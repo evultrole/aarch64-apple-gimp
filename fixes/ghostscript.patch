@@ -1,0 +1,16 @@
+--- a/configure.ac	2020-10-01 02:11:07.000000000 -0600
++++ b/configure.ac	2021-03-17 04:59:59.000000000 -0600
+@@ -1447,9 +1447,9 @@
+             *arm64*|*aarch64*)
+                 # Building on arm64 with gcc, disable libpng's neon
+                 # optimizations.
+-                if test $GCC = yes; then
++                #if test $GCC = yes; then
+                   CFLAGS="$CFLAGS -DPNG_ARM_NEON_OPT=0"
+-                fi
++                #fi
+             ;;
+           esac
+  else
+
+

@@ -1,0 +1,11 @@
+--- a/configure	2017-10-13 04:58:18.000000000 -0600
++++ b/configure	2021-03-17 05:59:50.000000000 -0600
+@@ -7628,6 +7628,8 @@
+ 	  _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
+ 	10.*)
+ 	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
++	11.*)
++	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
+       esac
+     ;;
+   esac

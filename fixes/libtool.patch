@@ -1,0 +1,35 @@
+--- a/m4/libtool.m4	2015-01-20 09:15:19.000000000 -0700
++++ b/m4/libtool.m4	2021-03-16 08:08:26.000000000 -0600
+@@ -1078,6 +1078,8 @@
+ 	  _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
+ 	10.*)
+ 	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
++	11.*)
++	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
+       esac
+     ;;
+   esac
+--- a/configure	2021-03-16 09:31:27.000000000 -0600
++++ b/configure	2021-03-16 09:27:10.000000000 -0600
+@@ -8491,6 +8491,8 @@
+ 	  _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
+ 	10.*)
+ 	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
++	11.*)
++	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
+       esac
+     ;;
+   esac
+
+--- a/Makefile.in	2021-03-16 11:37:33.000000000 -0600
++++ b/Makefile.in	2021-03-16 11:36:06.000000000 -0600
+@@ -422,7 +422,7 @@
+   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
+ distcleancheck_listfiles = find . -type f -print
+ pkgdatadir = @pkgdatadir@
+-ACLOCAL = @ACLOCAL@
++ACLOCAL = true
+ AMTAR = @AMTAR@
+ AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+ AR = @AR@
+

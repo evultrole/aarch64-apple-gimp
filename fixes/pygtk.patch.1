@@ -1,0 +1,67 @@
+--- a/configure	2011-04-01 04:41:02.000000000 -0600
++++ b/configure	2021-03-17 08:11:40.000000000 -0600
+@@ -6939,6 +6939,8 @@
+ 	  _lt_dar_allow_undefined='${wl}-flat_namespace ${wl}-undefined ${wl}suppress' ;;
+ 	10.*)
+ 	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
++	11.*)
++	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
+       esac
+     ;;
+   esac
+
+
+
+diff -pur a/pango-types.defs b/pango-types.defs
+--- a/pango-types.defs	2011-04-01 12:37:25.000000000 +0200
++++ b/pango-types.defs	2019-10-19 14:44:23.000000000 +0200
+@@ -176,13 +176,6 @@
+   (gtype-id "PANGO_TYPE_FONTSET")
+ )
+
+-(define-object FontsetSimple
+-  (in-module "Pango")
+-  (parent "PangoFontset")
+-  (c-name "PangoFontsetSimple")
+-  (gtype-id "PANGO_TYPE_FONTSET_SIMPLE")
+-)
+-
+ (define-object Layout
+   (in-module "Pango")
+   (parent "GObject")
+diff -pur a/pango.defs b/pango.defs
+--- a/pango.defs	2011-04-01 12:37:25.000000000 +0200
++++ b/pango.defs	2019-10-19 14:40:13.000000000 +0200
+@@ -1303,16 +1303,6 @@
+   )
+ )
+
+-(define-method find_shaper
+-  (of-object "PangoFont")
+-  (c-name "pango_font_find_shaper")
+-  (return-type "PangoEngineShape*")
+-  (parameters
+-    '("PangoLanguage*" "language")
+-    '("guint32" "ch")
+-  )
+-)
+-
+ (define-method get_metrics
+   (of-object "PangoFont")
+   (c-name "pango_font_get_metrics")
+@@ -1391,15 +1381,6 @@
+   )
+ )
+
+-(define-virtual find_shaper
+-  (of-object "PangoFont")
+-  (return-type "PangoEngineShape*")
+-  (parameters
+-    '("PangoLanguage*" "lang")
+-    '("guint32" "ch")
+-  )
+-)
+-
+ (define-virtual get_glyph_extents
+   (of-object "PangoFont")
+   (return-type "none")
