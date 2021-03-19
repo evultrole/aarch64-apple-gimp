@@ -1,15 +1,7 @@
---- configure	2021-02-15 18:30:33.000000000 -0700
-+++ configure	2021-03-19 03:08:22.000000000 -0600
-@@ -9219,7 +9219,7 @@ fi
-     		MACOSX_DEFAULT_ARCH="ppc"
-     		;;
-     	*)
--    		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
-+    		as_fn_error $? "Unexpected output of 'pppppparch' on OSX" "$LINENO" 5
-     		;;
-     	esac
-     else
-@@ -9230,8 +9230,11 @@ fi
+diff -Naurp Python-3.6.13.orig/configure Python-3.6.13/configure
+--- configure	2021-03-19 03:16:07.000000000 -0600
++++ configure	2021-03-19 03:16:59.000000000 -0600
+@@ -9230,6 +9230,9 @@ fi
      	ppc)
      		MACOSX_DEFAULT_ARCH="ppc64"
      		;;
@@ -17,9 +9,5 @@
 +                MACOSX_DEFAULT_ARCH="arm64"
 +                ;;
      	*)
--    		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
-+    		as_fn_error $? "Unexpected output of 'ssssarch' on OSX" "$LINENO" 5
+     		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
      		;;
-     	esac
- 
-
