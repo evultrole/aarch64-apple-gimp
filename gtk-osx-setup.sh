@@ -94,7 +94,7 @@ if test ! -f "`eval echo $PIP_CONFIG_FILE`" ; then
     export PIP_CONFIG_FILE="$PIP_CONFIG_DIR/pip.conf"
     mkdir -p "$PIP_CONFIG_DIR"
 fi
-PIP=`python3.8 -m pip`
+PIP=`python3 -m pip`
 if test ! -x "`eval echo $PIP`" ; then
     mv=`python --version 2>&1 | cut -b 12-13`
     if test $mv -lt 11 ; then

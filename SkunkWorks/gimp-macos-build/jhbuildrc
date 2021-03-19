@@ -325,6 +325,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
         append_autogenargs("libffi", "--host=aarch64-apple-darwin")
         append_autogenargs("libnettle", "--host=aarch64-apple-darwin")
         append_autogenargs("libde265", "--host=aarch64-apple-darwin")
+        append_autogenargs("ghostscript", "--host=aarch64-apple-darwin")
 
     # El Capitan needs bash to work around SIP. If you're using a
     # common bootstrap directory (e.g. $HOME/.local) then override
