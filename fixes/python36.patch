@@ -11,3 +11,16 @@ diff -Naurp Python-3.6.13.orig/configure Python-3.6.13/configure
      	*)
      		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
      		;;
+
+--- a/Mac/Tools/pythonw.c	2021-03-19 03:16:07.000000000 -0600
++++ b/Mac/Tools/pythonw.c	2021-03-19 03:28:45.000000000 -0600
+@@ -119,6 +119,8 @@
+ 
+ #elif defined(__ppc__)
+     cpu_types[0] = CPU_TYPE_POWERPC;
++#elif defined(__arm64__)
++    cpu_types[0] = CPU_TYPE_ARM64;
+ #elif defined(__i386__)
+     cpu_types[0] = CPU_TYPE_X86;
+ #else
+
