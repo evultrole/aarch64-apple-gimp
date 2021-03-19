@@ -9,9 +9,10 @@
 +                MACOSX_DEFAULT_ARCH="arm64" 
 +                ;;
      	*)
-     		AC_MSG_ERROR([Unexpected output of 'arch' on OSX])
+-    		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
++    		as_fn_error $? "Unexpected output of 'ssssarch' on OSX" "$LINENO" 5
      		;;
-
+     	esac
 
 --- configure	2021-02-15 18:30:33.000000000 -0700
 +++ configure	2021-03-19 02:28:45.000000000 -0600
@@ -23,5 +24,7 @@
 +                MACOSX_DEFAULT_ARCH="arm64" 
 +                ;;
      	*)
-     		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
+-    		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
++    		as_fn_error $? "Unexpected output of 'ssssarch' on OSX" "$LINENO" 5
      		;;
+     	esac
