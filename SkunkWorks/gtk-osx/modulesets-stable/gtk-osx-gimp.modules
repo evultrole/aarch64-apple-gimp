@@ -79,7 +79,7 @@
     </dependencies>
   </metamodule>
 
-  <autotools id="gimp" autogen-sh="autoreconf" autogenargs="--without-x --with-build-id=org.gimp.GIMP_official --with-revision=3c PYTHON=/usr/bin/python2">
+  <autotools id="gimp" autogen-sh="autoreconf" autogenargs="--without-x --with-build-id=org.gimp.GIMP_official --with-revision=3c">
     <branch module="gimp/v2.10/gimp-2.10.22.tar.bz2"
       version="2.10.22"
       hash="sha256:2db84b57f3778d80b3466d7c21a21d22e315c7b062de2883cbaaeda9a0f618bb" repo="gimp">

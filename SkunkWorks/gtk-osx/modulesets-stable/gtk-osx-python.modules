@@ -141,7 +141,7 @@
      installs as pygobject3. Introspection is disabled here, because
      gir-scanner isn't smart enough to co-install them. -->
   <autotools id="pygobject" autogen-sh="autoreconf"
-	     autogenargs="--disable-introspection PYTHON=/usr/bin/python2"
+	     autogenargs="--disable-introspection"
 	     supports-non-srcdir-builds="no">
     <branch version="2.28.7" module="pygobject/2.28/pygobject-2.28.7.tar.xz"
             hash="sha256:bb9d25a3442ca7511385a7c01b057492095c263784ef31231ffe589d83a96a5a">
@@ -171,7 +171,7 @@
 
 <!-- Pygtk is discontinued, this is the last release -->
  <autotools id="pygtk" autogen-sh="configure"
-	     autogenargs="CFLAGS=&quot;$CFLAGS -xobjective-c&quot; lt_cv_sys_global_symbol_pipe=&quot;'sed -n -e '\''s/^.*[ ]\([BCDEGRST][BCDEGRST]*\)[ ][ ]*_\([_A-Za-z][_A-Za-z0-9]*\)$/\1 _\2 \2/p'\'' | sed '\''/ __gnu_lto/d'\'''&quot; PYTHON=/usr/bin/python2">
+	     autogenargs="CFLAGS=&quot;$CFLAGS -xobjective-c&quot; lt_cv_sys_global_symbol_pipe=&quot;'sed -n -e '\''s/^.*[ ]\([BCDEGRST][BCDEGRST]*\)[ ][ ]*_\([_A-Za-z][_A-Za-z0-9]*\)$/\1 _\2 \2/p'\'' | sed '\''/ __gnu_lto/d'\'''&quot;">
     <branch version="2.24.0" module="pygtk/2.24/pygtk-2.24.0.tar.bz2"
             hash="sha256:cd1c1ea265bd63ff669e92a2d3c2a88eb26bcd9e5363e0f82c896e649f206912">
       <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/pygtk-libtool.patch" strip="1"/>

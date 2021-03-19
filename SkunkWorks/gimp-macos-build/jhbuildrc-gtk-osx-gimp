@@ -109,7 +109,7 @@ if _jhb is None:
 
 #  Set up a particular target and SDK: For default operation, set the
 # architecture and SDK for the native machine:
-setup_sdk("10.9","x86_64")
+setup_sdk("11.1","arm64")
 
 # enable optimization
 
@@ -155,7 +155,7 @@ environ_prepend('OBJCFLAGS', "-O3")
 # os.environ["CC"] = "/usr/bin/gcc-4.0"
 
 # use our modulset
-moduleset = 'https://gitlab.gnome.org/samm-git/gtk-osx/raw/gimp/modulesets-stable/gtk-osx.modules'
+moduleset = '/Users/steven/SkunkWorks/gtk-osx/modulesets-stable/gtk-osx.modules'
 
 # force python 3.6 for the libxml2 to avoid build issues
 module_extra_env['libxml2'] = { "ac_cv_path_PYTHON": "python3.6" }
@@ -165,7 +165,7 @@ module_extra_env['meson'] = { "LC_ALL": "en_US.UTF-8" }
 
 # DJM - gtk-doc needs PYTHON to be python3, and then creates gtkdoc-rebase with a shebang of $PYTHON, so we need to be
 # absolute here, otherwise anything calling gtkdoc-rebase (i.e. the later gtk+ install) will err with  "bad interpreter"
-module_extra_env['gtk-doc'] = { 'PYTHON': '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6' }
+#module_extra_env['gtk-doc'] = { 'PYTHON': '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6' }
 
 # DJM - c files built from defs are not including all necessary headers - ignore that
 module_extra_env['pygtk'] = { 'CFLAGS' : '-Wno-error=implicit-function-declaration' }
@@ -189,7 +189,7 @@ class _cmd_bootstrap_gtk_osx_gimp(jhbuild.commands.base.cmd_build):
                                           moduleset + '.modules'))):
             config.moduleset = moduleset
         else:
-            config.moduleset = 'https://gitlab.gnome.org/samm-git/gtk-osx/raw/gimp/modulesets-stable/bootstrap.modules'
+            config.moduleset = '/Users/steven/SkunkWorks/gtk-osx/modulesets-stable/bootstrap.modules'
 
         args = ['meta-bootstrap']
 
