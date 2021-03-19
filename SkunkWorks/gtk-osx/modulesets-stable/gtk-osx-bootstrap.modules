@@ -117,7 +117,7 @@
     </dependencies>
   </autotools>
 
-  <autotools id="gtk-doc" autogen-sh="configure" autogenargs="PYTHON=/opt/homebrew/bin/python3">
+  <autotools id="gtk-doc" autogen-sh="configure">
     <branch version="1.32" module="gtk-doc/1.32/gtk-doc-1.32.tar.xz"
             hash="sha256:de0ef034fb17cb21ab0c635ec730d19746bce52984a6706e7bbec6fb5e0b907c"/>
     <dependencies>
