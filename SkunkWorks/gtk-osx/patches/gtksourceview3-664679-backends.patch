@@ -1,0 +1,38 @@
+From 194d40ed2e6e27889b201b4c84997b1e7075a3a5 Mon Sep 17 00:00:00 2001
+From: Philip Chimento <philip.chimento@gmail.com>
+Date: Tue, 22 Nov 2011 13:05:08 +0100
+Subject: [PATCH] Allow for multiple GDK backends
+
+In GDK > 3.0, multiple backends can be built. The pkg-config
+variable that tells the backend is now called 'targets' instead of
+'target'. To determine whether to build for OS X, configure now
+needs to use the GTK_CHECK_BACKENDS macro supplied with GTK, as
+described in the migration guide:
+http://developer.gnome.org/gtk3/3.3/ch25s02.html
+---
+ configure.ac |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 7d4a17f..3d88fe5 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -84,14 +84,7 @@ AM_CONDITIONAL([ENABLE_PROVIDERS], [ test "$enable_providers" = "yes" ])
+ 
+ dnl check for native osx
+ AC_MSG_CHECKING([for native Mac OS X])
+-
+-gdk_windowing=`$PKG_CONFIG --variable=target gdk-3.0`
+-
+-if test "$gdk_windowing" = "quartz"; then
+-	os_osx=yes
+-else
+-	os_osx=no
+-fi
++GTK_CHECK_BACKEND([quartz], [3.0.0], [os_osx=yes], [os_osx=no])
+ AC_MSG_RESULT([$os_osx])
+ AM_CONDITIONAL([OS_OSX], [ test "$os_osx" = "yes" ])
+ 
+-- 
+1.7.3.2
+

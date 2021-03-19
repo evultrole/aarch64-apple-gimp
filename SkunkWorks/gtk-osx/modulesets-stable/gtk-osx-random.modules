@@ -1,0 +1,320 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="tarball" name="ftp.gnome.org" default="yes"
+              href="http://ftp.gnome.org/pub/GNOME/sources/"/>
+
+  <repository type="tarball" name="ftp.gtk.org"
+              href="https://ftp.gtk.org/pub/"/>
+  <repository type="tarball" name="hadess"
+              href="http://freedesktop.org/~hadess/"/>
+
+  <repository type="tarball" name="sourceforge"
+              href="http://downloads.sourceforge.net/sourceforge/"/>
+  <repository type="git" name="github.com" href="git://github.com/"/>
+  <repository type="tarball" name="github-tarball" href="https://github.com/"/>
+  <repository type="tarball" name="dbus.freedesktop.org"
+              href="http://dbus.freedesktop.org/releases/"/>
+  <repository type="tarball" name="sqlite" href="http://www.sqlite.org/"/>
+  <repository type="tarball" name="oracle"
+	      href="http://download.oracle.com/"/>
+  <repository type="tarball" name="ftp.gnu.org"
+	      href="https://ftp.gnu.org/gnu/"/>
+  <repository type="tarball" name="gmplib.org"
+	      href="ftp://ftp.gmplib.org/pub/"/>
+  <repository type="git" name="git.gnome.org"
+              href="https://gitlab.gnome.org/GNOME"/>
+  <repository type="tarball" name="itstool"
+	      href="http://files.itstool.org/"/>
+  <repository type="tarball" name="abisource/enchant"
+              href="http://www.abisource.com/downloads/enchant/"/>
+
+  <metamodule id="meta-gtk-osx-random">
+    <dependencies>
+      <dep package="devhelp"/>
+      <dep package="shared-mime-info"/>
+      <dep package="gossip"/>
+      <dep package="vala"/>
+      <dep package="glade3"/>
+      <dep package="librsvg"/>
+    </dependencies>
+  </metamodule>
+
+<!-- Libglade's functions are now part of Gtk+ with different names and
+Libglade itself is deprecated. This is the last release. -->
+  <autotools id="libglade" autogen-sh='autoreconf'>
+    <branch module="libglade/2.6/libglade-2.6.4.tar.bz2" version="2.6.4"
+            md5sum="d1776b40f4e166b5e9c107f1c8fe4139" >
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/libglade-gmodule.patch" strip="1"/>
+    </branch>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+  <autotools id="vala" autogen-sh="configure">
+    <branch repo="ftp.gnome.org" version="0.36.1"
+            module="vala/0.36/vala-0.36.1.tar.xz"
+            hash="sha256:13f4a3f99d983bf76e8d9dd736021ecc95f53ec1f9582423aa4b4be87455aa07"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+
+  <autotools id="libunique" autogen-sh="configure"
+             autogenargs="--without-x --disable-dbus">
+    <branch module="libunique/3.0/libunique-3.0.2.tar.bz2" version="3.0.2"
+            hash="sha256:a8f02ce073e2b920cca8ac45d418e7cb64438ad0814780c5912c6d63f8a4e038">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/libunique-663913-sockaddr-un.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="gtk+"/>
+    </dependencies>
+  </autotools>
+
+<!-- This is, I think, the last Gtk+2 version -->
+  <autotools id="devhelp" autogen-sh="autogen.sh">
+    <branch module="devhelp/2.32/devhelp-2.32.0.tar.bz2" version="2.32.0"
+            hash="sha256:61b342cbaf27379be9baa5df1f34c9464916601ec4378fa7e1c76fcc686553e4">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/devhelp-663789-gtkosxapplication.patch" strip="1"/>
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/devhelp-646962-variable-name.patch" strip="1"/>
+    </branch>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+    <dependencies>
+      <dep package="WebKit"/>
+      <dep package="libunique"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="devhelp-gtk3" autogen-sh="configure">
+    <branch module="devhelp/3.24/devhelp-3.24.0.tar.xz" version="3.24.0"
+            hash="sha256:4858de1c815532ad160d1bf9facd28859972e3a052908a8edf73f866c8cce430"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </after>
+    <dependencies>
+      <dep package="webkit2gtk3"/>
+      <dep package="gsettings-desktop-schemas"/>
+      <!-- Without shared-mime-info, HTML documents display as plain text -->
+      <dep package="shared-mime-info"/>
+    </dependencies>
+  </autotools>
+
+<!-- Glade 3.8 is the last stable series for Gtk+-2 -->
+  <autotools id="glade3" autogen-sh="configure"
+	     autogenargs="--disable-scrollkeeper">
+    <branch module="glade3/3.8/glade3-3.8.5.tar.xz" version="3.8.5"
+            hash="sha256:58a5f6e4df4028230ddecc74c564808b7ec4471b1925058e29304f778b6b2735">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/Glade-3-8-Mac-Integration-Fix-up-menu-accelerators-for-Mac.patch" strip="1"/>
+    </branch>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+<!-- Glade 3.10 is the first stable series for Gtk+-3. Note the name
+     change back to just "glade"-->
+  <autotools id="glade" autogen-sh="configure"
+	     autogenargs='--disable-scrollkeeper --disable-introspection CPPFLAGS="$CPPFLAGS -xobjective-c"'>
+    <branch module="glade/3.22/glade-3.22.1.tar.xz" version="3.22.1"
+            hash="sha256:dff89a2ef2eaf000ff2a46979978d03cb9202cb04668e01d0ea5c5bb5547e39a">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/glade-3.22.1-xslproc.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="itstool"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </after>
+  </autotools>
+
+<!-- gtksourceview-2.10.5 is the last version that supports Gtk+-2 -->
+  <autotools id="gtksourceview" autogen-sh="configure">
+    <branch module="gtksourceview/2.10/gtksourceview-2.10.5.tar.bz2"
+            version="2.10.5" hash="sha256:c585773743b1df8a04b1be7f7d90eecdf22681490d6810be54c81a7ae152191e">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/gtksourceview-664511-gtkosxapplication.patch" strip="1"/>
+    </branch>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+  <autotools id="gtksourceview3" autogen-sh="configure">
+    <branch module="gtksourceview/3.24/gtksourceview-3.24.4.tar.xz"
+            version="3.24.4" hash="sha256:207fb1958087d89393521eafac05f6dd67448ef6edb43ec2c708a79f3b1aa793">
+    </branch>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </after>
+  </autotools>
+
+  <autotools id="lcms" autogen-sh="configure">
+    <branch module="lcms/lcms2-2.9.tar.gz" version="2.9" repo="sourceforge" />
+  </autotools>
+
+  <autotools id="shared-mime-info"  autogen-sh="configure"
+             autogenargs="--disable-default-make-check ac_cv_func_fdatasync=no"
+             supports-non-srcdir-builds="no" >
+    <branch module="shared-mime-info-1.9.tar.xz" version="1.9"
+            repo="hadess">
+    </branch>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gsettings-desktop-schemas" autogen-sh="configure"
+             autogenargs="--enable-introspection=yes">
+    <branch module="gsettings-desktop-schemas/3.24/gsettings-desktop-schemas-3.24.0.tar.xz"
+            version="3.24.0"
+            hash="sha256:f6573a3f661d22ff8a001cc2421d8647717f1c0e697e342d03c6102f29bbbb90"/>
+    <dependencies>
+      <dep package="gobject-introspection"/>
+    </dependencies>
+  </autotools>
+
+<!-- SQLite3 is provided by MacOSX in /usr/lib/libsqlite.3.dylib -->
+  <autotools id="sqlite" autogenargs="--disable-tcl --enable-threadsafe"
+	     autogen-sh="configure">
+    <branch module="2017/sqlite-autoconf-3180000.tar.gz" version='3.18.0'
+	    repo="sqlite"/>
+  </autotools>
+
+<!-- Goocanvas-1 is for gtk+-2. -->
+  <autotools id="goocanvas" autogen-sh="configure">
+    <branch module="goocanvas/1.0/goocanvas-1.0.0.tar.bz2" version="1.0.0"
+	    hash="sha256:1c072ef88567cad241fb4addee26e9bd96741b1503ff736d1c152fa6d865711e"/>
+    <dependencies>
+      <dep package="gtk+"/>
+    </dependencies>
+  </autotools>
+
+<!-- Goocanvas2 is for gtk+-3. -->
+
+  <autotools id="goocanvas2" supports-non-srcdir-builds="no">
+    <branch module="goocanvas/2.0/goocanvas-2.0.2.tar.xz" version="2.0.2"
+	    hash="sha256:f20e5fbef8d1a2633033edbd886dd13146a1b948d1813a9c353a80a29295d1d0"/>
+    <branch repo="git.gnome.org" module="goocanvas" checkoutdir="goocanvas2"/>
+    <after>
+      <dep package="gtk+-3.0"/>
+      <dep package="gtk+-3.14"/>
+    </after>
+  </autotools>
+
+<!-- Libart_lgpl is deprecated by gnome. This is probably the last release. -->
+  <autotools id="libart_lgpl">
+    <branch   module="libart_lgpl/2.3/libart_lgpl-2.3.21.tar.bz2"
+	      version="2.3.21" hash="sha256:fdc11e74c10fc9ffe4188537e2b370c0abacca7d89021d4d303afdf7fd7476fa"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+  <autotools id="hunspell" autogen-sh="autoreconf">
+    <branch module="hunspell/hunspell/archive/v1.6.1.tar.gz" version="1.6.1"
+	    repo="github-tarball" checkoutdir="hunspell-1.6.1"/>
+  </autotools>
+
+  <autotools id="enchant" autogen-sh="autogen.sh" autogenargs="--with-myspell-dir=/Library/Dictionaries">
+    <!-- abiword website is http - curl complains, so let's honour its intent and fetch securely from github instead -->
+    <!-- branch module="1.6.0/enchant-1.6.0.tar.gz" version="1.6.0" repo="abisource/enchant" -->
+    <branch repo="github.com" module="AbiWord/enchant" revision="enchant-1-6-0">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/enchant-gsize.patch" strip="1"/>
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/enchant-env.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gtkspell" autogen-sh="configure">
+    <branch module="gtkspell/gtkspell-2.0.16.tar.gz" repo="sourceforge"
+	    version="2.0.16"/>
+    <dependencies>
+      <dep package="enchant"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gtkspell3" autogen-sh="configure">
+    <branch module="gtkspell/gtkspell3-3.0.9.tar.xz" repo="sourceforge"
+            version="3.0.9">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/0001-Enable-use-of-XDG_DATA_DIRS-for-locating-iso-code-fi.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="enchant"/>
+      <dep package="iso-codes"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libgsf" autogenargs="--without-python">
+    <branch  module="libgsf/1.14/libgsf-1.14.41.tar.xz" version="1.14.41"
+	     hash="sha256:150b98586a1021d5c49b3d4d065d0aa3e3674ae31db131af5372499d2d3f08d3">
+    </branch>
+  </autotools>
+
+  <autotools id="gmp">
+    <branch repo="ftp.gnu.org" module="gmp/gmp-6.2.1.tar.bz2" version="6.2.1">
+    </branch>
+  </autotools>
+
+  <autotools id="libunistring" autogen-sh="configure">
+    <branch repo="ftp.gnu.org" module="libunistring/libunistring-0.9.7.tar.gz"
+	    version="0.9.7">
+    </branch>
+  </autotools>
+
+  <autotools id="libatomic-ops"
+             autogen-template="pushd %(srcdir)s &amp;&amp; ./%(autogen-sh)s &amp;&amp; popd &amp;&amp; %(srcdir)s/configure --prefix=%(prefix)s %(autogenargs)s">
+    <branch repo="github.com" module="ivmai/libatomic_ops"
+	    revision="libatomic_ops-7_4_4"/>
+  </autotools>
+
+  <autotools id="bdw-gc" autogen-template="pushd %(srcdir)s &amp;&amp; ./autogen.sh &amp;&amp; automake -ac &amp;&amp; popd &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s  %(autogenargs)s">
+    <branch repo="github.com" module="ivmai/bdwgc"  revision="gc7_6_0" />
+    <dependencies>
+      <dep package="libatomic-ops"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="guile" autogen-sh="configure"
+	     autogenargs="--disable-error-on-warning">
+    <branch repo="ftp.gnu.org" module="guile/guile-1.8.8.tar.gz"
+	    version="1.8.8"/>
+    <dependencies>
+      <dep package="gmp"/>
+    </dependencies>
+  </autotools>
+
+  <!-- Guile 2.0.14 crashes during build. Stay at 2.0.12 while this is investigated. -->
+  <autotools id="guile2" autogen-sh="configure">
+    <branch repo="ftp.gnu.org" module="guile/guile-2.0.11.tar.gz"
+	    version="2.0.11">
+      <!--patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/guild-shell.patch" strip="1"/>
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/guile-clocktime.patch" strip="1"/-->
+    </branch>
+    <dependencies>
+      <dep package="libunistring"/>
+      <dep package="gmp"/>
+      <dep package="libffi"/>
+      <dep package="bdw-gc"/>
+    </dependencies>
+  </autotools>
+
+</moduleset>

@@ -1,0 +1,12 @@
+diff --git a/libappstream-glib/meson.build b/libappstream-glib/meson.build
+index 5f726b0..7d29ac8 100644
+--- a/libappstream-glib/meson.build
++++ b/libappstream-glib/meson.build
+@@ -136,7 +136,6 @@ asglib = shared_library(
+   dependencies : deps,
+   c_args : cargs,
+   include_directories : include_directories('..'),
+-  link_args : vflag,
+   link_depends : mapfile,
+   install : true,
+ )

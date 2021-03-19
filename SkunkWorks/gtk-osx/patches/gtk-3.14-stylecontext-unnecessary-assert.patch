@@ -1,0 +1,11 @@
+--- a/gtk/gtkstylecontext.c	2015-07-21 07:22:36.000000000 -0700
++++ b/gtk/gtkstylecontext.c	2018-05-26 10:35:57.000000000 -0700
+@@ -795,8 +795,6 @@
+   if (info->values)
+     return info->values;
+ 
+-  g_assert (priv->widget != NULL || priv->widget_path != NULL);
+-
+   values = g_hash_table_lookup (priv->style_values, info);
+   if (values)
+     {

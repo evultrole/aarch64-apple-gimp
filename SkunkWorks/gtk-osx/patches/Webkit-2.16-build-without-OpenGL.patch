@@ -1,0 +1,375 @@
+From 9e4d31faae8f3f23df718891b41dc4bd97eee0d6 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Thu, 20 Apr 2017 16:40:16 -0700
+Subject: [PATCH 2/3] [GTK] Building WebKit2Gtk without OpenGL Fails.
+
+Rearranged WebCore/PlatformGTK.cmake so that the OpenGL-dependent
+targets are built only if OpenGL is enabled. Add
+USE_COORDINATED_GRAPHICS to unconditionally TRUE options in
+OptionsGTK.cmake. Adjusted two targets in TextureMapper.cmake to
+build only if USE_TEXTURE_MAPPER_GL is true because they depend on
+OpenGL contexts. Made some functions and includes conditional on
+OpenGL or subsidiary items.
+---
+ Source/WebCore/PlatformGTK.cmake                   | 78 ++++++++++++++--------
+ Source/WebCore/page/FrameView.cpp                  |  2 +-
+ .../page/scrolling/ScrollingCoordinator.cpp        |  2 +-
+ Source/WebCore/platform/TextureMapper.cmake        |  8 ++-
+ .../WebCore/platform/graphics/PlatformDisplay.cpp  |  3 +-
+ .../texmap/coordinated/TiledBackingStore.cpp       |  2 +-
+ Source/WebKit2/PlatformGTK.cmake                   | 13 ++++
+ .../UIProcess/API/gtk/WebKitWebsiteData.cpp        |  3 -
+ .../UIProcess/API/gtk/WebKitWebsiteDataManager.cpp |  2 -
+ .../WebKit2/WebProcess/WebPage/DrawingAreaImpl.cpp |  1 -
+ Source/cmake/OptionsGTK.cmake                      |  5 +-
+ 11 files changed, 76 insertions(+), 43 deletions(-)
+
+diff --git a/Source/WebCore/PlatformGTK.cmake b/Source/WebCore/PlatformGTK.cmake
+index 6981e37..417249e 100644
+--- a/Source/WebCore/PlatformGTK.cmake
++++ b/Source/WebCore/PlatformGTK.cmake
+@@ -21,16 +21,11 @@ list(APPEND WebCore_INCLUDE_DIRECTORIES
+     "${WEBCORE_DIR}/platform/geoclue"
+     "${WEBCORE_DIR}/platform/gtk"
+     "${WEBCORE_DIR}/platform/graphics/cairo"
+-    "${WEBCORE_DIR}/platform/graphics/egl"
+-    "${WEBCORE_DIR}/platform/graphics/glx"
+     "${WEBCORE_DIR}/platform/graphics/gtk"
+     "${WEBCORE_DIR}/platform/graphics/freetype"
+     "${WEBCORE_DIR}/platform/graphics/harfbuzz/"
+     "${WEBCORE_DIR}/platform/graphics/harfbuzz/ng"
+-    "${WEBCORE_DIR}/platform/graphics/opengl"
+     "${WEBCORE_DIR}/platform/graphics/opentype"
+-    "${WEBCORE_DIR}/platform/graphics/wayland"
+-    "${WEBCORE_DIR}/platform/graphics/x11"
+     "${WEBCORE_DIR}/platform/mediastream/gtk"
+     "${WEBCORE_DIR}/platform/mock/mediasource"
+     "${WEBCORE_DIR}/platform/network/gtk"
+@@ -83,11 +78,9 @@ list(APPEND WebCore_SOURCES
+     platform/glib/MainThreadSharedTimerGLib.cpp
+     platform/glib/SharedBufferGlib.cpp
+ 
+-    platform/graphics/GLContext.cpp
+     platform/graphics/GraphicsContext3DPrivate.cpp
+ 
+     platform/graphics/cairo/BackingStoreBackendCairoImpl.cpp
+-    platform/graphics/cairo/BackingStoreBackendCairoX11.cpp
+     platform/graphics/cairo/CairoUtilities.cpp
+     platform/graphics/cairo/FloatRectCairo.cpp
+     platform/graphics/cairo/FontCairo.cpp
+@@ -106,18 +99,11 @@ list(APPEND WebCore_SOURCES
+     platform/graphics/cairo/RefPtrCairo.cpp
+     platform/graphics/cairo/TransformationMatrixCairo.cpp
+ 
+-    platform/graphics/egl/GLContextEGL.cpp
+-    platform/graphics/egl/GLContextEGLWayland.cpp
+-    platform/graphics/egl/GLContextEGLX11.cpp
+-
+     platform/graphics/freetype/FontCacheFreeType.cpp
+     platform/graphics/freetype/FontCustomPlatformDataFreeType.cpp
+     platform/graphics/freetype/FontPlatformDataFreeType.cpp
+     platform/graphics/freetype/GlyphPageTreeNodeFreeType.cpp
+     platform/graphics/freetype/SimpleFontDataFreeType.cpp
+-
+-    platform/graphics/glx/GLContextGLX.cpp
+-
+     platform/graphics/gstreamer/ImageGStreamerCairo.cpp
+ 
+     platform/graphics/harfbuzz/ComplexTextControllerHarfBuzz.cpp
+@@ -125,18 +111,8 @@ list(APPEND WebCore_SOURCES
+     platform/graphics/harfbuzz/HarfBuzzFaceCairo.cpp
+     platform/graphics/harfbuzz/HarfBuzzShaper.cpp
+ 
+-    platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
+-    platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
+-    platform/graphics/opengl/TemporaryOpenGLSetting.cpp
+-
+     platform/graphics/opentype/OpenTypeVerticalData.cpp
+ 
+-    platform/graphics/wayland/PlatformDisplayWayland.cpp
+-
+-    platform/graphics/x11/PlatformDisplayX11.cpp
+-    platform/graphics/x11/XErrorTrapper.cpp
+-    platform/graphics/x11/XUniqueResource.cpp
+-
+     platform/gtk/DragDataGtk.cpp
+     platform/gtk/ErrorsGtk.cpp
+     platform/gtk/MIMETypeRegistryGtk.cpp
+@@ -258,11 +234,6 @@ list(APPEND WebCore_LIBRARIES
+     ${LIBXSLT_LIBRARIES}
+     ${HYPHEN_LIBRARIES}
+     ${SQLITE_LIBRARIES}
+-    ${X11_X11_LIB}
+-    ${X11_Xcomposite_LIB}
+-    ${X11_Xdamage_LIB}
+-    ${X11_Xrender_LIB}
+-    ${X11_Xt_LIB}
+     ${ZLIB_LIBRARIES}
+     WTF
+ )
+@@ -296,11 +267,24 @@ if (USE_OPENGL_ES_2)
+ endif ()
+ 
+ if (USE_OPENGL)
++    list(APPEND WebCore_INCLUDE_DIRECTORIES
++        "${WEBCORE_DIR}/platform/graphics/opengl"
++        "${WEBCORE_DIR}/platform/graphics/egl"
++        "${WEBCORE_DIR}/platform/graphics/glx"
++    )
+     list(APPEND WebCore_SOURCES
++        platform/graphics/GLContext.cpp
+         platform/graphics/OpenGLShims.cpp
+ 
++        platform/graphics/egl/GLContextEGL.cpp
++
++        platform/graphics/glx/GLContextGLX.cpp
++
+         platform/graphics/opengl/Extensions3DOpenGL.cpp
+         platform/graphics/opengl/GraphicsContext3DOpenGL.cpp
++        platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
++        platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
++        platform/graphics/opengl/TemporaryOpenGLSetting.cpp
+     )
+ endif ()
+ 
+@@ -330,13 +314,49 @@ if (ENABLE_PLUGIN_PROCESS_GTK2)
+     )
+ endif ()
+ 
++if (ENABLE_X11_TARGET)
++    list(APPEND WebCore_INCLUDE_DIRECTORIES
++      "${WEBCORE_DIR}/platform/graphics/x11"
++    )
++    list(APPEND WebCore_SOURCES
++      platform/graphics/x11/PlatformDisplayX11.cpp
++      platform/graphics/x11/XErrorTrapper.cpp
++      platform/graphics/x11/XUniqueResource.cpp
++      platform/graphics/cairo/BackingStoreBackendCairoX11.cpp
++    )
++    list(APPEND WebCore_LIBRARIES
++      ${X11_X11_LIB}
++      ${X11_Xcomposite_LIB}
++      ${X11_Xdamage_LIB}
++      ${X11_Xrender_LIB}
++      ${X11_Xt_LIB}
++    )
++    if (USE_OPENGL)
++        list(APPEND WebCore_SOURCES
++          platform/graphics/egl/GLContextEGLX11.cpp
++        )
++    endif ()
++endif()
++
++
+ if (ENABLE_WAYLAND_TARGET)
++    list(APPEND WebCore_INCLUDE_DIRECTORIES
++      "${WEBCORE_DIR}/platform/graphics/wayland"
++    )
++    list(APPEND WebCore_SOURCES
++      platform/graphics/wayland/PlatformDisplayWayland.cpp
++    )
+     list(APPEND WebCore_SYSTEM_INCLUDE_DIRECTORIES
+         ${WAYLAND_INCLUDE_DIRS}
+     )
+     list(APPEND WebCore_LIBRARIES
+         ${WAYLAND_LIBRARIES}
+     )
++  if (USE_OPENGL)
++    list(APPEND WebCore_SOURCES
++         platform/graphics/egl/GLContextEGLWayland.cpp
++    )
++  endif ()
+ endif ()
+ 
+ add_library(WebCorePlatformGTK ${WebCore_LIBRARY_TYPE} ${WebCorePlatformGTK_SOURCES})
+diff --git a/Source/WebCore/page/FrameView.cpp b/Source/WebCore/page/FrameView.cpp
+index 597c666..8e2d43a 100644
+--- a/Source/WebCore/page/FrameView.cpp
++++ b/Source/WebCore/page/FrameView.cpp
+@@ -103,7 +103,7 @@
+ #include <wtf/SystemTracing.h>
+ 
+ #if USE(COORDINATED_GRAPHICS)
+-#include "TiledBackingStore.h"
++#include <texmap/coordinated/TiledBackingStore.h>
+ #endif
+ 
+ #if ENABLE(CSS_SCROLL_SNAP)
+diff --git a/Source/WebCore/page/scrolling/ScrollingCoordinator.cpp b/Source/WebCore/page/scrolling/ScrollingCoordinator.cpp
+index ff34266..9f7e93b 100644
+--- a/Source/WebCore/page/scrolling/ScrollingCoordinator.cpp
++++ b/Source/WebCore/page/scrolling/ScrollingCoordinator.cpp
+@@ -46,7 +46,7 @@
+ #include <wtf/text/StringBuilder.h>
+ 
+ #if USE(COORDINATED_GRAPHICS)
+-#include "ScrollingCoordinatorCoordinatedGraphics.h"
++#include <coordinatedgraphics/ScrollingCoordinatorCoordinatedGraphics.h>
+ #endif
+ 
+ #if ENABLE(WEB_REPLAY)
+diff --git a/Source/WebCore/platform/TextureMapper.cmake b/Source/WebCore/platform/TextureMapper.cmake
+index 1091a46..4cfcf1e 100644
+--- a/Source/WebCore/platform/TextureMapper.cmake
++++ b/Source/WebCore/platform/TextureMapper.cmake
+@@ -9,7 +9,6 @@ list(APPEND WebCore_SOURCES
+     platform/graphics/texmap/TextureMapperAnimation.cpp
+     platform/graphics/texmap/TextureMapperBackingStore.cpp
+     platform/graphics/texmap/TextureMapperFPSCounter.cpp
+-    platform/graphics/texmap/TextureMapperGC3DPlatformLayer.cpp
+     platform/graphics/texmap/TextureMapperLayer.cpp
+     platform/graphics/texmap/TextureMapperTile.cpp
+     platform/graphics/texmap/TextureMapperTiledBackingStore.cpp
+@@ -19,6 +18,7 @@ if (USE_TEXTURE_MAPPER_GL)
+     list(APPEND WebCore_SOURCES
+         platform/graphics/texmap/BitmapTextureGL.cpp
+         platform/graphics/texmap/ClipStack.cpp
++        platform/graphics/texmap/TextureMapperGC3DPlatformLayer.cpp
+         platform/graphics/texmap/TextureMapperGL.cpp
+         platform/graphics/texmap/TextureMapperShaderProgram.cpp
+     )
+@@ -42,8 +42,12 @@ if (USE_COORDINATED_GRAPHICS)
+ endif ()
+ 
+ if (ENABLE_THREADED_COMPOSITOR)
++    if (USE_TEXTURE_MAPPER_GL)
++        list(APPEND WebCore_SOURCES
++            platform/graphics/texmap/TextureMapperPlatformLayerBuffer.cpp
++        )
++    endif()
+     list(APPEND WebCore_SOURCES
+-        platform/graphics/texmap/TextureMapperPlatformLayerBuffer.cpp
+         platform/graphics/texmap/TextureMapperPlatformLayerProxy.cpp
+     )
+ endif ()
+diff --git a/Source/WebCore/platform/graphics/PlatformDisplay.cpp b/Source/WebCore/platform/graphics/PlatformDisplay.cpp
+index e387bf9..d4c1bd9 100644
+--- a/Source/WebCore/platform/graphics/PlatformDisplay.cpp
++++ b/Source/WebCore/platform/graphics/PlatformDisplay.cpp
+@@ -25,8 +25,9 @@
+ 
+ #include "config.h"
+ #include "PlatformDisplay.h"
+-
++#if ENABLE(OPENGL)
+ #include "GLContext.h"
++#endif
+ #include <cstdlib>
+ #include <mutex>
+ 
+diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/TiledBackingStore.cpp b/Source/WebCore/platform/graphics/texmap/coordinated/TiledBackingStore.cpp
+index ecb31b4..d88498c 100644
+--- a/Source/WebCore/platform/graphics/texmap/coordinated/TiledBackingStore.cpp
++++ b/Source/WebCore/platform/graphics/texmap/coordinated/TiledBackingStore.cpp
+@@ -24,7 +24,7 @@
+ #include "GraphicsContext.h"
+ #include "TiledBackingStoreClient.h"
+ #include <wtf/CheckedArithmetic.h>
+-#include <wtf/MemoryPressureHandler.h>
++#include "MemoryPressureHandler.h"
+ 
+ namespace WebCore {
+ 
+diff --git a/Source/WebKit2/PlatformGTK.cmake b/Source/WebKit2/PlatformGTK.cmake
+index 2c6bc5f..a73d5eb 100644
+--- a/Source/WebKit2/PlatformGTK.cmake
++++ b/Source/WebKit2/PlatformGTK.cmake
+@@ -59,6 +59,12 @@ list(APPEND WebKit2_SOURCES
+ 
+     Shared/Authentication/soup/AuthenticationManagerSoup.cpp
+ 
++    Shared/CoordinatedGraphics/CoordinatedBackingStore.cpp
++    Shared/CoordinatedGraphics/SimpleViewportController.cpp
++
++    Shared/CoordinatedGraphics/threadedcompositor/CompositingRunLoop.cpp
++    Shared/CoordinatedGraphics/threadedcompositor/ThreadedCompositor.cpp
++
+     Shared/Plugins/Netscape/x11/NetscapePluginModuleX11.cpp
+ 
+     Shared/Plugins/unix/PluginSearchPath.cpp
+@@ -491,6 +497,13 @@ list(APPEND WebKit2_SOURCES
+     WebProcess/soup/WebProcessSoup.cpp
+ )
+ 
++if (ENABLE_OPENGL)
++   list(APPEND WebKit2_SOURCES
++       Shared/CoordinatedGraphics/CoordinatedGraphicsScene.cpp
++       Shared/CoordinatedGraphics/threadedcompositor/ThreadSafeCoordinatedSurface.cpp
++  )
++endif()
++
+ list(APPEND WebKit2_DERIVED_SOURCES
+     ${DERIVED_SOURCES_WEBKIT2GTK_DIR}/InspectorGResourceBundle.c
+     ${DERIVED_SOURCES_WEBKIT2GTK_DIR}/WebKit2InspectorGResourceBundle.c
+diff --git a/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteData.cpp b/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteData.cpp
+index 59dea58..6ffd597 100644
+--- a/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteData.cpp
++++ b/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteData.cpp
+@@ -73,7 +73,6 @@ static bool recordContainsSupportedDataTypes(const WebsiteDataRecord& record)
+         WebsiteDataType::LocalStorage,
+         WebsiteDataType::WebSQLDatabases,
+         WebsiteDataType::IndexedDBDatabases,
+-        WebsiteDataType::PlugInData,
+         WebsiteDataType::Cookies
+     };
+     return record.types.contains(typesSupported);
+@@ -96,8 +95,6 @@ static WebKitWebsiteDataTypes toWebKitWebsiteDataTypes(OptionSet<WebsiteDataType
+         returnValue |= WEBKIT_WEBSITE_DATA_WEBSQL_DATABASES;
+     if (types.contains(WebsiteDataType::IndexedDBDatabases))
+         returnValue |= WEBKIT_WEBSITE_DATA_INDEXEDDB_DATABASES;
+-    if (types.contains(WebsiteDataType::PlugInData))
+-        returnValue |= WEBKIT_WEBSITE_DATA_PLUGIN_DATA;
+     if (types.contains(WebsiteDataType::Cookies))
+         returnValue |= WEBKIT_WEBSITE_DATA_COOKIES;
+     return static_cast<WebKitWebsiteDataTypes>(returnValue);
+diff --git a/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteDataManager.cpp b/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteDataManager.cpp
+index 5bc8775..510e30c 100644
+--- a/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteDataManager.cpp
++++ b/Source/WebKit2/UIProcess/API/gtk/WebKitWebsiteDataManager.cpp
+@@ -641,8 +641,6 @@ static OptionSet<WebsiteDataType> toWebsiteDataTypes(WebKitWebsiteDataTypes type
+         returnValue |= WebsiteDataType::WebSQLDatabases;
+     if (types & WEBKIT_WEBSITE_DATA_INDEXEDDB_DATABASES)
+         returnValue |= WebsiteDataType::IndexedDBDatabases;
+-    if (types & WEBKIT_WEBSITE_DATA_PLUGIN_DATA)
+-        returnValue |= WebsiteDataType::PlugInData;
+     if (types & WEBKIT_WEBSITE_DATA_COOKIES)
+         returnValue |= WebsiteDataType::Cookies;
+     return returnValue;
+diff --git a/Source/WebKit2/WebProcess/WebPage/DrawingAreaImpl.cpp b/Source/WebKit2/WebProcess/WebPage/DrawingAreaImpl.cpp
+index a2da574..5fb5648 100644
+--- a/Source/WebKit2/WebProcess/WebPage/DrawingAreaImpl.cpp
++++ b/Source/WebKit2/WebProcess/WebPage/DrawingAreaImpl.cpp
+@@ -100,7 +100,6 @@ void DrawingAreaImpl::scroll(const IntRect& scrollRect, const IntSize& scrollDel
+ 
+     if (m_previousLayerTreeHost)
+         m_previousLayerTreeHost->scrollNonCompositedContents(scrollRect);
+-
+     if (!m_scrollRect.isEmpty() && scrollRect != m_scrollRect) {
+         unsigned scrollArea = scrollRect.width() * scrollRect.height();
+         unsigned currentScrollArea = m_scrollRect.width() * m_scrollRect.height();
+diff --git a/Source/cmake/OptionsGTK.cmake b/Source/cmake/OptionsGTK.cmake
+index 6efb76b..c0696b7 100644
+--- a/Source/cmake/OptionsGTK.cmake
++++ b/Source/cmake/OptionsGTK.cmake
+@@ -280,6 +280,7 @@ if (ENABLE_MEDIA_STREAM OR ENABLE_WEB_RTC)
+ endif ()
+ 
+ SET_AND_EXPOSE_TO_BUILD(USE_TEXTURE_MAPPER TRUE)
++SET_AND_EXPOSE_TO_BUILD(USE_COORDINATED_GRAPHICS TRUE)
+ 
+ if (ENABLE_OPENGL)
+     # ENABLE_OPENGL is true if either USE_OPENGL or ENABLE_GLES2 is true.
+@@ -312,8 +313,8 @@ if (ENABLE_OPENGL)
+         SET_AND_EXPOSE_TO_BUILD(USE_GLX TRUE)
+     endif ()
+ 
+-    SET_AND_EXPOSE_TO_BUILD(USE_COORDINATED_GRAPHICS ${ENABLE_THREADED_COMPOSITOR})
+-    SET_AND_EXPOSE_TO_BUILD(USE_COORDINATED_GRAPHICS_THREADED ${ENABLE_THREADED_COMPOSITOR})
++    SET_AND_EXPOSE_TO_BUILD(USE_COORDINATED_GRAPHICS_THREADED TRUE)
++
+ endif ()
+ 
+ if (ENABLE_PLUGIN_PROCESS_GTK2)
+-- 
+2.2.2
+

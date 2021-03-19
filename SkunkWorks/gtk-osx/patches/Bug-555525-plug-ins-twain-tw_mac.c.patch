@@ -1,0 +1,68 @@
+From 1b8aa4be14d80f53c85552adc7cb2192afde3217 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Mon, 23 Feb 2015 15:12:33 -0800
+Subject: [PATCH] Fix clang complaining about missing void in function
+ prototypes.
+
+---
+ plug-ins/twain/tw_local.h | 6 +++---
+ plug-ins/twain/tw_mac.c   | 6 ++++--
+ 2 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/plug-ins/twain/tw_local.h b/plug-ins/twain/tw_local.h
+index e76cf87..45b2fca 100644
+--- a/plug-ins/twain/tw_local.h
++++ b/plug-ins/twain/tw_local.h
+@@ -34,7 +34,7 @@ TW_UINT16 callDSM(pTW_IDENTITY, pTW_IDENTITY,
+ 		  TW_UINT16, TW_MEMREF);
+ 
+ int twainIsAvailable(void);
+-void twainQuitApplication ();
++void twainQuitApplication (void);
+ gboolean twainSetupCallback (pTW_SESSION twSession);
+ 
+ TW_HANDLE twainAllocHandle(size_t size);
+@@ -42,7 +42,7 @@ TW_MEMREF twainLockHandle (TW_HANDLE handle);
+ void twainUnlockHandle (TW_HANDLE handle);
+ void twainFreeHandle (TW_HANDLE handle);
+ 
+-int twainMain ();
+-int scanImage ();
++int twainMain (void);
++int scanImage (void);
+ 
+ #endif
+diff --git a/plug-ins/twain/tw_mac.c b/plug-ins/twain/tw_mac.c
+index 796d28e..48cc0d9 100644
+--- a/plug-ins/twain/tw_mac.c
++++ b/plug-ins/twain/tw_mac.c
+@@ -146,7 +146,7 @@ TW_UINT16 twainCallback(pTW_IDENTITY pOrigin,
+   return TWRC_SUCCESS;
+ }
+ 
+-void twainQuitApplication ()
++void twainQuitApplication (void)
+ {
+   QuitApplicationEventLoop();
+ }
+@@ -192,14 +192,16 @@ static void twainSetupMacUI()
+ 
+   /* Voodoo magic fix inspired by java_swt launcher */
+   /* Without this the icon setting doesn't work about half the time. */
++#ifdef __LP_64__
+   CGrafPtr p = BeginQDContextForApplicationDockTile();
+   EndQDContextForApplicationDockTile(p);
+ 
+   SetApplicationDockTileImage (icon);
++#endif
+ }
+ 
+ int
+-twainMain()
++twainMain(void)
+ {
+   EventLoopTimerRef timer;
+   OSStatus err;
+-- 
+2.2.2
+

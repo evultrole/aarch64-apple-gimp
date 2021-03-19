@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+
+  <repository type="git" name="git.gnome.org" default="yes"
+              href="https://gitlab.gnome.org/GNOME"/>
+  <repository type="tarball" name="cairographics"
+              href="http://cairographics.org/releases/"/>
+<!--  <repository type="git" name="cairographics"
+              href="git://anongit.freedesktop.org/git/"/> -->
+  <repository type="tarball" name="python"
+	      href="https://www.python.org/ftp/python/"/>
+  <repository type="tarball" name="oracle"
+	      href="http://download.oracle.com/"/>
+  <repository type="tarball" name="pymodules"
+	      href="http://pypi.python.org/packages/"/>
+  <repository type="git" name="github" href="git://github.com/"/>
+
+  <metamodule id="meta-gtk-osx-python">
+    <dependencies>
+      <dep package="meta-gtk-osx-core"/>
+      <dep package="pycairo"/>
+      <dep package="pygobject"/>
+      <dep package="pygtk"/>
+      <dep package="gtk-mac-integration-python"/>
+    </dependencies>
+  </metamodule>
+
+  <metamodule id="meta-gtk-osx-python-gtk3">
+    <dependencies>
+      <dep package="meta-gtk-osx-gtk3"/>
+      <dep package="pycairo"/>
+      <dep package="pygobject3"/>
+      <dep package="gtk-mac-integration-python"/>
+    </dependencies>
+  </metamodule>
+
+  <metamodule id="meta-gtk-osx-python3-gtk3">
+    <dependencies>
+      <dep package="meta-gtk-osx-gtk3"/>
+      <dep package="pycairo"/>
+      <dep package="pygobject3"/>
+      <dep package="gtk-mac-integration-python"/>
+    </dependencies>
+  </metamodule>
+
+<!--Note the leading ; in autogen-template. It's there on purpose in case the user has set nice_build so that the nice prepended to the command doesn't eat the cd. -->
+  <autotools id="berkeleydb" autogen-sh="dist/configure"
+         autogen-template="cd .;cd build_unix; ../%(autogen-sh)s --prefix %(prefix)s %(autogenargs)s" makeargs="-C build_unix"
+         makeinstallargs="-C build_unix install">
+
+    <branch module="berkeley-db/db-4.8.30.NC.tar.gz" version="4.8.30"
+        repo="oracle">
+      <patch file="https://raw.githubusercontent.com/narkoleptik/os-x-berkeleydb-patch/master/atomic.patch" strip='1'/>
+    </branch>
+  </autotools>
+
+  <autotools id="python" autogenargs="--enable-shared"
+	     supports-non-srcdir-builds="no" autogen-sh="autoreconf">
+       <branch repo="python"
+               module="2.7.17/Python-2.7.17.tgz" version="2.7.17"
+               hash="sha256:f22059d09cdf9625e0a7284d24a13062044f5bf59d93a7f3382190dfa94cecde">
+  <!-- related to https://bugs.python.org/issue11445 -->
+  <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/python-ldflags.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package='readline'/>
+      <dep package="openssl"/> <!-- For hashlib -->
+    </dependencies>
+    <after>
+      <dep package="berkeleydb"/>
+    </after>
+  </autotools>
+
+  <autotools id="python3" autogenargs="--enable-shared" autogen-sh="configure">
+    <branch repo="python" module="3.8.2/Python-3.8.2.tar.xz" version="3.8.2"
+            hash="sha256:2646e7dc233362f59714c6193017bb2d6f7b38d6ab4a0cb5fbac5c36c4d845df"
+            />
+    <dependencies>
+      <dep package='readline'/>
+      <dep package="openssl" /> <!-- For hashlib -->
+    </dependencies>
+  </autotools>
+
+  <distutils id="pybsddb">
+    <branch module="8d/9b/c3b01ff14e19254b2e031d8ae5ebe472e5523a47acc6f7d49300960d406d/bsddb3-6.2.4.tar.gz"
+	    hash="md5:eec77d104c5981366701c6b0de585504" repo="pymodules"
+	    version="6.2.4"/>
+    <dependencies>
+      <dep package="python3"/>
+    </dependencies>
+    <after>
+      <dep package="berkeleydb"/>
+      <dep package="berkeleydb-nonsrctree"/>
+    </after>
+  </distutils>
+
+  <distutils id="pylxml">
+    <branch module="20/b3/9f245de14b7696e2d2a386c0b09032a2ff6625270761d6543827e667d8de/lxml-3.8.0.tar.gz"
+	    hash="md5:e54e2fae44d684d6b9c636fe189e93ff" repo="pymodules"
+	    version="3.8.0" />
+    <dependencies>
+      <dep package="python3"/>
+      <dep package="libxml2"/>
+      <dep package="libxslt"/>
+    </dependencies>
+  </distutils>
+
+  <distutils id="pysix">
+    <branch module="b3/b2/238e2590826bfdd113244a40d9d3eb26918bd798fc187e2360a8367068db/six-1.10.0.tar.gz"
+	    hash="md5:34eed507548117b2ab523ab14b2f8b55" repo="pymodules"
+	    version="1.1.0"/>
+    <dependencies>
+      <dep package="python3"/>
+    </dependencies>
+  </distutils>
+
+  <meson id="pycairo">
+    <branch module="pygobject/pycairo" repo="github"/>
+    <dependencies>
+      <dep package="cairo"/>
+    </dependencies>
+    <after>
+      <dep package="python3"/>
+      <dep package="python"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+      <dep package="meta-gtk-osx"/>
+    </after>
+  </meson>
+
+  <autotools id="pygobject" autogenargs="--disable-introspection">
+    <branch tag="pygobject-2-28"/>
+    <dependencies>
+      <dep package="meta-gtk-osx-core"/>
+    </dependencies>
+    <after>
+      <dep package="python"/>
+    </after>
+  </autotools>
+
+  <meson id="pygobject3">
+    <branch tag="pygobject-3-32" module="pygobject" checkoutdir="pygobject3"/>
+    <dependencies>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </dependencies>
+    <after>
+      <dep package="python"/>
+      <dep package="python3"/>
+    </after>
+  </meson>
+
+<!-- PyGtk is discontinued. -->
+  <autotools id="pygtk" autogenargs="--disable-introspection">
+    <branch tag="master"/>
+    <dependencies>
+      <dep package="pygobject"/>
+      <dep package="meta-gtk-osx-core"/>
+      <dep package="pycairo"/>
+    </dependencies>
+    <after>
+      <dep package="libglade"/>
+    </after>
+  </autotools>
+
+  <autotools id="gtk-mac-integration-python">
+    <!--gtk-mac-integration releases from master"-->
+    <branch module="gtk-mac-integration"
+	    checkoutdir="gtk-mac-integration"/>
+    <dependencies>
+     </dependencies>
+    <after>
+      <dep package="pygtk"/>
+      <dep package="pygobject3"/>
+    </after>
+  </autotools>
+
+  <autotools id="pygtk-extras">
+    <branch module="gnome-python-extras" revision="gnome-2-26"/>
+    <dependencies>
+      <dep package="pygtk"/>
+      <dep package="gtkspell"/>
+    </dependencies>
+  </autotools>
+
+</moduleset>

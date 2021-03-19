@@ -1,0 +1,11 @@
+--- Development/gtk-build/gtk-stable-10.13-x86_64/src/glade-3.22.1/man/Makefile.in~	2019-11-07 15:14:16.000000000 -0800
++++ Development/gtk-build/gtk-stable-10.13-x86_64/src/glade-3.22.1/man/Makefile.in	2019-11-07 15:21:01.000000000 -0800
+@@ -364,8 +364,7 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ XSLTPROC_FLAGS = \
+-        --nonet \
+         --stringparam man.output.quietly 1 \
+         --stringparam funcsynopsis.style ansi \
+         --stringparam man.th.extra1.suppress 1 \
+ 

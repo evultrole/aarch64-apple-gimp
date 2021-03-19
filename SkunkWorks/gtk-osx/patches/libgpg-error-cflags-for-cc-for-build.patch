@@ -1,0 +1,40 @@
+--- b/src/Makefile.am	Fri Nov  6 13:41:02 2015
++++ b/src/Makefile.am	Fri Nov  6 13:41:02 2015
+@@ -232,13 +232,13 @@
+ # It is correct to use $(CC_FOR_BUILD) here.  We want to run the
+ # program at build time.
+ mkerrcodes: mkerrcodes.c mkerrcodes.h Makefile
+-	$(CC_FOR_BUILD) -I. -I$(srcdir) -o $@ $(srcdir)/mkerrcodes.c
++	$(CC_FOR_BUILD) -I. -I$(srcdir) $(CFLAGS) -o $@ $(srcdir)/mkerrcodes.c
+ 
+ if HAVE_W32CE_SYSTEM
+ # It is correct to use $(CC_FOR_BUILD) here.  We want to run the
+ # program at build time.
+ mkw32errmap: mkw32errmap.c mkw32errmap.tab.h Makefile
+-	$(CC_FOR_BUILD) -I. -I$(srcdir) -o $@ $(srcdir)/mkw32errmap.c
++	$(CC_FOR_BUILD) -I. -I$(srcdir) $(CFLAGS) -o $@ $(srcdir)/mkw32errmap.c
+ endif
+ 
+ code-from-errno.h: mkerrcodes Makefile
+@@ -251,7 +251,7 @@
+ 
+ 
+ mkheader: mkheader.c Makefile
+-	$(CC_FOR_BUILD) -g -O0 -I. -I$(srcdir) -o $@ $(srcdir)/mkheader.c
++	$(CC_FOR_BUILD) -g -O0 -I. -I$(srcdir) $(CFLAGS) -o $@ $(srcdir)/mkheader.c
+ 
+ parts_of_gpg_error_h = 	 	\
+ 	gpg-error.h.in  	\
+--- b/doc/Makefile.am	Fri Nov  6 13:41:02 2015
++++ b/doc/Makefile.am	Fri Nov  6 13:41:02 2015
+@@ -35,7 +35,7 @@
+ man_MANS = $(myman_pages)
+ 
+ yat2m: yat2m.c
+-	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
++	$(CC_FOR_BUILD)  $(CFLAGS) -o $@ $(srcdir)/yat2m.c
+ 
+ 
+ yat2m-stamp: $(myman_sources)
+
+Diff finished.  Fri Nov  6 13:41:58 2015

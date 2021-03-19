@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="tarball" name="fftw.org" href="http://www.fftw.org/" default="yes"/>
+  <repository type="tarball" name="ftp.gnu.org" href="https://ftp.gnu.org/gnu/"/>
+  <repository type="tarball" name="heasarc.gsfc.nasa.gov" href="https://heasarc.gsfc.nasa.gov/FTP/software/"/>
+  <repository type="tarball" name="github.com" href="https://github.com/"/>
+  <repository type="git" name="git.gitlab.com" href="https://gitlab.com/"/>
+  <repository type="tarball" name="releases.llvm.org" href="https://releases.llvm.org/"/>
+  <repository type="tarball" name="libraw.org" href="https://www.libraw.org/data/"/>
+  <repository type="tarball" name="ffmpeg.org" href="https://ffmpeg.org/releases/"/>
+  <repository type="tarball" name="ftp.atnf.csiro.au" href="ftp://ftp.atnf.csiro.au/pub/software/"/>
+
+  <autotools id="fftw" autogenargs="--enable-single --enable-shared --disable-static">
+    <branch module="fftw-3.3.8.tar.gz" version="3.3.8" hash="sha256:6113262f6e92c5bd474f2875fa1b01054c4ad5040f6b0da7c03c98821d9ae303"/>
+  </autotools>
+  <autotools id="gsl" autogen-sh="configure" supports-non-srcdir-builds="no">
+    <branch repo="ftp.gnu.org" module="gsl/gsl-2.6.tar.gz" version="2.6" hash="sha256:b782339fc7a38fe17689cb39966c4d821236c28018b6593ddb6fd59ee40786a8"/>
+  </autotools>
+  <autotools id="ffmpeg" autogenargs="--enable-shared --disable-static --enable-swscale" autogen-sh="configure" supports-non-srcdir-builds="no" autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s %(autogenargs)s">
+    <branch repo="ffmpeg.org" module="ffmpeg-4.2.1.tar.xz" version="4.2.1" hash="sha256:cec7c87e9b60d174509e263ac4011b522385fd0775292e1670ecc1180c9bb6d4"/>
+    <dependencies>
+      <dep package="nasm"/>
+      <dep package="fontconfig"/>
+    </dependencies>
+  </autotools>
+  <autotools id="cfitsio" autogenargs="--enable-reentrant --enable-sse2" autogen-sh="configure" makeargs="shared" supports-non-srcdir-builds="no">
+    <branch checkoutdir="cfitsio" repo="heasarc.gsfc.nasa.gov" module="fitsio/c/cfitsio-3.49.tar.gz" version="3.49" hash="sha256:5b65a20d5c53494ec8f638267fca4a629836b7ac8dd0ef0266834eab270ed4b3"/>
+  </autotools>
+  <autotools id="libffms2" autogen-sh="configure" supports-non-srcdir-builds="no">
+    <branch checkoutdir="ffms2-2.23" repo="github.com" module="FFMS/ffms2/archive/2.23.tar.gz" version="2.23" hash="sha256:b09b2aa2b1c6f87f94a0a0dd8284b3c791cbe77f0f3df57af99ddebcd15273ed"/>
+    <dependencies>
+      <dep package="ffmpeg"/>
+    </dependencies>
+  </autotools>
+  <autotools id="wcslib" autogen-sh="configure" supports-non-srcdir-builds="no">
+    <branch checkoutdir="wcslib" repo="ftp.atnf.csiro.au" module="wcslib/wcslib.tar.bz2" version="7.3.1" hash="sha256:ccfc220d353b489c72a8cfce8fe5c4479e2ad0dc0824a4480262274ae5b80b5c"/>
+  </autotools>
+  <autotools id="libraw" autogen-sh="configure" supports-non-srcdir-builds="no">
+    <branch repo="libraw.org" module="LibRaw-0.20.0.tar.gz" version="0.20.0" hash="sha256:1f0a383da2ce9f409087facd28261decbf6be72cc90c78cd003b0766e4d694a3"/>
+    <dependencies>
+      <dep package="libjpeg"/>
+      <dep package="openmp"/>
+      <dep package="lcms"/>
+    </dependencies>
+  </autotools>
+  <autotools id="libconfig" autogen-sh="autoreconf">
+    <branch checkoutdir="libconfig-1.7.2" repo="github.com" module="hyperrealm/libconfig/archive/v1.7.2.tar.gz" version="1.7.2" hash="sha256:f67ac44099916ae260a6c9e290a90809e7d782d96cdd462cac656ebc5b685726"/>
+  </autotools>
+  <cmake id="opencv" cmakeargs="-DOPENCV_GENERATE_PKGCONFIG=ON -DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib">
+    <branch checkoutdir="opencv-4.1.2" module="opencv/opencv/archive/4.1.2.tar.gz" version="4.1.2" repo="github.com"/>
+    <after>
+      <dep package="ffmpeg"/>
+    </after>
+  </cmake>
+  <cmake id="openmp" cmakeargs="-DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib">
+    <branch module="9.0.0/openmp-9.0.0.src.tar.xz" version="9.0.0" checkoutdir="openmp-9.0.0.src" hash="sha256:9979eb1133066376cc0be29d1682bc0b0e7fb541075b391061679111ae4d3b5b" repo="releases.llvm.org"/>
+  </cmake>
+
+  <metamodule id="meta-siril-deps">
+    <dependencies>
+      <dep package="fftw"/>
+      <dep package="gsl"/>
+      <dep package="cfitsio"/>
+      <dep package="wcslib"/>
+      <dep package="libconfig"/>
+      <dep package="opencv"/>
+      <dep package="exiv2"/>
+      <dep package="libheif"/>
+      <dep package="libjpeg"/>
+      <dep package="libpng"/>
+      <dep package="libtiff"/>
+      <dep package="openmp"/>
+      <dep package="libraw"/>
+      <dep package="ffmpeg"/>
+      <dep package="libffms2"/>
+      <dep package="librsvg"/>
+      <dep package="adwaita-icon-theme"/>
+    </dependencies>
+  </metamodule>
+  <autotools id="siril" supports-non-srcdir-builds="no">
+    <branch repo="git.gitlab.com" module="free-astro/siril.git" checkoutdir="siril">
+</branch>
+    <dependencies>
+      <dep package="meta-siril-deps"/>
+    </dependencies>
+  </autotools>
+</moduleset>

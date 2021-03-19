@@ -1,0 +1,111 @@
+From b53a3b26248f93a74bf30a087ca31226b014ca32 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Tue, 8 Nov 2011 14:55:31 -0800
+Subject: [PATCH 2/2] [Mac Integration] Fix up menu accelerators for Mac
+
+Makes use of a new feature in Gtk+-2.24.7 & Gtk+-3.2.1 which provides a
+new modifier symbol, <primary>, which uses "command" as the accelerator
+modifier on Quartz and "control" everywhere else.
+
+Special cases the project accelerators, since <alt> disappears on
+Quartz-integrated menus, leaving just the number as an accelerator and
+preventing its use in text.
+---
+ src/glade-window.c |   29 ++++++++++++++++++-----------
+ 1 files changed, 18 insertions(+), 11 deletions(-)
+
+diff --git a/src/glade-window.c b/src/glade-window.c
+index 368c007..203a518 100644
+--- a/src/glade-window.c
++++ b/src/glade-window.c
+@@ -973,8 +973,11 @@ refresh_projects_list_menu (GladeWindow * window)
+       gchar action_name[32];
+       gchar *project_name;
+       gchar *tooltip;
++#ifdef MAC_INTEGRATION
++      gchar accel[11];
++#else
+       gchar accel[7];
+-
++#endif
+       view = gtk_notebook_get_nth_page (GTK_NOTEBOOK (p->notebook), i);
+       project = glade_design_view_get_project (GLADE_DESIGN_VIEW (view));
+ 
+@@ -997,7 +1000,11 @@ refresh_projects_list_menu (GladeWindow * window)
+ 
+       /* alt + 1, 2, 3... 0 to switch to the first ten tabs */
+       if (i < 10)
++#ifdef MAC_INTEGRATION
++        g_snprintf (accel, sizeof (accel), "<control>%d", (i + 1) % 10);
++#else
+         g_snprintf (accel, sizeof (accel), "<alt>%d", (i + 1) % 10);
++#endif
+       else
+         accel[0] = '\0';
+ 
+@@ -2178,15 +2185,15 @@ static GtkActionEntry static_entries[] = {
+   {"RedoMenu", NULL, NULL},
+ 
+   /* FileMenu */
+-  {"New", GTK_STOCK_NEW, NULL, "<control>N",
++  {"New", GTK_STOCK_NEW, NULL, "<primary>N",
+    N_("Create a new project"), G_CALLBACK (new_cb)},
+ 
+-  {"Open", GTK_STOCK_OPEN, N_("_Open\342\200\246"), "<control>O",
++  {"Open", GTK_STOCK_OPEN, N_("_Open\342\200\246"), "<primary>O",
+    N_("Open a project"), G_CALLBACK (open_cb)},
+ 
+   {"OpenRecent", NULL, N_("Open _Recent")},
+ 
+-  {"Quit", GTK_STOCK_QUIT, NULL, "<control>Q",
++  {"Quit", GTK_STOCK_QUIT, NULL, "<primary>Q",
+    N_("Quit the program"), G_CALLBACK (quit_cb)},
+ 
+   /* ViewMenu */
+@@ -2206,21 +2213,21 @@ static guint n_static_entries = G_N_ELEMENTS (static_entries);
+ static GtkActionEntry project_entries[] = {
+ 
+   /* FileMenu */
+-  {"Save", GTK_STOCK_SAVE, NULL, "<control>S",
++  {"Save", GTK_STOCK_SAVE, NULL, "<primary>S",
+    N_("Save the current project"), G_CALLBACK (save_cb)},
+ 
+   {"SaveAs", GTK_STOCK_SAVE_AS, N_("Save _As\342\200\246"), NULL,
+    N_("Save the current project with a different name"),
+    G_CALLBACK (save_as_cb)},
+ 
+-  {"Close", GTK_STOCK_CLOSE, NULL, "<control>W",
++  {"Close", GTK_STOCK_CLOSE, NULL, "<primary>W",
+    N_("Close the current project"), G_CALLBACK (close_cb)},
+ 
+   /* EditMenu */
+-  {"Undo", GTK_STOCK_UNDO, NULL, "<control>Z",
++  {"Undo", GTK_STOCK_UNDO, NULL, "<primary>Z",
+    N_("Undo the last action"), G_CALLBACK (undo_cb)},
+ 
+-  {"Redo", GTK_STOCK_REDO, NULL, "<shift><control>Z",
++  {"Redo", GTK_STOCK_REDO, NULL, "<shift><primary>Z",
+    N_("Redo the last action"), G_CALLBACK (redo_cb)},
+ 
+   {"Cut", GTK_STOCK_CUT, NULL, NULL,
+@@ -2235,14 +2242,14 @@ static GtkActionEntry project_entries[] = {
+   {"Delete", GTK_STOCK_DELETE, NULL, "Delete",
+    N_("Delete the selection"), G_CALLBACK (delete_cb)},
+ 
+-  {"Properties", GTK_STOCK_PROPERTIES, NULL, "<control>P",
++  {"Properties", GTK_STOCK_PROPERTIES, NULL, "<primary>P",
+    N_("Edit project properties"), G_CALLBACK (properties_cb)},
+ 
+   /* ProjectsMenu */
+-  {"PreviousProject", NULL, N_("_Previous Project"), "<control>Page_Up",
++  {"PreviousProject", NULL, N_("_Previous Project"), "<primary>Page_Up",
+    N_("Activate previous project"), G_CALLBACK (previous_project_cb)},
+ 
+-  {"NextProject", NULL, N_("_Next Project"), "<control>Page_Down",
++  {"NextProject", NULL, N_("_Next Project"), "<primary>Page_Down",
+    N_("Activate next project"), G_CALLBACK (next_project_cb)}
+ 
+ 
+-- 
+1.7.6.3.dirty
+

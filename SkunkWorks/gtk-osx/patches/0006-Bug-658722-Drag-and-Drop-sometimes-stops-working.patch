@@ -1,0 +1,209 @@
+From 2bf33d856464d33ed1bd5ab787c9279e464f08df Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Thu, 11 Feb 2016 15:53:33 -0800
+Subject: [PATCH] Bug-658722-Drag-and-Drop-sometimes-stops-working
+
+---
+ gdk/quartz/gdkdnd-quartz.c |  35 ++++-
+ gtk/gtkdnd-quartz.c        | 321 +++++++++++++++++++++------------------------
+ 2 files changed, 179 insertions(+), 177 deletions(-)
+
+diff --git a/gdk/quartz/gdkdnd-quartz.c b/gdk/quartz/gdkdnd-quartz.c
+index ec89ad2..7a70415 100644
+--- a/gdk/quartz/gdkdnd-quartz.c
++++ b/gdk/quartz/gdkdnd-quartz.c
+@@ -111,11 +111,20 @@ GdkDragContext *
+ gdk_drag_begin (GdkWindow     *window,
+ 		GList         *targets)
+ {
+-  g_assert (_gdk_quartz_drag_source_context == NULL);
++  if (_gdk_quartz_drag_source_context != NULL)
++    {
++      /* Something is amiss with the existing drag, so log a message
++	 and abort it */
++      g_warning ("Drag begun with existing context; aborting the preexisting drag");
++      gdk_drag_abort (_gdk_quartz_drag_source_context,
++		      (guint32)g_get_real_time ());
++    }
++
+   
+   /* Create fake context */
+   _gdk_quartz_drag_source_context = gdk_drag_context_new ();
+   _gdk_quartz_drag_source_context->is_source = TRUE;
++  _gdk_quartz_drag_source_context->source_window = window;
+   
+   return _gdk_quartz_drag_source_context;
+ }
+@@ -155,20 +164,36 @@ gdk_drag_find_window_for_screen (GdkDragContext  *context,
+   /* FIXME: Implement */
+ }
+ 
++static void
++gdk_quartz_drag_end (GdkDragContext *context)
++{
++  GdkEvent event;
++
++  g_assert (context != NULL);
++  event.dnd.type = GDK_DROP_FINISHED;
++  event.dnd.window = g_object_ref (context->source_window);
++  event.dnd.send_event = FALSE;
++  event.dnd.context = context;
++
++  (*_gdk_event_func) (&event, _gdk_event_data);
++
++  g_object_run_dispose (_gdk_quartz_drag_source_context);
++  _gdk_quartz_drag_source_context = NULL;
++}
++
+ void
+ gdk_drag_drop (GdkDragContext *context,
+ 	       guint32         time)
+ {
+-  /* FIXME: Implement */
++  gdk_quartz_drag_end (context);
+ }
+ 
+ void
+ gdk_drag_abort (GdkDragContext *context,
+ 		guint32         time)
+ {
+-  g_return_if_fail (context != NULL);
+-  
+-  /* FIXME: Implement */
++  g_warning ("Gdk-quartz-drag-drop, aborting\n");
++  gdk_quartz_drag_end (context);
+ }
+ 
+ void             
+diff --git a/gtk/gtkdnd-quartz.c b/gtk/gtkdnd-quartz.c
+index 62b8570..483525d 100644
+--- a/gtk/gtkdnd-quartz.c
++++ b/gtk/gtkdnd-quartz.c
+@@ -270,6 +270,39 @@ gtk_drag_dest_info_destroy (gpointer data)
+   g_free (info);
+ }
+ 
++static void
++gtk_drag_source_info_destroy (GtkDragSourceInfo *info)
++{
++  NSPasteboard *pasteboard;
++  NSAutoreleasePool *pool;
++
++  if (info->icon_pixbuf)
++    g_object_unref (info->icon_pixbuf);
++
++  g_signal_emit_by_name (info->widget, "drag-end",
++			 info->context);
++
++  if (info->source_widget)
++    g_object_unref (info->source_widget);
++
++  if (info->widget)
++    g_object_unref (info->widget);
++
++  gtk_target_list_unref (info->target_list);
++
++  pool = [[NSAutoreleasePool alloc] init];
++
++  /* Empty the pasteboard, so that it will not accidentally access
++   * info->context after it has been destroyed.
++   */
++  pasteboard = [NSPasteboard pasteboardWithName: NSDragPboard];
++  [pasteboard declareTypes: nil owner: nil];
++
++  [pool release];
++
++  g_free (info);
++}
++
+ static GtkDragDestInfo *
+ gtk_drag_get_dest_info (GdkDragContext *context,
+ 			gboolean        create)
+@@ -303,18 +336,14 @@ gtk_drag_get_source_info (GdkDragContext *context,
+     {
+       info = g_new0 (GtkDragSourceInfo, 1);
+       info->context = context;
+-      g_object_set_qdata (G_OBJECT (context), dest_info_quark, info);
++      g_object_ref (info->context);
++      g_object_set_qdata_full (G_OBJECT (context), dest_info_quark,
++			       info, gtk_drag_source_info_destroy);
+     }
+ 
+   return info;
+ }
+ 
+-static void
+-gtk_drag_clear_source_info (GdkDragContext *context)
+-{
+-  g_object_set_qdata (G_OBJECT (context), dest_info_quark, NULL);
+-}
+-
+ GtkWidget *
+ gtk_drag_get_source_widget (GdkDragContext *context)
+ {
+@@ -1888,53 +1917,6 @@ gtk_drag_set_default_icon (GdkColormap   *colormap,
+   g_warning ("gtk_drag_set_default_icon is not supported on Mac OS X.");
+ }
+ 
+-static void
+-gtk_drag_source_info_destroy (GtkDragSourceInfo *info)
+-{
+-  NSPasteboard *pasteboard;
+-  NSAutoreleasePool *pool;
+-
+-  if (info->icon_pixbuf)
+-    g_object_unref (info->icon_pixbuf);
+-
+-  g_signal_emit_by_name (info->widget, "drag-end", 
+-			 info->context);
+-
+-  if (info->source_widget)
+-    g_object_unref (info->source_widget);
+-
+-  if (info->widget)
+-    g_object_unref (info->widget);
+-
+-  gtk_target_list_unref (info->target_list);
+-
+-  pool = [[NSAutoreleasePool alloc] init];
+-
+-  /* Empty the pasteboard, so that it will not accidentally access
+-   * info->context after it has been destroyed.
+-   */
+-  pasteboard = [NSPasteboard pasteboardWithName: NSDragPboard];
+-  [pasteboard declareTypes: nil owner: nil];
+-
+-  [pool release];
+-
+-  gtk_drag_clear_source_info (info->context);
+-  g_object_unref (info->context);
+-
+-  g_free (info);
+-  info = NULL;
+-}
+-
+-static gboolean
+-drag_drop_finished_idle_cb (gpointer data)
+-{
+-  GtkDragSourceInfo* info = (GtkDragSourceInfo*) data;
+-
+-  if (info->success)
+-    gtk_drag_source_info_destroy (data);
+-
+-  return FALSE;
+-}
+ 
+ static void
+ gtk_drag_drop_finished (GtkDragSourceInfo *info,
+@@ -1950,11 +1932,6 @@ gtk_drag_drop_finished (GtkDragSourceInfo *info,
+     g_signal_emit_by_name (info->source_widget, "drag-data-delete",
+                            info->context);
+ 
+-  /* Workaround for the fact that the NS API blocks until the drag is
+-   * over. This way the context is still valid when returning from
+-   * drag_begin, even if it will still be quite useless. See bug #501588.
+-  */
+-  g_idle_add (drag_drop_finished_idle_cb, info);
+ }
+ 
+ /*************************************************************
