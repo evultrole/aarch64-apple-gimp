@@ -1,0 +1,65 @@
+From 2a46cc3633069fada208fccee686b7232db40af5 Mon Sep 17 00:00:00 2001
+From: Christoph Reiter <creiter@src.gnome.org>
+Date: Wed, 16 Mar 2016 19:25:30 +0100
+Subject: [PATCH] quartz: fix pixelated image surfaces in retina/hidpi mode
+
+gtk+ currently depends on the scaling factor and the cairo device scale
+of both the backend surfaces and image surfaces to be equal.
+
+Until now we didn't apply a cairo device scale at all and depended on the
+automatic scaling of CGContexts. This works when drawing with cairo but
+fails in case of image surfaces, which get requested at a too small size.
+
+To make the quartz backend behave more like the X11 one, set the cairo device
+scale on the surface in gdk_quartz_ref_cairo_surface(). As this conflicts
+with the default scaling done by CGContext (we would get double scaling)
+undo the CGContext scaling using CGContextScaleCTM().
+---
+ gdk/quartz/gdkwindow-quartz.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
+index 62710a2..3cd7b3f 100644
+--- a/gdk/quartz/gdkwindow-quartz.c
++++ b/gdk/quartz/gdkwindow-quartz.c
+@@ -121,6 +121,7 @@ gdk_window_impl_quartz_get_context (GdkWindowImplQuartz *window_impl,
+ 				    gboolean             antialias)
+ {
+   CGContextRef cg_context;
++  CGSize scale;
+ 
+   if (GDK_WINDOW_DESTROYED (window_impl->wrapper))
+     return NULL;
+@@ -141,6 +142,12 @@ gdk_window_impl_quartz_get_context (GdkWindowImplQuartz *window_impl,
+   CGContextSaveGState (cg_context);
+   CGContextSetAllowsAntialiasing (cg_context, antialias);
+ 
++  /* Undo the default scaling transform, since we apply our own
++   * in gdk_quartz_ref_cairo_surface () */
++  scale = CGContextConvertSizeToDeviceSpace (cg_context,
++                                             CGSizeMake (1.0, 1.0));
++  CGContextScaleCTM (cg_context, 1.0 / scale.width, 1.0 / scale.height);
++
+   return cg_context;
+ }
+ 
+@@ -317,10 +324,14 @@ gdk_quartz_ref_cairo_surface (GdkWindow *window)
+ 
+   if (!impl->cairo_surface)
+     {
++      gint scale = gdk_window_get_scale_factor (impl->wrapper);
++
+       impl->cairo_surface = 
+           gdk_quartz_create_cairo_surface (impl,
+-                                           gdk_window_get_width (impl->wrapper),
+-                                           gdk_window_get_height (impl->wrapper));
++                                           gdk_window_get_width (impl->wrapper) * scale,
++                                           gdk_window_get_height (impl->wrapper) * scale);
++
++      cairo_surface_set_device_scale (impl->cairo_surface, scale, scale);
+     }
+   else
+     cairo_surface_reference (impl->cairo_surface);
+-- 
+2.7.0
+

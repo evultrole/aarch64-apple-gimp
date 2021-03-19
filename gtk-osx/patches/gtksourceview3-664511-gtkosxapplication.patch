@@ -1,0 +1,79 @@
+From 43cdc6b7fe7470c7dc4a2482569eb4ffdff41ace Mon Sep 17 00:00:00 2001
+From: Philip Chimento <philip.chimento@gmail.com>
+Date: Mon, 21 Nov 2011 22:23:00 +0100
+Subject: [PATCH] Change IgeMacIntegration to GtkOSXApplication
+
+Rename ige-mac-integration to gtk-mac-integration and replace the deprecate
+ige_mac_bundle_get_localedir with the newer
+ quartz_application_get_resource_path().
+---
+ configure.ac                       |    2 +-
+ gtksourceview/Makefile.am          |    4 ++--
+ gtksourceview/gtksourceview-i18n.c |    8 +++-----
+ 3 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 7d2f39b..7d4a17f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -98,7 +98,7 @@ AM_CONDITIONAL([OS_OSX], [ test "$os_osx" = "yes" ])
+ if test "$os_osx" = "yes"; then
+ 	AC_DEFINE([OS_OSX], [1], [Defined if os is Mac OSX])
+ 
+-	PKG_CHECK_MODULES(IGE_MAC, ige-mac-integration)
++	PKG_CHECK_MODULES(GTK_MAC, gtk-mac-integration)
+ fi
+ 
+ # Check for Glade3
+diff --git a/gtksourceview/Makefile.am b/gtksourceview/Makefile.am
+index e4adeaa..e2cb296 100644
+--- a/gtksourceview/Makefile.am
++++ b/gtksourceview/Makefile.am
+@@ -8,7 +8,7 @@ INCLUDES = 				\
+ 	-I$(top_srcdir) -I$(srcdir) 	\
+ 	$(DISABLE_DEPRECATED_CFLAGS)	\
+ 	$(WARN_CFLAGS) 			\
+-	$(IGE_MAC_CFLAGS)		\
++	$(GTK_MAC_CFLAGS)		\
+ 	$(DEP_CFLAGS)
+ 
+ BUILT_SOURCES = 			\
+@@ -111,7 +111,7 @@ nodist_libgtksourceview_3_0_la_SOURCES =\
+ completion_providers = 							\
+ 	completion-providers/words/libgtksourcecompletionwords.la
+ 
+-libgtksourceview_3_0_la_LIBADD = $(DEP_LIBS) $(IGE_MAC_LIBS) $(completion_providers)
++libgtksourceview_3_0_la_LIBADD = $(DEP_LIBS) $(GTK_MAC_LIBS) $(completion_providers)
+ libgtksourceview_3_0_la_LDFLAGS = -no-undefined -export-symbols-regex "^gtk_source_.*"
+ libgtksourceview_3_0_includedir = $(includedir)/gtksourceview-3.0/gtksourceview
+ 
+diff --git a/gtksourceview/gtksourceview-i18n.c b/gtksourceview/gtksourceview-i18n.c
+index 997d283..64e392a 100644
+--- a/gtksourceview/gtksourceview-i18n.c
++++ b/gtksourceview/gtksourceview-i18n.c
+@@ -24,7 +24,7 @@
+ #endif
+ 
+ #ifdef OS_OSX
+-#include <ige-mac-bundle.h>
++#include <gtkosxapplication.h>
+ #endif
+ 
+ #include <string.h>
+@@ -45,11 +45,9 @@ get_locale_dir (void)
+ 
+ 	g_free (win32_dir);
+ #elif defined (OS_OSX)
+-	IgeMacBundle *bundle = ige_mac_bundle_get_default ();
+-
+-	if (ige_mac_bundle_get_is_app_bundle (bundle))
++	if (quartz_application_get_bundle_id () != NULL)
+ 	{
+-		locale_dir = g_strdup (ige_mac_bundle_get_localedir (bundle));
++		locale_dir = g_build_filename (quartz_application_get_resource_path (), "share", "locale", NULL);
+ 	}
+ 	else
+ 	{
+-- 
+1.7.3.2
+

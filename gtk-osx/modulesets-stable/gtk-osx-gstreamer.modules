@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="tarball" name="gstreamer" default="yes"
+              href="http://gstreamer.freedesktop.org/src/"/>
+  <repository type="tarball" name="sourceforge"
+              href="http://iweb.dl.sf.net/project/"/>
+
+  <autotools id="liborc" autogen-sh="configure">
+    <branch module="orc/orc-0.4.28.tar.xz" version="0.4.28"
+            hash="sha256:bfcd7c6563b05672386c4eedfc4c0d4a0a12b4b4775b74ec6deb88fc2bcd83ce"/>
+  </autotools>
+
+  <autotools id="faad2" autogen-sh="autoreconf"
+             autogenargs="-without-bmp --without-xmms --without-drm --without-mpeg4ip">
+    <branch repo="sourceforge" version="2.8.6"
+            module="faac/faad2-src/faad2-2.8.0/faad2-2.8.6.tar.gz"
+            hash="sha256:654977adbf62eb81f4fca00152aca58ce3b6dd157181b9edd7bed687a7c73f21">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/faad2-2.7-ac-config-headers.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="gstreamer" autogenargs="--disable-tests" supports-non-srcdir-builds="no"
+    makeargs="ERROR_CFLAGS=" autogen-sh="configure">
+    <branch module="gstreamer/gstreamer-1.16.2.tar.xz" version="1.16.2"
+            hash="sha256:e3f044246783fd685439647373fa13ba14f7ab0b346eadd06437092f8419e94e">
+    </branch>
+    <after>
+      <dep package="glib"/>
+    </after>
+  </autotools>
+
+  <autotools id="gst-plugins-base" autogenargs="--disable-tests --disable-x --disable-xvideo --disable-examples" supports-non-srcdir-builds="no"
+    makeargs="ERROR_CFLAGS=" autogen-sh="configure">
+    <branch module="gst-plugins-base/gst-plugins-base-1.16.2.tar.xz"
+            version="1.16.2"
+            hash="sha256:b13e73e2fe74a4166552f9577c3dcb24bed077021b9c7fa600d910ec6987816a"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="liborc"/>
+    </dependencies>
+    <after>
+    </after>
+  </autotools>
+
+  <autotools id="gst-plugins-good" autogenargs="--disable-tests --disable-x --disable-xvideo --disable-osx-video --disable-vpx" supports-non-srcdir-builds="no"
+    makeargs="ERROR_CFLAGS=" autogen-sh="configure">
+    <branch module="gst-plugins-good/gst-plugins-good-1.16.2.tar.xz"
+            version="1.16.2"
+            hash="sha256:40bb3bafda25c0b739c8fc36e48380fccf61c4d3f83747e97ac3f9b0171b1319">
+    </branch>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gst-plugins-ugly" autogenargs="--disable-tests"
+             supports-non-srcdir-builds="no" makeargs="ERROR_CFLAGS="
+             autogen-sh="configure">
+    <branch version="1.16.2"
+            module="gst-plugins-ugly/gst-plugins-ugly-1.16.2.tar.xz"
+            hash="sha256:5500415b865e8b62775d4742cbb9f37146a50caecfc0e7a6fc0160d3c560fbca"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gst-plugins-bad" supports-non-srcdir-builds="no"
+             autogenargs="--disable-tests --disable-x --disable-xvid"
+             makeargs="ERROR_CFLAGS=" autogen-sh="configure">
+    <branch version="1.16.2"
+            module="gst-plugins-bad/gst-plugins-bad-1.16.2.tar.xz"
+            hash="sha256:f1cb7aa2389569a5343661aae473f0a940a90b872001824bc47fa8072a041e74"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+      <dep package="faad2"/>
+      <dep package='openssl'/>
+    </dependencies>
+  </autotools>
+
+  <!-- disable-yasm: gst-libav's version of libav requires yasm 0.8.0 or nasm
+  2.0.3; OSX 10.9 has nasm 0.98.40 -->
+  <autotools id="gst-libav" supports-non-srcdir-builds="no"
+             autogen-sh="configure"
+             autogenargs="--disable-tests --disable-mmx --with-libav-extra-configure='--disable-yasm'">
+     <branch version="1.16.2"
+             module="gst-libav/gst-libav-1.16.2.tar.xz"
+             hash="sha256:c724f612700c15a933c7356fbeabb0bb9571fb5538f8b1b54d4d2d94188deef2"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+    </dependencies>
+  </autotools>
+
+  <metamodule id="meta-gstreamer">
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+      <dep package="gst-plugins-good"/>
+      <dep package="gst-plugins-ugly"/>
+      <dep package="gst-plugins-bad"/>
+      <dep package="gst-libav"/>
+    </dependencies>
+  </metamodule>
+
+</moduleset>

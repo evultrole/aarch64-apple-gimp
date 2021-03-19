@@ -1,0 +1,6 @@
+diff -ruN a/meson_options.txt b/meson_options.txt
+--- a/meson_options.txt	2018-06-23 21:22:32.000000000 +0100
++++ b/meson_options.txt	2020-12-03 16:31:05.000000000 +0000
+@@ -1 +1 @@
+-option('python', type : 'string', value : 'python3')
++option('python', type : 'string', value : 'python')

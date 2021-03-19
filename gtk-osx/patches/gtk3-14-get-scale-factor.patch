@@ -1,0 +1,11 @@
+--- a/gdk/quartz/gdkwindow-quartz.c	2018-01-28 15:25:06.000000000 -0800
++++ b/gdk/quartz/gdkwindow-quartz.c	2018-01-29 13:28:42.000000000 -0800
+@@ -2931,7 +2931,7 @@
+ 
+   impl = GDK_WINDOW_IMPL_QUARTZ (window->impl);
+ 
+-  if (gdk_quartz_osx_version() >= GDK_OSX_LION)
++  if (impl->toplevel != NULL && gdk_quartz_osx_version() >= GDK_OSX_LION)
+     return [(id <ScaleFactor>) impl->toplevel backingScaleFactor];
+ 
+   return 1;

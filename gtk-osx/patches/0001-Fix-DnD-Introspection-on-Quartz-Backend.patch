@@ -1,0 +1,26 @@
+From 673013ac67e322ff86193001131255fc24a68d5e Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Fri, 29 May 2015 13:04:07 -0700
+Subject: [PATCH] Fix DnD Introspection on Quartz Backend.
+
+Don't exclude the -quartz.c files from introspection_files.
+---
+ gtk/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gtk/Makefile.am b/gtk/Makefile.am
+index 51153e6..ae4ae62 100644
+--- a/gtk/Makefile.am
++++ b/gtk/Makefile.am
+@@ -1331,7 +1331,7 @@ distclean-local:
+ if HAVE_INTROSPECTION
+ introspection_files = \
+     $(filter-out %private.h gtktextdisplay.h gtktextlayout.h gtkx.h, $(gtkinclude_HEADERS) $(a11yinclude_HEADERS) $(deprecatedinclude_HEADERS)) \
+-    $(filter-out %win32.c %quartz.c, $(gtk_base_c_sources)) \
++    $(filter-out %win32.c, $(gtk_base_c_sources)) \
+     gtkprintoperation-unix.c \
+     gtktypebuiltins.h \
+     gtktypebuiltins.c
+-- 
+2.2.2
+

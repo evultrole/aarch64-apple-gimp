@@ -1,0 +1,234 @@
+diff -Naur gtksourceview-2.10.5/configure gtksourceview-2.10.5-patched/configure
+--- gtksourceview-2.10.5/configure	2010-09-28 11:43:55.000000000 +0200
++++ gtksourceview-2.10.5-patched/configure	2011-11-17 08:55:22.000000000 +0100
+@@ -669,8 +677,8 @@
+ GLADE_CATALOGDIR
+ GLADE_CATALOG_FALSE
+ GLADE_CATALOG_TRUE
+-IGE_MAC_LIBS
+-IGE_MAC_CFLAGS
++GTK_MAC_LIBS
++GTK_MAC_CFLAGS
+ OS_OSX_FALSE
+ OS_OSX_TRUE
+ ENABLE_PROVIDERS_FALSE
+@@ -830,8 +838,8 @@
+ PKG_CONFIG_LIBDIR
+ DEP_CFLAGS
+ DEP_LIBS
+-IGE_MAC_CFLAGS
+-IGE_MAC_LIBS'
++GTK_MAC_CFLAGS
++GTK_MAC_LIBS'
+ 
+ 
+ # Initialize some variables set by options.
+@@ -1497,10 +1506,10 @@
+               path overriding pkg-config's built-in search path
+   DEP_CFLAGS  C compiler flags for DEP, overriding pkg-config
+   DEP_LIBS    linker flags for DEP, overriding pkg-config
+-  IGE_MAC_CFLAGS
+-              C compiler flags for IGE_MAC, overriding pkg-config
+-  IGE_MAC_LIBS
+-              linker flags for IGE_MAC, overriding pkg-config
++  GTK_MAC_CFLAGS
++              C compiler flags for GTK_MAC, overriding pkg-config
++  GTK_MAC_LIBS
++              linker flags for GTK_MAC, overriding pkg-config
+ 
+ Use these variables to override the choices made by `configure' or to help
+ it to find libraries and programs with nonstandard names/locations.
+@@ -11213,35 +11220,35 @@
+ 
+ 
+ pkg_failed=no
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for IGE_MAC" >&5
+-$as_echo_n "checking for IGE_MAC... " >&6; }
++{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK_MAC" >&5
++$as_echo_n "checking for GTK_MAC... " >&6; }
+ 
+-if test -n "$IGE_MAC_CFLAGS"; then
+-    pkg_cv_IGE_MAC_CFLAGS="$IGE_MAC_CFLAGS"
++if test -n "$GTK_MAC_CFLAGS"; then
++    pkg_cv_GTK_MAC_CFLAGS="$GTK_MAC_CFLAGS"
+  elif test -n "$PKG_CONFIG"; then
+     if test -n "$PKG_CONFIG" && \
+-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"ige-mac-integration\""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "ige-mac-integration") 2>&5
++    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk-mac-integration\""; } >&5
++  ($PKG_CONFIG --exists --print-errors "gtk-mac-integration") 2>&5
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; then
+-  pkg_cv_IGE_MAC_CFLAGS=`$PKG_CONFIG --cflags "ige-mac-integration" 2>/dev/null`
++  pkg_cv_GTK_MAC_CFLAGS=`$PKG_CONFIG --cflags "gtk-mac-integration" 2>/dev/null`
+ else
+   pkg_failed=yes
+ fi
+  else
+     pkg_failed=untried
+ fi
+-if test -n "$IGE_MAC_LIBS"; then
+-    pkg_cv_IGE_MAC_LIBS="$IGE_MAC_LIBS"
++if test -n "$GTK_MAC_LIBS"; then
++    pkg_cv_GTK_MAC_LIBS="$GTK_MAC_LIBS"
+  elif test -n "$PKG_CONFIG"; then
+     if test -n "$PKG_CONFIG" && \
+-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"ige-mac-integration\""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "ige-mac-integration") 2>&5
++    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk-mac-integration\""; } >&5
++  ($PKG_CONFIG --exists --print-errors "gtk-mac-integration") 2>&5
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; then
+-  pkg_cv_IGE_MAC_LIBS=`$PKG_CONFIG --libs "ige-mac-integration" 2>/dev/null`
++  pkg_cv_GTK_MAC_LIBS=`$PKG_CONFIG --libs "gtk-mac-integration" 2>/dev/null`
+ else
+   pkg_failed=yes
+ fi
+@@ -11261,24 +11268,23 @@
+         _pkg_short_errors_supported=no
+ fi
+         if test $_pkg_short_errors_supported = yes; then
+-	        IGE_MAC_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "ige-mac-integration" 2>&1`
++	        GTK_MAC_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gtk-mac-integration" 2>&1`
+         else
+-	        IGE_MAC_PKG_ERRORS=`$PKG_CONFIG --print-errors "ige-mac-integration" 2>&1`
++	        GTK_MAC_PKG_ERRORS=`$PKG_CONFIG --print-errors "gtk-mac-integration" 2>&1`
+         fi
+ 	# Put the nasty error message in config.log where it belongs
+-	echo "$IGE_MAC_PKG_ERRORS" >&5
++	echo "$GTK_MAC_PKG_ERRORS" >&5
+ 
+-	as_fn_error $? "Package requirements (ige-mac-integration) were not met:
++	as_fn_error $? "Package requirements (gtk-mac-integration) were not met:
+ 
+-$IGE_MAC_PKG_ERRORS
++$GTK_MAC_PKG_ERRORS
+ 
+ Consider adjusting the PKG_CONFIG_PATH environment variable if you
+ installed software in a non-standard prefix.
+ 
+-Alternatively, you may set the environment variables IGE_MAC_CFLAGS
+-and IGE_MAC_LIBS to avoid the need to call pkg-config.
++Alternatively, you may set the environment variables GTK_MAC_CFLAGS
++and GTK_MAC_LIBS to avoid the need to call pkg-config.
+ See the pkg-config man page for more details." "$LINENO" 5
+-
+ elif test $pkg_failed = untried; then
+      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+ $as_echo "no" >&6; }
+@@ -11288,16 +11294,15 @@
+ is in your PATH or set the PKG_CONFIG environment variable to the full
+ path to pkg-config.
+ 
+-Alternatively, you may set the environment variables IGE_MAC_CFLAGS
+-and IGE_MAC_LIBS to avoid the need to call pkg-config.
++Alternatively, you may set the environment variables GTK_MAC_CFLAGS
++and GTK_MAC_LIBS to avoid the need to call pkg-config.
+ See the pkg-config man page for more details.
+ 
+ To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+ See \`config.log' for more details" "$LINENO" 5; }
+-
+ else
+-	IGE_MAC_CFLAGS=$pkg_cv_IGE_MAC_CFLAGS
+-	IGE_MAC_LIBS=$pkg_cv_IGE_MAC_LIBS
++	GTK_MAC_CFLAGS=$pkg_cv_GTK_MAC_CFLAGS
++	GTK_MAC_LIBS=$pkg_cv_GTK_MAC_LIBS
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+ 
+diff -Naur gtksourceview-2.10.5/configure.ac gtksourceview-2.10.5-patched/configure.ac
+--- gtksourceview-2.10.5/configure.ac	2010-09-28 11:35:40.000000000 +0200
++++ gtksourceview-2.10.5-patched/configure.ac	2011-11-17 08:51:09.000000000 +0100
+@@ -76,7 +76,7 @@
+ if test "$os_osx" = "yes"; then
+ 	AC_DEFINE([OS_OSX],[1],[Defined if os is Mac OSX])
+ 
+-	PKG_CHECK_MODULES(IGE_MAC, ige-mac-integration)
++	PKG_CHECK_MODULES(GTK_MAC, gtk-mac-integration)
+ fi
+ 
+ # Check for Glade3
+diff -Naur gtksourceview-2.10.5/gtksourceview/Makefile.am gtksourceview-2.10.5-patched/gtksourceview/Makefile.am
+--- gtksourceview-2.10.5/gtksourceview/Makefile.am	2010-08-22 13:45:04.000000000 +0200
++++ gtksourceview-2.10.5-patched/gtksourceview/Makefile.am	2011-11-19 10:33:20.000000000 +0100
+@@ -10,7 +10,7 @@
+ 	-I$(top_srcdir) -I$(srcdir) 	\
+ 	$(DISABLE_DEPRECATED)		\
+ 	$(WARN_CFLAGS) 			\
+-	$(IGE_MAC_CFLAGS)		\
++	$(GTK_MAC_CFLAGS)		\
+ 	$(DEP_CFLAGS)
+ 
+ BUILT_SOURCES = 			\
+@@ -96,7 +96,7 @@
+ completion_providers = 							\
+ 	completion-providers/words/libgtksourcecompletionwords.la
+ 
+-libgtksourceview_2_0_la_LIBADD = $(DEP_LIBS) $(IGE_MAC_LIBS) $(completion_providers)
++libgtksourceview_2_0_la_LIBADD = $(DEP_LIBS) $(GTK_MAC_LIBS) $(completion_providers)
+ libgtksourceview_2_0_la_LDFLAGS = -no-undefined -export-symbols-regex "^gtk_source_.*"
+ libgtksourceview_2_0_includedir = $(includedir)/gtksourceview-2.0/gtksourceview
+ 
+diff -Naur gtksourceview-2.10.5/gtksourceview/Makefile.in gtksourceview-2.10.5-patched/gtksourceview/Makefile.in
+--- gtksourceview-2.10.5/gtksourceview/Makefile.in	2010-09-28 11:43:57.000000000 +0200
++++ gtksourceview-2.10.5-patched/gtksourceview/Makefile.in	2011-11-19 10:33:40.000000000 +0100
+@@ -217,10 +217,10 @@
+ GTKDOC_CHECK = @GTKDOC_CHECK@
+ GTKDOC_MKPDF = @GTKDOC_MKPDF@
+ GTKDOC_REBASE = @GTKDOC_REBASE@
++GTK_MAC_CFLAGS = @GTK_MAC_CFLAGS@
++GTK_MAC_LIBS = @GTK_MAC_LIBS@
+ GTK_REQUIRED_VERSION = @GTK_REQUIRED_VERSION@
+ HTML_DIR = @HTML_DIR@
+-IGE_MAC_CFLAGS = @IGE_MAC_CFLAGS@
+-IGE_MAC_LIBS = @IGE_MAC_LIBS@
+ INSTALL = @INSTALL@
+ INSTALL_DATA = @INSTALL_DATA@
+ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -336,7 +336,7 @@
+ 	-I$(top_srcdir) -I$(srcdir) 	\
+ 	$(DISABLE_DEPRECATED)		\
+ 	$(WARN_CFLAGS) 			\
+-	$(IGE_MAC_CFLAGS)		\
++	$(GTK_MAC_CFLAGS)		\
+ 	$(DEP_CFLAGS)
+ 
+ BUILT_SOURCES = \
+@@ -423,7 +423,7 @@
+ completion_providers = \
+ 	completion-providers/words/libgtksourcecompletionwords.la
+ 
+-libgtksourceview_2_0_la_LIBADD = $(DEP_LIBS) $(IGE_MAC_LIBS) $(completion_providers)
++libgtksourceview_2_0_la_LIBADD = $(DEP_LIBS) $(GTK_MAC_LIBS) $(completion_providers)
+ libgtksourceview_2_0_la_LDFLAGS = -no-undefined -export-symbols-regex "^gtk_source_.*"
+ libgtksourceview_2_0_includedir = $(includedir)/gtksourceview-2.0/gtksourceview
+ libgtksourceview_2_0_include_HEADERS = \
+diff -Naur gtksourceview-2.10.5/gtksourceview/gtksourceview-i18n.c gtksourceview-2.10.5-patched/gtksourceview/gtksourceview-i18n.c
+--- gtksourceview-2.10.5/gtksourceview/gtksourceview-i18n.c	2010-08-22 13:45:05.000000000 +0200
++++ gtksourceview-2.10.5-patched/gtksourceview/gtksourceview-i18n.c	2011-11-19 17:39:33.000000000 +0100
+@@ -24,7 +24,7 @@
+ #endif
+ 
+ #ifdef OS_OSX
+-#include <ige-mac-bundle.h>
++#include <gtkosxapplication.h>
+ #endif
+ 
+ #include <string.h>
+@@ -45,11 +45,9 @@
+ 
+ 	g_free (win32_dir);
+ #elif defined (OS_OSX)
+-	IgeMacBundle *bundle = ige_mac_bundle_get_default ();
+-
+-	if (ige_mac_bundle_get_is_app_bundle (bundle))
++	if (quartz_application_get_bundle_id () != NULL)
+ 	{
+-		locale_dir = g_strdup (ige_mac_bundle_get_localedir (bundle));
++		locale_dir = g_build_filename (quartz_application_get_resource_path (), "share", "locale", NULL);
+ 	}
+ 	else
+ 	{

@@ -1,0 +1,11 @@
+--- a/configure	2014-09-23 04:36:17.000000000 -0700
++++ b/configure	2016-09-09 14:58:04.000000000 -0700
+@@ -13174,7 +13174,7 @@
+ 
+ case "$host" in
+   *-*-darwin*)
+-    CAIRO_SHARED_LIBRARY="libcairo-gobject.2.dylib"
++    CAIRO_SHARED_LIBRARY="${prefix}/lib/libcairo-gobject.2.dylib"
+     ;;
+   *-*-mingw*)
+     CAIRO_SHARED_LIBRARY="libcairo-gobject-2.dll"

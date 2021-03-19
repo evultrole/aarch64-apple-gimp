@@ -1,0 +1,253 @@
+From 96e40ec7321990fe63fb41b1be0ceead21b3ffc3 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Sun, 29 Sep 2013 11:40:25 -0700
+Subject: [PATCH] Bug 702516 - Make -Werror=format-nonliteral happy
+
+---
+ gio/gcontenttype.c      |  5 ++++-
+ gio/gthreadedresolver.c |  5 +++++
+ glib/gfileutils.c       | 50 +++++++++++++++++++++++++++++++++++--------------
+ glib/gmarkup.c          |  7 ++++++-
+ glib/gstrfuncs.c        |  6 +++++-
+ glib/gutils.c           |  5 +++++
+ 6 files changed, 61 insertions(+), 17 deletions(-)
+
+diff --git a/gio/gcontenttype.c b/gio/gcontenttype.c
+index 575d6fe..8dc5896 100644
+--- a/gio/gcontenttype.c
++++ b/gio/gcontenttype.c
+@@ -393,6 +393,8 @@ g_content_type_get_mime_type (const char *type)
+   return g_strdup (type);
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+ 
+ static GIcon *
+ g_content_type_get_icon_internal (const gchar *type,
+@@ -423,7 +425,7 @@ g_content_type_get_icon_internal (const gchar *type,
+   G_LOCK (gio_xdgmime);
+   xdg_icon = xdg_mime_get_icon (type);
+   G_UNLOCK (gio_xdgmime);
+-  if (xdg_icon != NULL)
++   if (xdg_icon != NULL)
+     xdg_mimetype_icon = g_strdup_printf (file_template, xdg_icon);
+ 
+   if (xdg_mimetype_icon)
+@@ -450,6 +452,7 @@ g_content_type_get_icon_internal (const gchar *type,
+ 
+   return themed_icon;
+ }
++#pragma GCC diagnostic pop
+ 
+ /**
+  * g_content_type_get_icon:
+diff --git a/gio/gthreadedresolver.c b/gio/gthreadedresolver.c
+index 37f930c..1ffaf15 100644
+--- a/gio/gthreadedresolver.c
++++ b/gio/gthreadedresolver.c
+@@ -505,6 +505,9 @@ g_resolver_record_type_to_rrtype (GResolverRecordType type)
+   g_return_val_if_reached (-1);
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-nonliteral"
++
+ static GList *
+ g_resolver_records_from_res_query (const gchar      *rrname,
+                                    gint              rrtype,
+@@ -619,6 +622,8 @@ g_resolver_records_from_res_query (const gchar      *rrname,
+     return records;
+ }
+ 
++#pragma GCC diagnostic pop
++
+ #elif defined(G_OS_WIN32)
+ 
+ static GVariant *
+diff --git a/glib/gfileutils.c b/glib/gfileutils.c
+index 7e5bedc..eb5baea 100644
+--- a/glib/gfileutils.c
++++ b/glib/gfileutils.c
+@@ -1004,25 +1004,47 @@ rename_file (const char  *old_name,
+   return TRUE;
+ }
+ 
+-/* format string must have two '%s':
+- *
+- *   - the place for the filename
+- *   - the place for the strerror
+- */
+-static void
+-format_error_message (GError      **error,
+-                      const gchar  *filename,
++static char *
++format_error_message (const gchar  *filename,
++                      const gchar  *format_string) G_GNUC_FORMAT(2);
++
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-nonliteral"
++
++static char *
++format_error_message (const gchar  *filename,
+                       const gchar  *format_string)
+ {
+   gint saved_errno = errno;
+   gchar *display_name;
++  gchar *msg;
+ 
+   display_name = g_filename_display_name (filename);
++  msg = g_strdup_printf (format_string, display_name, g_strerror (saved_errno));
++  g_free (display_name);
++
++  return msg;
++}
+ 
+-  g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (saved_errno),
+-               format_string, display_name, g_strerror (saved_errno));
++#pragma GCC diagnostic pop
+ 
+-  g_free (display_name);
++/* format string must have two '%s':
++ *
++ *   - the place for the filename
++ *   - the place for the strerror
++ */
++static void
++set_file_error (GError      **error,
++                const gchar  *filename,
++                const gchar  *format_string)
++                      
++{
++  int saved_errno = errno;
++  char *msg = format_error_message (filename, format_string);
++
++  g_set_error_literal (error, G_FILE_ERROR, g_file_error_from_errno (saved_errno),
++                       msg);
++  g_free (msg);
+ }
+ 
+ static gchar *
+@@ -1044,7 +1066,7 @@ write_to_temp_file (const gchar  *contents,
+ 
+   if (fd == -1)
+     {
+-      format_error_message (err, tmp_name, _("Failed to create file '%s': %s"));
++      set_file_error (err, tmp_name, _("Failed to create file '%s': %s"));
+       goto out;
+     }
+ 
+@@ -1068,7 +1090,7 @@ write_to_temp_file (const gchar  *contents,
+           if (errno == EINTR)
+             continue;
+ 
+-          format_error_message (err, tmp_name, _("Failed to write file '%s': write() failed: %s"));
++          set_file_error (err, tmp_name, _("Failed to write file '%s': write() failed: %s"));
+           close (fd);
+           g_unlink (tmp_name);
+ 
+@@ -1108,7 +1130,7 @@ write_to_temp_file (const gchar  *contents,
+      */
+     if (g_lstat (dest_file, &statbuf) == 0 && statbuf.st_size > 0 && fsync (fd) != 0)
+       {
+-        format_error_message (err, tmp_name, _("Failed to write file '%s': fsync() failed: %s"));
++        set_file_error (err, tmp_name, _("Failed to write file '%s': fsync() failed: %s"));
+         close (fd);
+         g_unlink (tmp_name);
+ 
+diff --git a/glib/gmarkup.c b/glib/gmarkup.c
+index 552773f..fb02a42 100644
+--- a/glib/gmarkup.c
++++ b/glib/gmarkup.c
+@@ -2366,6 +2366,9 @@ find_conversion (const char  *format,
+  *
+  * Since: 2.4
+  */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-nonliteral"
++
+ gchar *
+ g_markup_vprintf_escaped (const gchar *format,
+                           va_list      args)
+@@ -2430,6 +2433,7 @@ g_markup_vprintf_escaped (const gchar *format,
+   G_VA_COPY (args2, args);
+ 
+   output1 = g_strdup_vprintf (format1->str, args);
++
+   if (!output1)
+     {
+       va_end (args2);
+@@ -2440,7 +2444,6 @@ g_markup_vprintf_escaped (const gchar *format,
+   va_end (args2);
+   if (!output2)
+     goto cleanup;
+-
+   result = g_string_new (NULL);
+ 
+   /* Iterate through the original format string again,
+@@ -2492,6 +2495,8 @@ g_markup_vprintf_escaped (const gchar *format,
+     return NULL;
+ }
+ 
++#pragma GCC diagnostic pop
++
+ /**
+  * g_markup_printf_escaped:
+  * @format: printf() style format string
+diff --git a/glib/gstrfuncs.c b/glib/gstrfuncs.c
+index 9509233..4fcd91c 100644
+--- a/glib/gstrfuncs.c
++++ b/glib/gstrfuncs.c
+@@ -881,6 +881,9 @@ g_ascii_dtostr (gchar       *buffer,
+   return g_ascii_formatd (buffer, buf_len, "%.17g", d);
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-nonliteral"
++
+ /**
+  * g_ascii_formatd:
+  * @buffer: A buffer to place the resulting string in
+@@ -909,7 +912,7 @@ g_ascii_formatd (gchar       *buffer,
+   locale_t old_locale;
+ 
+   old_locale = uselocale (get_C_locale ());
+-  _g_snprintf (buffer, buf_len, format, d);
++   _g_snprintf (buffer, buf_len, format, d);
+   uselocale (old_locale);
+ 
+   return buffer;
+@@ -988,6 +991,7 @@ g_ascii_formatd (gchar       *buffer,
+   return buffer;
+ #endif
+ }
++#pragma GCC diagnostic pop
+ 
+ #define ISSPACE(c)              ((c) == ' ' || (c) == '\f' || (c) == '\n' || \
+                                  (c) == '\r' || (c) == '\t' || (c) == '\v')
+diff --git a/glib/gutils.c b/glib/gutils.c
+index 0a9944f..2620cb6 100644
+--- a/glib/gutils.c
++++ b/glib/gutils.c
+@@ -2148,6 +2148,9 @@ g_format_size (guint64 size)
+  * Flags to modify the format of the string returned by g_format_size_full().
+  */
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-nonliteral"
++
+ /**
+  * g_format_size_full:
+  * @size: a size in bytes
+@@ -2281,6 +2284,8 @@ g_format_size_full (guint64          size,
+   return g_string_free (string, FALSE);
+ }
+ 
++#pragma GCC diagnostic pop
++
+ /**
+  * g_format_size_for_display:
+  * @size: a size in bytes
+-- 
+1.8.3.rc0
+

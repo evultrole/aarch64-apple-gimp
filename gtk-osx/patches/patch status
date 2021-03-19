@@ -1,0 +1,95 @@
+
+libproxy: 	0001-Bug-168-libproxy-pc-file.patch (fixed in r827)
+		Not yet released
+		libproxy-Bug-052-POSIX_C_SOURCE.patch
+		(Doesn't seem to be applied, and it builds anyway.)
+
+gtkmm3: 	0001-Gtkmm-won-t-build-for-Quartz.patch
+		(Bug 662975, fixed 11/29/11, not yet released)
+
+gobject-intro:  0001-scanner-split-CC-environment-variable.patch fixed, not
+		released in stable.
+		girscanner-objc.patch: Bug 626995, will likely never be
+		committed.
+		gobject-introspection-625195-Fix-non-libtool-linker-flags-on-Darwin.patch:
+		https://bugzilla.gnome.org/show_bug.cgi?id=625195, required only
+		for --no-libtool, i.e. webkit2gtk3.
+
+gtk2:		0004-Bug-571582-GtkSelection-implementation-for-quartz.patch
+		0006-Bug-658722-Drag-and-Drop-sometimes-stops-working.patch
+		0008-Implement-GtkDragSourceOwner-pasteboardChangedOwner.patch
+		gtk+-Bug-655065-autotestkeywords-ldadd.patch
+
+cairo: 		Cairo-44584-llvm-no-flto.patch Rejected. Cairo maintainer wants
+		optimization suppressed instead.
+
+libunique:	libunique-663913-sockaddr-un.patch No Love from maintainer
+
+pygtk:		pygtk-libtool.patch: The PyGtk-2.24.0 tarball uses an argument
+		export-symbols-regex, which llvm-gcc doesn't seem to like.
+
+Webkit:		Webkit-1.6-enable-blob.patch
+		webkit-1.6-missing-utf8-include.patch
+		webkit-1.6-no-x11.patch
+		webkit-1.6-pango-includes.patch
+
+webkit1gtk:	webkit-140167-disable-netscape-api.patch
+			There's no configure option to disable this. Work around by
+			modifying the variable directly.
+			https://bugs.webkit.org/show_bug.cgi?id=140167
+		webkit-133293-cfi-clang-failure.patch
+			Workaround for https://bugs.webkit.org/show_bug.cgi?id=133293
+			This patch is a workaround for a clang bug in XCode < 6.3. It can
+			be commented out for XCode 6.3 and later versions.
+
+webkit2gtk3:	webkit-144561-quartz-backend.patch
+			Unlikely to be merged unless WebKit gains a build bot
+			for WebKitGTK on OS X.
+		webkit-144560-platform-fixes.patch
+			Various fixes to disable OS X-specific functionality that
+			works for Safari but shouldn't be enabled for WebKitGTK.
+		webkit-144785-link-injected-bundle.patch
+			Languishing in Bugzilla
+		webkit-148606-build-texture-mapper-gl-separately.patch
+			Languishing in Bugzilla
+		webkit-148607-include-stub-for-plugin-permission-request.patch
+			Languishing in Bugzilla
+
+GConf:		GConf-characters.patch Bug 161209. Unlikely ever to be fixed.
+
+Glade:		Glade-3-8-Bug-663492-Update-Mac-integration-bindings-to-.patch
+		Glade-3-8-Mac-Integration-Fix-up-menu-accelerators-for-Mac.patch
+		Glade-master-Bug-663492-Update-Mac-integration-bindings-to-.patch
+		Glade-master-Mac-Integration-Fix-up-menu-accelerators-for-Mac.patch
+
+dbi:		dbi.patch, dbi-driver.patch These belong in gnucash.modules
+
+devhelp:	devhelp-646962-variable-name.patch
+		devhelp-663789-gtkosxapplication.patch
+		Both pushed to master, but won't be backported.
+
+dbus:		dbus-install.patch
+		dbus-msg-nosignal.patch
+
+gjs:		gjs-Bug-737701-Don-t-error-out-on-missing-cairo-xlib.pc.patch
+		gjs-Bug-737702-Use-R-instead-of-rpath.patch
+		gjs-Bug-740696-Use-m4-directory-for-macros.patch
+		All committed to master and gtk-3-14, only needed for modulesets-stable.
+
+faad2:		faad2-2.7-ac-config-headers.patch
+		Reported at https://sourceforge.net/p/faac/bugs/190/ but there hasn't
+		been much activity in the last few years
+
+gstreamer:      gstreamer-fix-includes-in-gst-datetime.patch
+                gstreamer-680428-Fix-flex-version-check.patch
+                gstreamer-706462-Make-grammar-y-work-with-Bison-3.patch
+                All fixed on 0.10 branch, only needed for modulesets-stable.
+
+py2cairo-python2.6: py2cairo-python2.6-Dont-try-to-guess-arch.patch
+		Needed to work around broken behaviour in waf.
+		Not sure if this will ever be fixed.
+		https://code.google.com/p/waf/issues/detail?id=1505
+
+cmake:		cmake-libnetwork.patch
+		Necessary when building on 10.11. Should be fixed in CMake 3.4.
+		https://cmake.org/gitweb?p=cmake.git;a=commit;h=01b6ecdb41ec0a60f8abc70555aca6eb1463fe3f

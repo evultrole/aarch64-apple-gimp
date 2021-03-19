@@ -1,0 +1,54 @@
+--- a/Makefile.in	2011-04-01 03:41:04.000000000 -0700
++++ b/Makefile.in	2011-10-25 15:18:34.000000000 -0700
+@@ -414,7 +414,7 @@
+ ATK_OVERRIDES = atk.override atkrectangle.override
+ atk_la_CFLAGS = $(ATK_CFLAGS)
+ atk_la_LIBADD = $(ATK_LIBS)
+-atk_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initatk
++atk_la_LDFLAGS = $(common_ldflags) -export_symbol initatk
+ atk_la_SOURCES = atkmodule.c
+ nodist_atk_la_SOURCES = atk.c
+ 
+@@ -422,14 +422,14 @@
+ PANGO_DEFS = pango.defs pango-types.defs
+ pango_la_CFLAGS = $(PANGO_CFLAGS)
+ pango_la_LIBADD = $(PANGO_LIBS)
+-pango_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initpango
++pango_la_LDFLAGS = $(common_ldflags) -export_symbol initpango
+ pango_la_SOURCES = pangomodule.c
+ nodist_pango_la_SOURCES = pango.c
+ 
+ # pangocairo module
+ PANGOCAIRO_DEFS = pangocairo.defs pangocairo.override
+ pangocairo_la_CFLAGS = $(PYCAIRO_CFLAGS) $(PANGOCAIRO_CFLAGS)
+-pangocairo_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initpangocairo
++pangocairo_la_LDFLAGS = $(common_ldflags) -export_symbol initpangocairo
+ pangocairo_la_LIBADD = $(PANGOCAIRO_LIBS)
+ pangocairo_la_SOURCES = pangocairomodule.c
+ nodist_pangocairo_la_SOURCES = pangocairo.c
+--- a/gtk/Makefile.in	2011-04-01 03:41:04.000000000 -0700
++++ b/gtk/Makefile.in	2011-10-25 15:18:55.000000000 -0700
+@@ -443,7 +443,7 @@
+ 	gtkwindow.override
+ 
+ _gtk_la_CFLAGS = $(PYCAIRO_CFLAGS) $(GTK_CFLAGS) $(am__append_33)
+-_gtk_la_LDFLAGS = $(common_ldflags) -export-symbols-regex init_gtk
++_gtk_la_LDFLAGS = $(common_ldflags) -export_symbol init_gtk
+ _gtk_la_LIBADD = $(GTK_LIBS)
+ _gtk_la_SOURCES = \
+ 	gtk-types.c 		\
+@@ -462,12 +462,12 @@
+ LIBGLADE_DEFS = libglade.defs
+ glade_la_CFLAGS = $(LIBGLADE_CFLAGS)
+ glade_la_LIBADD = $(LIBGLADE_LIBS)
+-glade_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initglade
++glade_la_LDFLAGS = $(common_ldflags) -export_symbol initglade
+ glade_la_SOURCES = libglademodule.c
+ nodist_glade_la_SOURCES = libglade.c
+ gtkunixprint_la_CFLAGS = $(PYCAIRO_CFLAGS) $(GTKUNIXPRINT_CFLAGS)
+ gtkunixprint_la_LIBADD = $(GTKUNIXPRINT_LIBS)
+-gtkunixprint_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initgtkunixprint
++gtkunixprint_la_LDFLAGS = $(common_ldflags) -export_symbol initgtkunixprint
+ gtkunixprint_la_SOURCES = gtkunixprintmodule.c
+ nodist_gtkunixprint_la_SOURCES = gtkunixprint.c
+ @BUILD_GTKUNIXPRINT_TRUE@pkgpyexec_LTLIBRARIES = gtkunixprint.la

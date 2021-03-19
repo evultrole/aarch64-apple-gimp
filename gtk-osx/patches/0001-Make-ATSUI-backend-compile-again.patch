@@ -1,0 +1,74 @@
+From 18dc8d4059c6c21f62caa75d0e0ff7d3d14d8649 Mon Sep 17 00:00:00 2001
+From: Kristian Rietveld <kris@gtk.org>
+Date: Fri, 1 Jul 2011 21:08:39 +0200
+Subject: [PATCH] Make ATSUI backend compile again
+
+Commit 02f80c9acdec53f58fef0e12f41363c3c4ea1efe broke the build and was
+likely committed untested.
+
+pango-1-29-4 was branched from tag 1.29.3, before this fix was applied
+to master.
+
+Note that the problem affects only OS X 10.4 (Tiger); pango builds on
+later OS X versions without this change.
+---
+ pango/pangoatsui-fontmap.c |    8 ++++++--
+ pango/pangoatsui-private.h |    2 ++
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/pango/pangoatsui-fontmap.c b/pango/pangoatsui-fontmap.c
+index 8eb123a..c169f0d 100644
+--- a/pango/pangoatsui-fontmap.c
++++ b/pango/pangoatsui-fontmap.c
+@@ -70,6 +70,8 @@ struct _PangoATSUIFace
+ static GType pango_atsui_family_get_type (void);
+ static GType pango_atsui_face_get_type (void);
+ 
++static gpointer pango_atsui_face_parent_class;
++
+ static const char *
+ get_real_family (const char *family_name)
+ {
+@@ -200,6 +202,8 @@ pango_atsui_family_is_monospace (PangoFontFamily *family)
+   return atsuifamily->is_monospace;
+ }
+ 
++G_DEFINE_TYPE (PangoATSUIFamily, pango_atsui_family, PANGO_TYPE_FONT_FAMILY);
++
+ static void
+ pango_atsui_family_finalize (GObject *object)
+ {
+@@ -219,8 +223,6 @@ pango_atsui_family_finalize (GObject *object)
+   G_OBJECT_CLASS (pango_atsui_family_parent_class)->finalize (object);
+ }
+ 
+-G_DEFINE_TYPE (PangoATSUIFamilyClass, pango_atsui_family, PANGO_TYPE_FONT_FAMILY);
+-
+ static void
+ pango_atsui_family_class_init (PangoATSUIFamilyClass *class)
+ {
+@@ -337,6 +339,8 @@ pango_atsui_face_class_init (PangoFontFaceClass *class)
+ {
+   GObjectClass *object_class = (GObjectClass *)class;
+ 
++  pango_atsui_face_parent_class = g_type_class_peek_parent (class);
++
+   object_class->finalize = pango_atsui_face_finalize;
+ 
+   class->describe = pango_atsui_face_describe;
+diff --git a/pango/pangoatsui-private.h b/pango/pangoatsui-private.h
+index a5ab0cb..81bcf60 100644
+--- a/pango/pangoatsui-private.h
++++ b/pango/pangoatsui-private.h
+@@ -38,6 +38,8 @@ G_BEGIN_DECLS
+ 
+ 
+ typedef struct _PangoATSUIFamily       PangoATSUIFamily;
++typedef struct _PangoFontFamilyClass   PangoATSUIFamilyClass;
++
+ typedef struct _PangoATSUIFace         PangoATSUIFace;
+ 
+ typedef struct _PangoATSUIFontMap      PangoATSUIFontMap;
+-- 
+1.7.6.3.dirty
+

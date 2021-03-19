@@ -1,0 +1,131 @@
+From 2298406004115614c30554cb189f5e9ce2919326 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Sat, 29 Apr 2017 10:37:46 -0700
+Subject: [PATCH] Bug 781947 - Build fails on MacOS because glib doesn't have
+ gdesktopinfo.
+
+Disable building desktopapinfo.cpp with the same test used in glib.
+---
+ configure.ac        | 12 ++++++++++++
+ gio/src/filelist.am |  8 +++++++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 02352bd..e19f212 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -55,6 +55,22 @@ AS_CASE([$host_os], [mingw*], [glibmm_host_windows=yes], [glibmm_host_windows=no
+ AC_MSG_RESULT([$glibmm_host_windows])
+ AM_CONDITIONAL([HOST_WINDOWS_NATIVE], [test "x$glibmm_host_windows" = xyes])
+ 
++glib_have_cocoa=no
++AC_MSG_CHECKING([for Mac OS X Cocoa support])
++AC_TRY_CPP([
++#include <Cocoa/Cocoa.h>
++#ifdef GNUSTEP_BASE_VERSION
++#error "Detected GNUstep, not Cocoa"
++#endif
++], glib_have_cocoa=yes)
++
++AC_MSG_RESULT([$glib_have_cocoa])
++AM_CONDITIONAL(OS_COCOA, [test "$glib_have_cocoa" = "yes"])
++AS_IF([test "x$glib_have_cocoa" = "xyes"],
++[
++AC_DEFINE([GLIBMM_OS_COCOA], [1], [Define if building with Cocoa, to disable building DestopAppInfo])
++])
++
+ # TODO: This makes no sense. --danielk
+ AS_IF([test "x$enable_static" = xyes],
+ [
+--- a/glib/glibmmconfig.h.in	2017-04-04 09:37:56.000000000 -0700
++++ b/glib/glibmmconfig.h.in	2017-04-30 10:18:29.000000000 -0700
+@@ -95,6 +95,8 @@
+ /* Define if glibmm is built as a static library */
+ #undef GLIBMM_STATIC_LIB
+ 
++/* Define if building with Cocoa, to disable building DestopAppInfo. */
++#undef GLIBMM_OS_COCOA
+ 
+ #endif /* GLIBMM_CONFIGURE */
+ 
+diff --git a/gio/src/filelist.am b/gio/src/filelist.am
+index 0095128..31339d3 100644
+--- a/gio/src/filelist.am
++++ b/gio/src/filelist.am
+@@ -136,7 +136,6 @@ giomm_files_any_hg =			\
+ 	zlibcompressor.hg
+ 
+ giomm_files_posix_hg =			\
+-	desktopappinfo.hg		\
+ 	unixconnection.hg		\
+ 	unixcredentialsmessage.hg 	\
+ 	unixfdlist.hg 			\
+@@ -145,11 +144,18 @@ giomm_files_posix_hg =			\
+ 	unixoutputstream.hg 		\
+ 	unixsocketaddress.hg
+ 
++giomm_files_not_mac =			\
++	desktopappinfo.hg
++
+ if HOST_WINDOWS_NATIVE
+ giomm_files_arch_hg =
+ else
++if OS_COCOA
+ giomm_files_arch_hg = $(giomm_files_posix_hg)
++else
++giomm_files_arch_hg = $(giomm_files_not_mac) $(giomm_files_posix_hg)
++endif
+ endif
+ giomm_files_used_hg = $(giomm_files_any_hg) $(giomm_files_arch_hg)
+ 
+--- a/gio/giomm/wrap_init.cc	2017-04-04 11:00:01.000000000 -0700
++++ b/gio/giomm/wrap_init.cc	2017-04-30 10:18:58.000000000 -0700
+@@ -52,7 +52,7 @@
+ #include "dbussubtreevtable.h"
+ #include "dbusutils.h"
+ #include "dbuswatchname.h"
+-#ifndef G_OS_WIN32
++#if !(defined(G_OS_WIN32) || defined(GLIBMM_OS_COCOA))
+ #include "desktopappinfo.h"
+ #endif // ifndef G_OS_WIN32
+ #include "drive.h"
+@@ -186,7 +186,7 @@
+ GType g_dbus_method_invocation_get_type(void);
+ GType g_dbus_proxy_get_type(void);
+ GType g_dbus_server_get_type(void);
+-#ifndef G_OS_WIN32
++#if !(defined(G_OS_WIN32) || defined(GLIBMM_OS_COCOA))
+ GType g_desktop_app_info_get_type(void);
+ #endif // ifndef G_OS_WIN32
+ GType g_emblem_get_type(void);
+@@ -302,7 +302,7 @@
+ namespace DBus { class MethodInvocation_Class { public: static Glib::ObjectBase* wrap_new(GObject*); }; }
+ namespace DBus { class Proxy_Class { public: static Glib::ObjectBase* wrap_new(GObject*); }; }
+ namespace DBus { class Server_Class { public: static Glib::ObjectBase* wrap_new(GObject*); }; }
+-#ifndef G_OS_WIN32
++#if !(defined(G_OS_WIN32) || defined(GLIBMM_OS_COCOA))
+ class DesktopAppInfo_Class { public: static Glib::ObjectBase* wrap_new(GObject*); };
+ #endif // ifndef G_OS_WIN32
+ class Emblem_Class { public: static Glib::ObjectBase* wrap_new(GObject*); };
+@@ -429,7 +429,7 @@
+   Glib::wrap_register(g_dbus_method_invocation_get_type(), &DBus::MethodInvocation_Class::wrap_new);
+   Glib::wrap_register(g_dbus_proxy_get_type(), &DBus::Proxy_Class::wrap_new);
+   Glib::wrap_register(g_dbus_server_get_type(), &DBus::Server_Class::wrap_new);
+-#ifndef G_OS_WIN32
++#if !(defined(G_OS_WIN32) || defined(GLIBMM_OS_COCOA))
+   Glib::wrap_register(g_desktop_app_info_get_type(), &DesktopAppInfo_Class::wrap_new);
+ #endif // ifndef G_OS_WIN32
+   Glib::wrap_register(g_emblem_get_type(), &Emblem_Class::wrap_new);
+@@ -533,7 +533,7 @@
+   DBus::MethodInvocation::get_type();
+   DBus::Proxy::get_type();
+   DBus::Server::get_type();
+-#ifndef G_OS_WIN32
++#if !(defined(G_OS_WIN32) || defined(GLIBMM_OS_COCOA))
+   DesktopAppInfo::get_type();
+ #endif // ifndef G_OS_WIN32
+   Emblem::get_type();
+
+
+2.2.2
+

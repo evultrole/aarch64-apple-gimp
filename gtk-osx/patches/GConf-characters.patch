@@ -1,0 +1,18 @@
+diff -c /Volumes/RAID1/Gnucash-Build/Gnucash-svn/src/GConf-2.28.0/gconf/gconf-backend.c /var/folders/8Z/8ZMrxptP2RW3\+U\+8ZNMZY\+\+\+\+TI/-Tmp-/buffer-content-344872Ae
+--- a/gconf/gconf-backend.c	Wed Aug 19 08:35:32 2009
++++ b/gconf/gconf-backend.c	Wed Aug 19 08:35:32 2009
+@@ -31,11 +31,7 @@
+  * The important one here is not to allow ';' because we use that
+  * internally as a list delimiter. See GCONF_DATABASE_LIST_DELIM
+  */
+-static const char invalid_chars[] = 
+-#ifndef G_OS_WIN32
+-  /* Space is common in user names (and thus home directories) on Windows */
+-  " "
+-#endif
++static const char invalid_chars[] =
+   "\t\r\n\"$&<>,+=#!()'|{}[]?~`;%\\";
+ 
+ static gboolean
+
+Diff finished.  Thu Aug 25 16:05:55 2011

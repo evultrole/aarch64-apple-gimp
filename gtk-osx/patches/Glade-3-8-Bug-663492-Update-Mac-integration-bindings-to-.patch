@@ -1,0 +1,408 @@
+From 5284fe2e57aa004139b38ca13972e50652cffa29 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Tue, 8 Nov 2011 16:10:10 -0800
+Subject: [PATCH 1/2] [Glade Bug 663492] Update Mac integration bindings to
+ GtkOSXApplication
+
+---
+ configure.ac        |   12 ++++++------
+ gladeui/Makefile.am |    6 +++---
+ gladeui/glade-app.c |    8 +++-----
+ src/Makefile.am     |    4 ++--
+ src/glade-window.c  |   35 ++++++++++++++++++++++++++++++-----
+ 5 files changed, 44 insertions(+), 21 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index d398e2a..8f40b99 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -230,9 +230,9 @@ dnl ================================================================
+ _gdk_tgt=`$PKG_CONFIG --variable=target gdk-2.0`
+ AM_CONDITIONAL([GDK_TARGET_QUARTZ], [test x$_gdk_tgt = xquartz])
+ if test "x$_gdk_tgt" = xquartz; then 
+-   PKG_CHECK_MODULES(IGE_MAC, ige-mac-integration)
++   PKG_CHECK_MODULES(GTK_MAC, gtk-mac-integration)
+ 
+-   IGE_MAC_BUNDLE_FLAG=
++   GTK_MAC_BUNDLE_FLAG=
+ 
+    AC_ARG_ENABLE(mac-bundle,
+       AS_HELP_STRING([--enable-mac-bundle], [enable mac bundling]),
+@@ -241,12 +241,12 @@ if test "x$_gdk_tgt" = xquartz; then
+    if test "x$build_bundle" = xyes; then
+       AC_MSG_NOTICE([enableing mac bundle..])
+ 
+-      IGE_MAC_BUNDLE_FLAG=-DMAC_BUNDLE
++      GTK_MAC_BUNDLE_FLAG=-DMAC_BUNDLE
+    fi      
+ 
+-   AC_SUBST(IGE_MAC_BUNDLE_FLAG)
+-   AC_SUBST(IGE_MAC_LIBS)
+-   AC_SUBST(IGE_MAC_CFLAGS)
++   AC_SUBST(GTK_MAC_BUNDLE_FLAG)
++   AC_SUBST(GTK_MAC_LIBS)
++   AC_SUBST(GTK_MAC_CFLAGS)
+ fi
+ 
+ AC_SUBST([AM_CPPFLAGS])
+diff --git a/gladeui/Makefile.am b/gladeui/Makefile.am
+index c2ef6e4..b4741b2 100644
+--- a/gladeui/Makefile.am
++++ b/gladeui/Makefile.am
+@@ -67,8 +67,8 @@ libgladeui_1_la_CPPFLAGS =  \
+ 	-I$(top_srcdir)     \
+ 	-I$(top_builddir)   \
+ 	$(GTK_CFLAGS)       \
+-	$(IGE_MAC_BUNDLE_FLAG) \
+-	$(IGE_MAC_CFLAGS)  \
++	$(GTK_MAC_BUNDLE_FLAG) \
++	$(GTK_MAC_CFLAGS)  \
+ 	$(WARN_CFLAGS)      \
+ 	$(AM_CPPFLAGS)
+ 
+@@ -76,7 +76,7 @@ libgladeui_1_la_CFLAGS =    \
+ 	$(AM_CFLAGS)
+ 
+ libgladeui_1_la_LDFLAGS = -version-info $(GLADE_CURRENT):$(GLADE_REVISION):$(GLADE_AGE) $(AM_LDFLAGS)
+-libgladeui_1_la_LIBADD = $(GTK_LIBS) $(IGE_MAC_LIBS)
++libgladeui_1_la_LIBADD = $(GTK_LIBS) $(GTK_MAC_LIBS)
+ 
+ 
+ libgladeuiincludedir=$(includedir)/libgladeui-1.0/gladeui
+diff --git a/gladeui/glade-app.c b/gladeui/glade-app.c
+index 88cdd48..8af1f08 100644
+--- a/gladeui/glade-app.c
++++ b/gladeui/glade-app.c
+@@ -49,7 +49,7 @@
+ #include <gtk/gtk.h>
+ 
+ #ifdef MAC_INTEGRATION
+-#  include <ige-mac-integration.h>
++#  include <gtkosxapplication.h>
+ #endif
+ 
+ #define GLADE_CONFIG_FILENAME "glade-3.conf"
+@@ -380,10 +380,8 @@ build_package_paths (void)
+ 	prefix = g_win32_get_package_installation_directory_of_module (NULL);
+ 
+ # else // defined (MAC_INTEGRATION) && defined (MAC_BUNDLE)
+-	IgeMacBundle *bundle = ige_mac_bundle_get_default ();
+-
+-	prefix = g_build_filename (ige_mac_bundle_get_path (bundle), "Contents", "Resources", NULL);
+-# endif 
++	prefix = quartz_application_get_bundle_path ();
++# endif
+ 
+ 	pixmaps_dir  = g_build_filename (prefix, "share", PACKAGE, "pixmaps", NULL);
+ 	catalogs_dir = g_build_filename (prefix, "share", PACKAGE, "catalogs", NULL);
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 4ec720a..00b4150 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -7,7 +7,7 @@ glade_3_CPPFLAGS = \
+ 	-I$(top_builddir)  \
+ 	-DGLADE_GNOMEHELPDIR="\"$(HELP_DIR)\"" \
+ 	$(GTK_CFLAGS)      \
+-	$(IGE_MAC_CFLAGS)  \
++	$(GTK_MAC_CFLAGS)  \
+ 	$(WARN_CFLAGS)     \
+ 	$(AM_CPPFLAGS)
+ 
+@@ -16,7 +16,7 @@ glade_3_CFLAGS =           \
+ 
+ glade_3_LDFLAGS = $(AM_LDFLAGS)
+ 
+-glade_3_LDADD = $(top_builddir)/gladeui/libgladeui-1.la $(IGE_MAC_LIBS)
++glade_3_LDADD = $(top_builddir)/gladeui/libgladeui-1.la $(GTK_MAC_LIBS)
+ 
+ glade_3_SOURCES = \
+ 	glade-window.c \
+diff --git a/src/glade-window.c b/src/glade-window.c
+index b21dba7..f9f971b 100644
+--- a/src/glade-window.c
++++ b/src/glade-window.c
+@@ -42,7 +42,7 @@
+ #include <gtk/gtk.h>
+ 
+ #ifdef MAC_INTEGRATION
+-#  include <ige-mac-integration.h>
++#  include <gtkosxapplication.h>
+ #endif
+ 
+ 
+@@ -3369,10 +3369,35 @@ glade_window_init (GladeWindow *window)
+ #ifdef MAC_INTEGRATION
+ 	{
+ 		/* Fix up the menubar for MacOSX Quartz builds */
++		GtkWidget *sep;
++		GtkOSXApplication *theApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
+ 		gtk_widget_hide (menubar);
+-		ige_mac_menu_set_menu_bar (GTK_MENU_SHELL (menubar));
+-		
+-		widget = gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/FileMenu/Quit");
+-		ige_mac_menu_set_quit_menu_item (GTK_MENU_ITEM (widget));
++		gtk_osxapplication_set_menu_bar(theApp, GTK_MENU_SHELL(menubar));
++		widget =
++			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/FileMenu/Quit");
++		gtk_widget_hide (widget);
++		widget =
++			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/HelpMenu/About");
++		gtk_osxapplication_insert_app_menu_item (theApp, widget, 0);
++		sep = gtk_separator_menu_item_new();
++		g_object_ref(sep);
++		gtk_osxapplication_insert_app_menu_item (theApp, sep, 1);
++
++		widget =
++			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/EditMenu/Preferences");
++		gtk_osxapplication_insert_app_menu_item  (theApp, widget, 2);
++		sep = gtk_separator_menu_item_new();
++		g_object_ref(sep);
++		gtk_osxapplication_insert_app_menu_item (theApp, sep, 3);
++
++		widget =
++			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/HelpMenu");
++		gtk_osxapplication_set_help_menu(theApp, GTK_MENU_ITEM(widget));
++
++		g_signal_connect(theApp, "NSApplicationWillTerminate",
++				 G_CALLBACK(quit_cb), window);
++
++		gtk_osxapplication_ready(theApp);
++
+ 	}
+ #endif
+
+--- a/configure		Mon Apr  4 05:29:57 2011
++++ b/configure		Tue Nov  8 17:02:02 2011
+@@ -752,9 +752,9 @@
+ AM_CXXFLAGS
+ AM_CFLAGS
+ AM_CPPFLAGS
+-IGE_MAC_BUNDLE_FLAG
+-IGE_MAC_LIBS
+-IGE_MAC_CFLAGS
++GTK_MAC_BUNDLE_FLAG
++GTK_MAC_LIBS
++GTK_MAC_CFLAGS
+ GDK_TARGET_QUARTZ_FALSE
+ GDK_TARGET_QUARTZ_TRUE
+ WINDRES
+@@ -1026,8 +1026,8 @@
+ GNOME_LIBS
+ PYGTK_CFLAGS
+ PYGTK_LIBS
+-IGE_MAC_CFLAGS
+-IGE_MAC_LIBS'
++GTK_MAC_CFLAGS
++GTK_MAC_LIBS'
+ 
+ 
+ # Initialize some variables set by options.
+@@ -1702,10 +1702,10 @@
+   PYGTK_CFLAGS
+               C compiler flags for PYGTK, overriding pkg-config
+   PYGTK_LIBS  linker flags for PYGTK, overriding pkg-config
+-  IGE_MAC_CFLAGS
+-              C compiler flags for IGE_MAC, overriding pkg-config
+-  IGE_MAC_LIBS
+-              linker flags for IGE_MAC, overriding pkg-config
++  GTK_MAC_CFLAGS
++              C compiler flags for GTK_MAC, overriding pkg-config
++  GTK_MAC_LIBS
++              linker flags for GTK_MAC, overriding pkg-config
+ 
+ Use these variables to override the choices made by `configure' or to help
+ it to find libraries and programs with nonstandard names/locations.
+@@ -14485,35 +14485,35 @@
+ if test "x$_gdk_tgt" = xquartz; then
+ 
+ pkg_failed=no
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for IGE_MAC" >&5
+-$as_echo_n "checking for IGE_MAC... " >&6; }
++{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK_MAC" >&5
++$as_echo_n "checking for GTK_MAC... " >&6; }
+ 
+-if test -n "$IGE_MAC_CFLAGS"; then
+-    pkg_cv_IGE_MAC_CFLAGS="$IGE_MAC_CFLAGS"
++if test -n "$GTK_MAC_CFLAGS"; then
++    pkg_cv_GTK_MAC_CFLAGS="$GTK_MAC_CFLAGS"
+  elif test -n "$PKG_CONFIG"; then
+     if test -n "$PKG_CONFIG" && \
+-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"ige-mac-integration\""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "ige-mac-integration") 2>&5
++    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk-mac-integration\""; } >&5
++  ($PKG_CONFIG --exists --print-errors "gtk-mac-integration") 2>&5
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; then
+-  pkg_cv_IGE_MAC_CFLAGS=`$PKG_CONFIG --cflags "ige-mac-integration" 2>/dev/null`
++  pkg_cv_GTK_MAC_CFLAGS=`$PKG_CONFIG --cflags "gtk-mac-integration" 2>/dev/null`
+ else
+   pkg_failed=yes
+ fi
+  else
+     pkg_failed=untried
+ fi
+-if test -n "$IGE_MAC_LIBS"; then
+-    pkg_cv_IGE_MAC_LIBS="$IGE_MAC_LIBS"
++if test -n "$GTK_MAC_LIBS"; then
++    pkg_cv_GTK_MAC_LIBS="$GTK_MAC_LIBS"
+  elif test -n "$PKG_CONFIG"; then
+     if test -n "$PKG_CONFIG" && \
+-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"ige-mac-integration\""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "ige-mac-integration") 2>&5
++    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk-mac-integration\""; } >&5
++  ($PKG_CONFIG --exists --print-errors "gtk-mac-integration") 2>&5
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; then
+-  pkg_cv_IGE_MAC_LIBS=`$PKG_CONFIG --libs "ige-mac-integration" 2>/dev/null`
++  pkg_cv_GTK_MAC_LIBS=`$PKG_CONFIG --libs "gtk-mac-integration" 2>/dev/null`
+ else
+   pkg_failed=yes
+ fi
+@@ -14531,22 +14531,22 @@
+         _pkg_short_errors_supported=no
+ fi
+         if test $_pkg_short_errors_supported = yes; then
+-	        IGE_MAC_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "ige-mac-integration" 2>&1`
++	        GTK_MAC_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gtk-mac-integration" 2>&1`
+         else
+-	        IGE_MAC_PKG_ERRORS=`$PKG_CONFIG --print-errors "ige-mac-integration" 2>&1`
++	        GTK_MAC_PKG_ERRORS=`$PKG_CONFIG --print-errors "gtk-mac-integration" 2>&1`
+         fi
+ 	# Put the nasty error message in config.log where it belongs
+-	echo "$IGE_MAC_PKG_ERRORS" >&5
++	echo "$GTK_MAC_PKG_ERRORS" >&5
+ 
+-	as_fn_error "Package requirements (ige-mac-integration) were not met:
++	as_fn_error "Package requirements (gtk-mac-integration) were not met:
+ 
+-$IGE_MAC_PKG_ERRORS
++$GTK_MAC_PKG_ERRORS
+ 
+ Consider adjusting the PKG_CONFIG_PATH environment variable if you
+ installed software in a non-standard prefix.
+ 
+-Alternatively, you may set the environment variables IGE_MAC_CFLAGS
+-and IGE_MAC_LIBS to avoid the need to call pkg-config.
++Alternatively, you may set the environment variables GTK_MAC_CFLAGS
++and GTK_MAC_LIBS to avoid the need to call pkg-config.
+ See the pkg-config man page for more details.
+ " "$LINENO" 5
+ elif test $pkg_failed = untried; then
+@@ -14556,21 +14556,21 @@
+ is in your PATH or set the PKG_CONFIG environment variable to the full
+ path to pkg-config.
+ 
+-Alternatively, you may set the environment variables IGE_MAC_CFLAGS
+-and IGE_MAC_LIBS to avoid the need to call pkg-config.
++Alternatively, you may set the environment variables GTK_MAC_CFLAGS
++and GTK_MAC_LIBS to avoid the need to call pkg-config.
+ See the pkg-config man page for more details.
+ 
+ To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+ See \`config.log' for more details." "$LINENO" 5; }
+ else
+-	IGE_MAC_CFLAGS=$pkg_cv_IGE_MAC_CFLAGS
+-	IGE_MAC_LIBS=$pkg_cv_IGE_MAC_LIBS
++	GTK_MAC_CFLAGS=$pkg_cv_GTK_MAC_CFLAGS
++	GTK_MAC_LIBS=$pkg_cv_GTK_MAC_LIBS
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+ 	:
+ fi
+ 
+-   IGE_MAC_BUNDLE_FLAG=
++   GTK_MAC_BUNDLE_FLAG=
+ 
+    # Check whether --enable-mac-bundle was given.
+ if test "${enable_mac_bundle+set}" = set; then :
+@@ -14584,7 +14584,7 @@
+       { $as_echo "$as_me:${as_lineno-$LINENO}: enableing mac bundle.." >&5
+ $as_echo "$as_me: enableing mac bundle.." >&6;}
+ 
+-      IGE_MAC_BUNDLE_FLAG=-DMAC_BUNDLE
++      GTK_MAC_BUNDLE_FLAG=-DMAC_BUNDLE
+    fi
+ 
+ 
+
+Diff finished.  Tue Nov  8 17:02:24 2011
+diff -c /Volumes/RAID1/local/gtk-stable/src/glade3-3.8.0/src/Makefile.in\~ /Volumes/RAID1/local/gtk-stable/src/glade3-3.8.0/src/Makefile.in
+--- a/src/Makefile.in	Mon Apr  4 05:29:56 2011
++++ b/src/Makefile.in	Tue Nov  8 17:04:37 2011
+@@ -159,9 +159,9 @@
+ GTK_LIBS = @GTK_LIBS@
+ HELP_DIR = @HELP_DIR@
+ HTML_DIR = @HTML_DIR@
+-IGE_MAC_BUNDLE_FLAG = @IGE_MAC_BUNDLE_FLAG@
+-IGE_MAC_CFLAGS = @IGE_MAC_CFLAGS@
+-IGE_MAC_LIBS = @IGE_MAC_LIBS@
++GTK_MAC_BUNDLE_FLAG = @GTK_MAC_BUNDLE_FLAG@
++GTK_MAC_CFLAGS = @GTK_MAC_CFLAGS@
++GTK_MAC_LIBS = @GTK_MAC_LIBS@
+ INSTALL = @INSTALL@
+ INSTALL_DATA = @INSTALL_DATA@
+ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -294,7 +294,7 @@
+ 	-I$(top_builddir)  \
+ 	-DGLADE_GNOMEHELPDIR="\"$(HELP_DIR)\"" \
+ 	$(GTK_CFLAGS)      \
+-	$(IGE_MAC_CFLAGS)  \
++	$(GTK_MAC_CFLAGS)  \
+ 	$(WARN_CFLAGS)     \
+ 	$(AM_CPPFLAGS)
+ 
+@@ -303,7 +303,7 @@
+ 
+ glade_3_LDFLAGS = $(AM_LDFLAGS) $(am__append_2)
+ glade_3_LDADD = $(top_builddir)/gladeui/libgladeui-1.la \
+-	$(IGE_MAC_LIBS) $(am__append_1)
++	$(GTK_MAC_LIBS) $(am__append_1)
+ glade_3_SOURCES = \
+ 	glade-window.c \
+ 	glade-window.h \
+
+Diff finished.  Tue Nov  8 17:04:45 2011
+diff -c /Volumes/RAID1/local/gtk-stable/src/glade3-3.8.0/gladeui/Makefile.in\~ /Volumes/RAID1/local/gtk-stable/src/glade3-3.8.0/gladeui/Makefile.in
+--- a/gladeui/Makefile.in	Mon Apr  4 05:29:54 2011
++++ b/gladeui/Makefile.in	Tue Nov  8 17:06:44 2011
+@@ -217,9 +217,9 @@
+ GTK_LIBS = @GTK_LIBS@
+ HELP_DIR = @HELP_DIR@
+ HTML_DIR = @HTML_DIR@
+-IGE_MAC_BUNDLE_FLAG = @IGE_MAC_BUNDLE_FLAG@
+-IGE_MAC_CFLAGS = @IGE_MAC_CFLAGS@
+-IGE_MAC_LIBS = @IGE_MAC_LIBS@
++GTK_MAC_BUNDLE_FLAG = @GTK_MAC_BUNDLE_FLAG@
++GTK_MAC_CFLAGS = @GTK_MAC_CFLAGS@
++GTK_MAC_LIBS = @GTK_MAC_LIBS@
+ INSTALL = @INSTALL@
+ INSTALL_DATA = @INSTALL_DATA@
+ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -413,8 +413,8 @@
+ 	-I$(top_srcdir)     \
+ 	-I$(top_builddir)   \
+ 	$(GTK_CFLAGS)       \
+-	$(IGE_MAC_BUNDLE_FLAG) \
+-	$(IGE_MAC_CFLAGS)  \
++	$(GTK_MAC_BUNDLE_FLAG) \
++	$(GTK_MAC_CFLAGS)  \
+ 	$(WARN_CFLAGS)      \
+ 	$(AM_CPPFLAGS)
+ 
+@@ -424,7 +424,7 @@
+ libgladeui_1_la_LDFLAGS = -version-info \
+ 	$(GLADE_CURRENT):$(GLADE_REVISION):$(GLADE_AGE) $(AM_LDFLAGS) \
+ 	$(am__append_1) $(am__append_2)
+-libgladeui_1_la_LIBADD = $(GTK_LIBS) $(IGE_MAC_LIBS)
++libgladeui_1_la_LIBADD = $(GTK_LIBS) $(GTK_MAC_LIBS)
+ libgladeuiincludedir = $(includedir)/libgladeui-1.0/gladeui
+ libgladeuiinclude_HEADERS = \
+ 	glade.h \
+
+Diff finished.  Tue Nov  8 17:06:50 2011
+ 
+-- 
+1.7.6.3.dirty
+

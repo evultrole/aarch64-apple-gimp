@@ -1,0 +1,21 @@
+diff --git a/Source/JavaScriptCore/llint/LowLevelInterpreter.cpp b/Source/JavaScriptCore/llint/LowLevelInterpreter.cpp
+--- a/Source/JavaScriptCore/llint/LowLevelInterpreter.cpp   (revision 174258)
++++ b/Source/JavaScriptCore/llint/LowLevelInterpreter.cpp   (working copy)
+@@ -522,7 +522,7 @@
+ //
+ 
+ // These are for building an interpreter from generated assembly code:
+-#if CPU(X86_64) && COMPILER(CLANG)
++#if 0
+ #define OFFLINE_ASM_BEGIN   asm ( \
+     ".cfi_startproc\n"
+ 
+@@ -545,7 +545,7 @@
+     ".thumb\n"                                   \
+     ".thumb_func " THUMB_FUNC_PARAM(label) "\n"  \
+     SYMBOL_STRING(label) ":\n"
+-#elif CPU(X86_64) && COMPILER(CLANG)
++#elif 0
+ #define OFFLINE_ASM_GLOBAL_LABEL(label)         \
+     ".text\n"                                   \
+     ".globl " SYMBOL_STRING(label) "\n"         \

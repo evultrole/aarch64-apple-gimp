@@ -1,0 +1,94 @@
+diff --git a/babl/babl.map b/babl/babl.map
+new file mode 100644
+index 0000000..c27b37d
+--- /dev/null
++++ b/babl/babl.map
+@@ -0,0 +1,6 @@
++{
++	global:
++		babl_*;
++	local:
++		*;
++};
+diff --git a/babl/babl.map.clang b/babl/babl.map.clang
+new file mode 100644
+index 0000000..2ad2526
+--- /dev/null
++++ b/babl/babl.map.clang
+@@ -0,0 +1 @@
++babl_*
+diff --git a/babl/meson.build b/babl/meson.build
+index b551c9a..f2b3bb8 100644
+--- a/babl/meson.build
++++ b/babl/meson.build
+@@ -4,6 +4,12 @@ subdir('base')
+ python = import('python').find_installation()
+ 
+ version_script = 'babl.map'
++version_script_clang = 'babl.map.clang'
++
++babl_gnu_sym_path = join_paths(meson.current_source_dir(), 'babl.map')
++babl_clang_sym_path = join_paths(meson.current_source_dir(), 'babl.map.clang')
++
++
+ export_symbols = join_paths(meson.source_root(), 'export-symbols')
+ version_script_target = custom_target(version_script,
+   input : [ export_symbols, ] ,
+@@ -24,9 +30,14 @@ babl_c_args = [
+ ]
+ 
+ # Linker arguments
+-babl_link_args = [
+-  '-Wl,--version-script,' + version_script,
+-]
++if cc.links('', name: '-Wl,--version-script', args: ['-shared', '-Wl,--version-script=' + babl_gnu_sym_path])
++  babl_link_args = ['-Wl,--version-script,' + version_script]
++elif host_machine.system() == 'darwin' and cc.has_multi_link_arguments('-Wl,-exported_symbols_list', babl_clang_sym_path)
++	# Clang on Darwin
++  babl_link_args = ['-Wl,-exported_symbols_list',version_script_clang]
++else
++	error('Linker doesn\'t support --version-script or -exported_symbols_list')
++endif
+ if platform_win32
+   babl_link_args += '-Wl,--no-undefined'
+ endif
+diff --git a/gen_babl_map.py b/gen_babl_map.py
+index 644ea61..80a2d3e 100644
+--- a/gen_babl_map.py
++++ b/gen_babl_map.py
+@@ -2,6 +2,7 @@ import sys
+ 
+ export_symbols=sys.argv[1]
+ version_file=sys.argv[2]
++version_file_clang=sys.argv[2] + ".clang"
+ 
+ with open(export_symbols, 'r') as syms, \
+      open(version_file, 'w') as version:
+@@ -9,3 +10,8 @@ with open(export_symbols, 'r') as syms, \
+      for sym in syms:
+         version.write("        {};\n".format(sym.strip()))
+      version.write("    local:\n        *;\n};\n")
++
++with open(export_symbols, 'r') as syms, \
++     open(version_file_clang, 'w') as version:
++     for sym in syms:
++        version.write("_{}\n".format(sym.strip()))
+diff --git a/meson.build b/meson.build
+index 0befaef..8c7d522 100644
+--- a/meson.build
++++ b/meson.build
+@@ -118,7 +118,13 @@ platform_android = host_os.contains('android')
+ 
+ path_sep = ( platform_win32 ? ';'     : ':' )
+ dirs_sep = ( platform_win32 ? '\\\\'  : '/' )
+-lib_ext  = ( platform_win32 ? '.dll'  : '.so' )
++if platform_win32
++  lib_ext = '.dll'
++elif platform_osx
++  lib_ext = '.dylib'
++else
++  lib_ext = '.so'
++endif
+ 
+ conf.set('BABL_PATH_SEPARATOR', '\'' + path_sep + '\'', description:
+   'separator between paths in BABL_PATH')

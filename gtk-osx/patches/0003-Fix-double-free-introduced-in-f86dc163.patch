@@ -1,0 +1,25 @@
+From 5c820fe22d7484f1f09ebe4c59491c1c5dde34d7 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Fri, 11 Oct 2013 10:40:26 -0700
+Subject: [PATCH 3/4] Fix double-free introduced in f86dc163
+
+---
+ gtk/gtkdnd-quartz.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gtk/gtkdnd-quartz.c b/gtk/gtkdnd-quartz.c
+index 1ec5db5..11a4855 100644
+--- a/gtk/gtkdnd-quartz.c
++++ b/gtk/gtkdnd-quartz.c
+@@ -1263,7 +1263,7 @@ gtk_drag_begin_internal (GtkWidget         *widget,
+   window = [(id<GdkNSView>)[nswindow contentView] gdkWindow];
+   g_return_val_if_fail (nsevent != NULL, NULL);
+ 
+-  context = gdk_drag_begin (window, target_list->list);
++  context = gdk_drag_begin (window, g_list_copy (target_list->list));
+   g_return_val_if_fail (context != NULL, NULL);
+ 
+   info = gtk_drag_get_source_info (context, TRUE);
+-- 
+1.8.3.rc0
+

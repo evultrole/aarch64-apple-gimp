@@ -1,0 +1,31 @@
+From 6333a3724e1e93b96077c0ce4eb3e01aeb6da453 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Sun, 19 Feb 2012 13:15:40 -0800
+Subject: [PATCH 3/9] Create enum PrinterStateLevel
+
+Fixes "magic number" in printer_state_reason_level.
+---
+ modules/printbackends/cups/gtkprintbackendcups.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/modules/printbackends/cups/gtkprintbackendcups.c b/modules/printbackends/cups/gtkprintbackendcups.c
+index 88c7137..fab3f40 100644
+--- a/modules/printbackends/cups/gtkprintbackendcups.c
++++ b/modules/printbackends/cups/gtkprintbackendcups.c
+@@ -1650,6 +1650,13 @@ static const char * printer_strings[] =
+     N_("There is a problem on printer '%s'.")
+   };
+ 
++typedef enum
++  {
++    GTK_PRINTER_STATE_LEVEL_NONE = 0,
++    GTK_PRINTER_STATE_LEVEL_INFO = 1,
++    GTK_PRINTER_STATE_LEVEL_WARNING = 2,
++    GTK_PRINTER_STATE_LEVEL_ERROR = 3
++  } PrinterStateLevel;
+ static void
+ cups_request_printer_list_cb (GtkPrintBackendCups *cups_backend,
+                               GtkCupsResult       *result,
+-- 
+1.7.7.5 (Apple Git-28)
+

@@ -1,0 +1,47 @@
+From 4aebe6d4f08297066b231eee7aa15d33d8dd6d98 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Fri, 3 May 2013 10:31:47 -0700
+Subject: [PATCH] Bug 667759 - gtkdnd-quartz.c is missing annotations for
+ introspection
+
+Work around this by introspecting gtkclipboard.c and gtkdnd.c instead
+of the quartz alternatives.
+
+Note that this is temporary: The implementation of GdkSelection
+will make the quartz alternatives unnecessary. See bug 571582.
+---
+ gtk/Makefile.am | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/gtk/Makefile.am b/gtk/Makefile.am
+index 6e7bbf1..0b82797 100644
+--- a/gtk/Makefile.am
++++ b/gtk/Makefile.am
+@@ -1313,13 +1313,23 @@ LDADDS =								\
+ 	$(GTK_DEP_LIBS)
+ 
+ if HAVE_INTROSPECTION
++# The Quartz clipboard and dnd files aren't annotated for
++# introspection. Rather than copy the annotations over from the
++# regular files, exclude the quartz ones:
+ introspection_files = \
+-    $(filter-out %private.h gtktextdisplay.h gtktextlayout.h, $(gtkinclude_HEADERS) $(deprecatedinclude_HEADERS)) \
++    $(filter-out %private.h gtktextdisplay.h gtktextlayout.h, $(gtkinclude_HEADERS) $(deprecatedinclude_HEADERS) gtkclipboard-quartz.c gtkdnd-quartz.c) \
+     $(gtk_base_c_sources) \
+     gtkprintoperation-unix.c \
+     gtktypebuiltins.h \
+     gtktypebuiltins.c
+ 
++# And include the regular ones:
++if USE_QUARTZ
++introspection_files += \
++    gtkclipboard.c \
++    gtkdnd.c
++endif
++
+ if USE_X11
+ introspection_files += \
+     gtksocket.c \
+-- 
+1.8.3.rc0
+

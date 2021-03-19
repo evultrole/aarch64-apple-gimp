@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="git" name="git.gnome.org" default="yes"
+              href="https://gitlab.gnome.org/GNOME"/>
+  <repository type='git' name='git.debian.org'
+	      href="git://salsa.debian.org/"/>
+  <repository type='git' name='git.gnupg.org' href="git://git.gnupg.org/" />
+  <repository type='tarball' name='ftp.gnupg.org' href="ftp://ftp.gnupg.org/" />
+  <repository type='git' name='github'
+              href='git://github.com/'
+              tags-template="tags/%(tag)s"/>
+  <repository type="git" name="freedesktop"
+              href="git://anongit.freedesktop.org"/>
+  <repository type="tarball" name="curl.haxx.se"
+              href="http://curl.haxx.se/download/"/>
+
+  <metamodule id="meta-gtk-osx-unsupported">
+    <dependencies>
+      <dep package="gnome-mime-data"/>
+      <dep package="iso-codes"/>
+    </dependencies>
+  </metamodule>
+
+  <autotools id="gnome-mime-data">
+   <branch tag="GNOME_MIME_DATA_2_18_0"/>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="iso-codes" >
+    <branch repo="git.debian.org" tag="iso-codes-3.67"
+            module="iso-codes-team/iso-codes.git"/>
+
+  </autotools>
+
+  <autotools id="p11-kit" autogenargs="--without-trust-paths">
+    <branch repo="freedesktop" module="p11-glue/p11-kit" revision="stable"/>
+    <dependencies>
+      <dep package="libtasn1"/>
+    </dependencies>
+  </autotools>
+
+  <cmake id='libproxy' cmakeargs="-DWITH_PYTHON=OFF">
+    <branch module="libproxy/libproxy" tag="0.4.14"
+            repo='github'/>
+    <dependencies>
+    </dependencies>
+  </cmake>
+
+  <!-- libgnome-keyring releases from master. -->
+  <autotools id="libgnome-keyring">
+    <branch />
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="libgcrypt"/>
+      <dep package="libtasn1"/>
+      <dep package="dbus"/>
+    </dependencies>
+  </autotools>
+
+  <!-- libgpg-error releases from master -->
+  <autotools id="libgpg-error" autogenargs="--disable-doc"
+             autogen-sh="autoreconf">
+    <branch repo="git.gnupg.org" module="libgpg-error"/>
+  </autotools>
+
+  <autotools id="libgcrypt" autogen-sh="configure" autogenargs="--disable-asm">
+    <!-- Git version requires fig2dev, an X11 utility, until disable-doc option
+    is available, currently only on master.
+    <branch repo="git.gnupg.org" revision="LIBGCRYPT_1_6_BRANCH"
+            module="libgcrypt"/> -->
+    <branch repo="ftp.gnupg.org" version="1.7.6"
+            module="gcrypt/libgcrypt/libgcrypt-1.7.6.tar.bz2">
+            <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/libgcrypt-cflags-for-build.patch"
+       strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="libgpg-error" />
+    </dependencies>
+  </autotools>
+
+  <autotools id="gnome-keyring" autogenargs="--disable-pam --without-root-certs">
+    <branch revision="gnome-3-20"/>
+    <dependencies>
+      <dep package="gtk+"/>
+      <dep package="libgcrypt"/>
+      <dep package="libtasn1"/>
+    </dependencies>
+  </autotools>
+
+</moduleset>

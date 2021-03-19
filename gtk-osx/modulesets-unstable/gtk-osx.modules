@@ -1,0 +1,265 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="git" name="git.gnome.org" default="yes"
+              href="https://gitlab.gnome.org/GNOME"/>
+  <repository type="git" name="github" href="git://github.com/"/>
+  <repository type="git" name="freedesktop"
+              href="git://anongit.freedesktop.org/git/"/>
+  <repository type="system" name="system"/>
+
+  <!-- This module set works a bit differently than for example the
+       GNOME ones do. It's split up in seperate pieces:
+
+       - gtk-osx-bootstrap: contains bootstrap-like modules that you
+         don't want to rebuild all the time.
+
+       - gtk-osx.modules: contains the core GTK+ stack. This does not
+         have a hard dependency on the bootstrap modules, in order to
+         make it easy to rebuild the whole core stack without redoing
+         the bootstrap parts. They have a soft, "after", depencency.
+
+       The remaining modules are mostly for testing and might not work
+       all the time:
+
+       - gtk-osx-python.modules: self explaining.
+       - gtk-osx-gtkmm.modules: self explaining.
+       - gtk-osx-javascript.modules: GJS, associated tools, and the Mozilla JS
+         library it depends on.
+       - gtk-osx-gstreamer.modules: self explaining.
+       - gtk-osx-themes.modules: self explaining.
+       - gtk-osx-network.modules: The network/crypto stack and various
+         configurations of WebKit.
+
+       - gtk-osx-random.modules: "random stuff", has apps for testing GTK+.
+       - gtk-osx-unsupported.modules: more testing stuff, competely unsupported.
+  -->
+
+  <include href="gtk-osx-bootstrap.modules"/>
+  <include href="gtk-osx-javascript.modules"/>
+  <include href="gtk-osx-python.modules"/>
+  <include href="gtk-osx-gstreamer.modules"/>
+  <include href="gtk-osx-gtkmm.modules"/>
+  <include href="gtk-osx-network.modules"/>
+  <include href="gtk-osx-themes.modules"/>
+  <include href="gtk-osx-random.modules"/>
+  <include href="gtk-osx-unsupported.modules"/>
+
+  <metamodule id="meta-gtk-osx-core">
+    <dependencies>
+      <dep package="gtk+"/>
+      <dep package="gtk-mac-integration"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+  </metamodule>
+
+  <metamodule id="meta-gtk-osx-gtk3">
+    <dependencies>
+      <dep package="gtk+-3.0"/>
+      <dep package="gtk-mac-integration"/>
+      <dep package="adwaita-icon-theme"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+  </metamodule>
+
+  <meson id="glib" mesonargs="-Dinternal_pcre=true -Dlibmount=false">
+    <branch/>
+    <dependencies>
+      <dep package="libffi"/>
+    </dependencies>
+  </meson>
+
+  <autotools id="libffi" autogenargs="--disable-builddir"
+             autogen-sh="autoreconf" supports-non-srcdir-builds="no">
+    <branch module="atgreen/libffi" repo="github"/>
+  </autotools>
+
+  <meson id="gobject-introspection">
+    <branch/>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="cairo"/>
+      <dep package='python3'/>
+    </dependencies>
+  </meson>
+
+  <meson id="fribidi" mesonargs="-Ddocs=false">
+    <branch module="fribidi/fribidi" repo="github"/>
+    <dependencies>
+      <!--dep package="c2man"/ -->
+    </dependencies>
+  </meson>
+
+  <meson id="pango">
+    <branch />
+    <dependencies>
+      <dep package="cairo"/>
+      <dep package="glib"/>
+      <dep package="fribidi"/>
+      <dep package="harfbuzz"/>
+    </dependencies>
+    <after>
+      <dep package="gobject-introspection"/>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-freetype"/>
+    </after>
+  </meson>
+
+ <meson id="atk">
+    <branch />
+    <dependencies>
+    </dependencies>
+    <after>
+      <dep package="glib"/>
+      <dep package="gobject-introspection"/>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+ </meson>
+
+  <meson id="gdk-pixbuf" mesonargs="-Dx11=false -Dman=false">
+    <branch />
+    <after>
+      <dep package="pango"/>
+      <dep package="gobject-introspection"/>
+    </after>
+  </meson>
+
+  <meson id="gtk-doc">
+    <branch repo="git.gnome.org"/>
+    <dependencies>
+      <dep package="libxml2"/>
+      <dep package="itstool"/>
+      <dep package="yelp-tools"/>
+      <dep package="glib"/>
+    </dependencies>
+  </meson>
+
+  <autotools id="xorg-util-macros">
+    <branch repo="freedesktop" module="xorg/util/macros"/>
+  </autotools>
+
+  <meson id="libepoxy">
+    <branch repo="github" module="anholt/libepoxy"/>
+    <dependencies>
+      <dep package="xorg-util-macros"/>
+    </dependencies>
+  </meson>
+
+  <meson id="graphene">
+    <branch module="ebassi/graphene" repo="github" checkoutdir="graphene"/>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="gobject-introspection"/>
+    </dependencies>
+  </meson>
+ 
+  <autotools id="gtk+"
+	     autogenargs="--with-gdktarget=quartz --enable-introspection=no --enable-quartz-relocation --disable-visibility">
+    <branch module="gtk" revision="gtk-2-24" checkoutdir="gtk+-2.0"/>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="pango"/>
+      <dep package="atk"/>
+      <dep package="gdk-pixbuf"/>
+      <dep package="gobject-introspection"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+  </autotools>
+  
+
+  <autotools id="gtk+-3.0"
+             autogenargs="--enable-quartz-backend --enable-quartz-relocation --disable-colord">
+    <branch module="gtk" checkoutdir="gtk+-3.0" revision="gtk-3-24"/>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="pango"/>
+      <dep package="gdk-pixbuf"/>
+      <dep package="atk"/>
+      <dep package="gobject-introspection"/>
+      <dep package="libepoxy"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+  </autotools>
+
+  <meson id="gtk+-4.0"
+             mesonargs="-Dquartz-backend=true -Dx11-backend=false -Dmedia=none">
+    <branch module="gtk" checkoutdir="gtk+-4.0"/>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="pango"/>
+      <dep package="gdk-pixbuf"/>
+      <dep package="atk"/>
+      <dep package="gobject-introspection"/>
+      <dep package="graphene"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+  </meson>
+
+  <autotools id="pixman" autogenargs="--disable-gtk --disable-mmx">
+    <branch repo="freedesktop" module="pixman" />
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+  </autotools>
+
+  <!-- Cairo will automatically enable freetype and fontconfig if
+       meta-gtk-osx-freetype is built, so packages which require
+       cairoft or cairofc should have meta-gtk-osx-freetype as a
+       dependency. -->
+  <autotools id="cairo"
+             autogenargs="--enable-pdf --enable-quartz --disable-xlib --without-x">
+    <branch repo="freedesktop" module="cairo" />
+    <dependencies>
+      <dep package="pixman"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-freetype"/>
+    </after>
+  </autotools>
+
+  <autotools id="gtk-mac-integration" autogenargs="--disable-python">
+    <branch/>
+    <after>
+      <dep package="gtk+"/>
+      <dep package="gtk+-3.0"/>
+    </after>
+  </autotools>
+
+  <autotools id="adwaita-icon-theme">
+    <branch />
+    <dependencies>
+      <dep package="librsvg"/>
+    </dependencies>
+  </autotools>
+
+  <!-- librsvg is converting to the Rust language. This requires
+       substantial infrastructure that's resistant to installing with
+       jhbuild, so we'll freeze at the 2.40 branch. -->
+  <autotools id="librsvg" autogenargs="--disable-Bsymbolic">
+    <branch module="librsvg" tag="librsvg-2-40"/>
+    <dependencies>
+      <dep package="libcroco"/>
+    </dependencies>
+    <after>
+      <dep package="gtk+"/>
+      <dep package="gtk+-3.0"/>
+    </after>
+  </autotools>
+
+  <autotools id="libcroco" autogenargs="--disable-Bsymbolic">
+    <branch/>
+  </autotools>
+
+</moduleset>

@@ -1,0 +1,301 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="git" name="git.gnome.org" default="yes"
+              href="https://gitlab.gnome.org/GNOME"/>
+  <repository type="git" name="github" href="git://github.com/"/>
+  <repository type="tarball" name="ftp.gnome.org"
+	      href="ftp://ftp.gnome.org/pub/gnome/sources/"/>
+  <repository type="tarball" name="ftp.gnu.org"
+	      href="https://ftp.gnu.org/gnu/"/>
+  <repository type="git" name="git.freedesktop.org"
+              href="git://anongit.freedesktop.org/"/>
+  <repository type="tarball" name="dbus.freedesktop.org"
+	      href="http://dbus.freedesktop.org/releases/"/>
+  <repository type="tarball" name="sourceforge"
+              href="http://downloads.sourceforge.net/sourceforge/"/>
+  <repository type="tarball" name="sqlite" href="http://www.sqlite.org/"/>
+  <repository type="git" name="savannah" href="git://git.sv.gnu/org/"/>
+  <repository type="tarball" name="boehm"
+	      href="http://www.hboem.info/"/>
+  <repository type="svn" name="abisource/enchant"
+              href="http://svn.abisource.com/"/>
+
+  <metamodule id="meta-gtk-osx-random">
+    <dependencies>
+      <dep package="poppler"/>
+      <dep package="gimp"/>
+      <dep package="devhelp"/>
+      <dep package="shared-mime-info"/>
+      <dep package="gossip"/>
+      <dep package="vala"/>
+      <dep package="glade3"/>
+    </dependencies>
+  </metamodule>
+
+<!-- Libglade's functions have been rolled into Gtk+, and Libglade is
+     deprecated. This is the last release. -->
+  <autotools id="libglade">
+    <branch tag="LIBGLADE_2_6_4"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+<!-- Vala-bootstrap is the current stable vala precompiled to C. -->
+  <!--<autotools id="vala" autogen-sh="configure">
+    <branch module="vala-bootstrap"/>
+  </autotools>-->
+  <!-- vala-bootstrap is stuck at 0.16, so use a tarball for the time being.-->
+  <autotools id="vala" autogen-sh="configure">
+    <branch repo="ftp.gnome.org" version="0.36.0"
+            module="vala/0.36/vala-0.36.0.tar.xz"
+            hash="sha256:13f4a3f99d983bf76e8d9dd736021ecc95f53ec1f9582423aa4b4be87455aa07"/>
+  </autotools>
+
+  <!-- unique is obsolete, retained only for the gtk2 version of devhelp.-->
+  <autotools id="unique">
+    <branch />
+  </autotools>
+
+  <autotools id="devhelp">
+    <branch revision="gnome-2-32"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+    <dependencies>
+      <dep package="WebKit"/>
+      <dep package="unique"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="devhelp-gtk3">
+    <branch module="devhelp" revision="gnome-3-24"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </after>
+    <dependencies>
+      <dep package="webkit2gtk3"/>
+      <dep package="gsettings-desktop-schemas"/>
+      <!-- Without shared-mime-info, HTML documents display as plain text -->
+      <dep package="shared-mime-info"/>
+    </dependencies>
+  </autotools>
+
+  <!-- Glade 3.8 is the last stable series for Gtk+-2 -->
+  <autotools id="glade3" autogenargs="--disable-scrollkeeper">
+    <branch revision="glade-3-8" module="glade"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+  <autotools id="glade" autogenargs="--disable-scrollkeeper">
+    <branch revision="glade-3-22"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-themes"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+  <autotools id="gtksourceview">
+    <branch revision="gnome-2-30"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+  <autotools id="gtksourceview-gtk3">
+    <branch revision="gnome-3-24" module="gtksourceview"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </after>
+  </autotools>
+
+
+  <!-- These folks don't make their repository available.-->
+  <autotools id="lcms" autogen-sh="configure">
+    <branch module="lcms/lcms2-2.9.tar.gz" version="2.9" repo="sourceforge"/>
+  </autotools>
+
+  <autotools id="shared-mime-info"
+             autogenargs="--disable-default-make-check  ac_cv_func_fdatasync=no"
+             supports-non-srcdir-builds="no" >
+    <branch module="xdg/shared-mime-info" tag="Release-1-7"
+            repo="git.freedesktop.org"/>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gsettings-desktop-schemas" autogenargs="--enable-introspection=yes">
+    <branch revision="gnome-3-22"/>
+    <dependencies>
+      <dep package="gobject-introspection"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gimp"
+             autogenargs="--disable-python --disable-print --without-x
+                          --without-dbus --without-gnomevfs4echo  --without-wmf"
+             makeargs='LDFLAGS="-framework Carbon"'>
+    <branch revision="gimp-2-8"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+    <dependencies>
+      <dep package="lcms"/>
+      <dep package="fontconfig"/>
+      <dep package="gegl"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="json-glib">
+    <branch revision="json-glib-1-2"/>
+  </autotools>
+
+   <autotools id="babl">
+     <branch tag="BABL_0_1_24"/>
+  </autotools>
+
+  <autotools id="gegl">
+    <branch tag="GEGL_0_3_14"/>
+    <dependencies>
+      <dep package="babl"/>
+      <dep package="json-glib"/>
+    </dependencies>
+  </autotools>
+
+  <!-- Poppler is releasing from master -->
+  <autotools id="poppler"
+           autogenargs="--disable-qt --disable-qt4 --without-x --disable-gtk-test --enable-xpdf-headers">
+    <branch repo="git.freedesktop.org" module="poppler/poppler" />
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+<!-- SQLite3 is provided by MacOSX in /usr/lib/libsqlite.3.dylib -->
+  <autotools id="sqlite" autogenargs="--disable-tcl --enable-threadsafe" >
+    <!-- Another package with a non-standard repository structure. Tarballs
+    are easier.-->
+    <branch module="2017/sqlite-autoconf-3180000.tar.gz" version='3.18.0'
+	    repo="sqlite"/>
+  </autotools>
+
+<!-- Goocanvas 1.0 is for Gtk+-2, and has a branch. -->
+  <autotools id="goocanvas">
+    <branch revision="goocanvas-1.0"/>
+    <dependencies>
+      <dep package="meta-gtk-osx-core"/>
+    </dependencies>
+  </autotools>
+
+<!-- Goocanvas2 is for Gtk+-3, and uses the master branch. -->
+  <autotools id="goocanvas2">
+    <!-- No tags, so this is release 2.0.1 -->
+    <branch revision="goocanvas-2.0" module="goocanvas"/>
+    <dependencies>
+      <dep package="meta-gtk-osx-core-gtk3"/>
+    </dependencies>
+  </autotools>
+
+<!-- Libart_lgpl is deprecated. -->
+  <autotools id="libart_lgpl">
+    <branch/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-core"/>
+    </after>
+  </autotools>
+
+  <autotools id="hunspell" >
+    <branch module="hunspell" tag="v1.6.1" repo="github"/>
+  </autotools>
+
+  <autotools id="enchant">
+    <branch repo="abisource/enchant" module="enchant" tag="enchant-1-6-0"/>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <!-- GtkSpell has switched to Mercurial for VCS, so we'll use the
+       tarballs to avoid the dependency. -->
+
+  <autotools id="gtkspell" autogen-sh="configure">
+    <branch module="gtkspell/gtkspell-2.0.16.tar.gz" repo="sourceforge"
+	    version="2.0.16"/>
+    <dependencies>
+      <dep package="enchant"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gtkspell3" autogen-sh="configure">
+    <branch module="gtkspell/gtkspell3-3.0.9.tar.xz" repo="sourceforge"
+            version="3.0.9">
+      <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/0001-Enable-use-of-XDG_DATA_DIRS-for-locating-iso-code-fi.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="enchant"/>
+      <dep package="iso-codes"/>
+    </dependencies>
+  </autotools>
+
+<!-- LibGSF develops in master -->
+  <autotools id="libgsf" autogenargs="--without-python">
+    <branch tag="LIBGSF_1_14_41"/>
+  </autotools>
+
+  <!-- gmp uses Mercurial, so we stick with the tarball to avoid
+       having to install yet another vcs tool. -->
+  <autotools id="gmp">
+    <branch repo="ftp.gnu.org" module="gmp/gmp-6.1.2.tar.bz2" version="6.1.2">
+    </branch>
+  </autotools>
+
+  <autotools id="libunistring" autogen-sh="configure">
+    <branch repo="savannah" module="libunistring.git" tag="v0.9.7"/>
+  </autotools>
+
+  <autotools id="libatomic-ops"
+             autogen-template="%(autogen-sh)s &amp;&amp; ./configure --prefix=%(prefix)s> %(autogen-args)s">
+    <branch repo="github" module="ivmai/libatomic_ops"
+	    revision="libatomic_ops-7_4_4"/>
+  </autotools>
+
+  <autotools id="bdw-gc" autogen-template="pushd %(srcdir)s &amp;&amp; ./autogen.sh &amp;&amp; automake -ac &amp;&amp; popd &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s  %(autogenargs)s">
+    <branch repo="github" module="ivmai/bdwgc" revision="release-7_6_0"/>
+  </autotools>
+
+  <autotools id="guile" autogenargs="--disable-error-on-warning">
+    <branch repo="savannah" module="guile.git" tag="release_1_8_8"/>
+    <dependencies>
+      <dep package="gmp"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="guile2" autogen-sh="configure">
+    <branch repo="savannah" module="guile.git" revision="stable-2.0"/>
+    <dependencies>
+      <dep package="libunistring"/>
+      <dep package="gmp"/>
+      <dep package="libffi"/>
+      <dep package="bdw-gc"/>
+    </dependencies>
+  </autotools>
+
+</moduleset>
