@@ -10,3 +10,17 @@
      	*)
      		AC_MSG_ERROR([Unexpected output of 'arch' on OSX])
      		;;
+
+
+--- a/configure	2021-02-15 18:30:33.000000000 -0700
++++ b/configure	2021-03-19 02:28:45.000000000 -0600
+@@ -9230,6 +9230,9 @@
+     	ppc)
+     		MACOSX_DEFAULT_ARCH="ppc64"
+     		;;
++        arm64) 
++                MACOSX_DEFAULT_ARCH="arm64" 
++                ;;
+     	*)
+     		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
+     		;;
