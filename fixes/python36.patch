@@ -1,6 +1,6 @@
 diff -Naurp Python-3.6.13.orig/configure Python-3.6.13/configure
---- configure	2021-03-19 03:16:07.000000000 -0600
-+++ configure	2021-03-19 03:16:59.000000000 -0600
+--- a/configure	2021-03-19 03:16:07.000000000 -0600
++++ b/configure	2021-03-19 03:16:59.000000000 -0600
 @@ -9230,6 +9230,9 @@ fi
      	ppc)
      		MACOSX_DEFAULT_ARCH="ppc64"
