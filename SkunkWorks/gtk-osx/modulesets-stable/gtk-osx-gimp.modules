@@ -97,7 +97,6 @@
     </after>
     <dependencies>
       <dep package="gimp-common-deps"/>
-      <dep package="python"/>
       <dep package="meta-gtk-osx-python"/>
     </dependencies>
   </autotools>
