@@ -119,10 +119,23 @@ $HOME/.new_local/bin/jhbuild bootstrap-gtk-osx-gimp\
 #\
 # Install bundler app\
 #\
+jhbuild build python python3\
+rm  $HOME/.local/bin/*\
+cd $HOME/.local/bin/\
+ln -s $HOME/gtk/inst/bin/python3.8 python3\
+ln -s $HOME/gtk/inst/bin/python3.8-config python3-config\
+ln -s $HOME/gtk/inst/bin/python2.7 python2\
+ln -s $HOME/gtk/inst/bin/python2.7-config python2-config\
+ln -s python3 python\
+\
+python3 -m pip install --upgrade pip wheel pipenv\
+\
 cd ~/Source\
 git clone https://github.com/samm-git/gtk-mac-bundler -b fix-otool\
 cd gtk-mac-bundler\
 make install\
+\
+\
 \
 #\
 # Install base/bootstrap modules - this includes gtk+\

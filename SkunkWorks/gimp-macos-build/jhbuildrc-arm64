@@ -155,18 +155,18 @@ environ_prepend('OBJCFLAGS', "-O3")
 # os.environ["CC"] = "/usr/bin/gcc-4.0"
 
 # use our modulset
-moduleset = 'https://raw.githubusercontent.com/evultrole/aarch64-apple-gimp/main/SkunkWorks/gtk-osx/modulesets-stable/gtk-osx.modules'
+moduleset = '/Users/steven/SkunkWorks/gtk-osx/modulesets-stable/gtk-osx.modules'
 
 # force python 3.6 for the libxml2 to avoid build issues
-module_extra_env['libxml2'] = { "ac_cv_path_PYTHON": "python3" }
+module_extra_env['libxml2'] = { "ac_cv_path_PYTHON": "/Users/steven/.local/bin/python3" }
+module_extra_env['itstool'] = { "PYTHON": "/Users/steven/.local/bin/python2" }
 
 # meson needs UTF-8 charset for build python scripts to work correctly
 module_extra_env['meson'] = { "LC_ALL": "en_US.UTF-8" }
 
 # DJM - gtk-doc needs PYTHON to be python3, and then creates gtkdoc-rebase with a shebang of $PYTHON, so we need to be
 # absolute here, otherwise anything calling gtkdoc-rebase (i.e. the later gtk+ install) will err with  "bad interpreter"
-module_extra_env['gtk-doc'] = { 'PYTHON': '/usr/bin/python3' }
-module_extra_env['gimp'] = { 'PYTHON': '/usr/bin/python3' }
+module_extra_env['gtk-doc'] = { 'PYTHON': '/Users/steven/.local/bin/python3' }
 
 # DJM - c files built from defs are not including all necessary headers - ignore that
 module_extra_env['pygtk'] = { 'CFLAGS' : '-Wno-error=implicit-function-declaration' }
@@ -190,7 +190,7 @@ class _cmd_bootstrap_gtk_osx_gimp(jhbuild.commands.base.cmd_build):
                                           moduleset + '.modules'))):
             config.moduleset = moduleset
         else:
-            config.moduleset = 'https://raw.githubusercontent.com/evultrole/aarch64-apple-gimp/main/SkunkWorks/gtk-osx/modulesets-stable/bootstrap.modules'
+            config.moduleset = '/Users/steven/SkunkWorks/gtk-osx/modulesets-stable/bootstrap.modules'
 
         args = ['meta-bootstrap']
 
@@ -202,5 +202,3 @@ class _cmd_bootstrap_gtk_osx_gimp(jhbuild.commands.base.cmd_build):
         return rc
 
 jhbuild.commands.register_command(_cmd_bootstrap_gtk_osx_gimp)
-#use_local_modulesets = True
-#modulesets_dir = '~/.cache/jhbuild/'
