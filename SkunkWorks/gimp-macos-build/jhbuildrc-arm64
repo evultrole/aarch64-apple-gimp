@@ -166,6 +166,7 @@ module_extra_env['meson'] = { "LC_ALL": "en_US.UTF-8" }
 # DJM - gtk-doc needs PYTHON to be python3, and then creates gtkdoc-rebase with a shebang of $PYTHON, so we need to be
 # absolute here, otherwise anything calling gtkdoc-rebase (i.e. the later gtk+ install) will err with  "bad interpreter"
 module_extra_env['gtk-doc'] = { 'PYTHON': '/usr/bin/python3' }
+module_extra_env['gimp'] = { 'PYTHON': '/usr/bin/python3' }
 
 # DJM - c files built from defs are not including all necessary headers - ignore that
 module_extra_env['pygtk'] = { 'CFLAGS' : '-Wno-error=implicit-function-declaration' }
