@@ -121,8 +121,8 @@
   </meson>
 
   <meson id="fribidi" mesonargs="-Ddocs=false">
-    <branch module="fribidi/fribidi/releases/download/v1.0.9/fribidi-1.0.9.tar.xz"
-            repo="github-tarball" version="1.0.9"/>
+    <branch module="fribidi/fribidi/releases/download/v1.0.10/fribidi-1.0.10.tar.xz"
+            repo="github-tarball" version="1.0.10"/>
     <dependencies>
       <!--dep package="c2man"/ -->
     </dependencies>
@@ -130,9 +130,9 @@
 
   <meson id="pango">
     <branch version="1.44.7" module="pango/1.44/pango-1.44.7.tar.xz"
-            hash="sha256:66a5b6cc13db73efed67b8e933584509f8ddb7b10a8a40c3850ca4a985ea1b1f">
+            >
+  <patch file="https://gitlab.gnome.org/samm-git/gtk-osx/raw/gimp/patches/DJM_pango_fallthrough.patch" strip="1"/>
       <!-- MacOS clang doesn't like fallthrough comments - use __attribute__ method instead -->
-      <patch file="https://gitlab.gnome.org/samm-git/gtk-osx/raw/gimp/patches/DJM_pango_fallthrough.patch" strip="1"/>
     </branch>
     <dependencies>
       <dep package="glib"/>
@@ -160,8 +160,8 @@
   </meson>
 
   <meson id="gdk-pixbuf" mesonargs="-Dx11=false -Dman=false">
-    <branch module="gdk-pixbuf/2.40/gdk-pixbuf-2.40.0.tar.xz" version="2.40.0"
-            hash="sha256:1582595099537ca8ff3b99c6804350b4c058bb8ad67411bbaae024ee7cead4e6">
+    <branch module="gdk-pixbuf/2.42/gdk-pixbuf-2.42.0.tar.xz" version="2.42.0"
+>
       <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/gdk-pixbuf-loader-name.patch" strip="1"/>
     </branch>
     <after>
@@ -215,9 +215,8 @@
   </autotools>
 
   <meson id="libepoxy">
-    <branch repo="github-tarball" version="1.5.4"
-            hash="sha256:0bd2cc681dfeffdef739cb29913f8c3caa47a88a451fd2bc6e606c02997289d2"
-            module="anholt/libepoxy/releases/download/1.5.4/libepoxy-1.5.4.tar.xz"/>
+    <branch repo="github-tarball" version="1.5.5"
+            module="anholt/libepoxy/releases/download/1.5.5/libepoxy-1.5.5.tar.xz"/>
     <dependencies>
       <dep package="xorg-util-macros"/>
     </dependencies>
@@ -249,8 +248,8 @@
 
   <autotools id="gtk+-3.0" autogen-sh="autogen.sh"
              autogenargs="--enable-quartz-backend --enable-quartz-relocation">
-    <branch module="gtk+/3.24/gtk+-3.24.20.tar.xz" version="3.24.20"
-            hash="sha256:2dac69f716e8d04ba7a95091589e2baaec95dcace932cb15839163db479b1df3">
+    <branch module="gtk+/3.24/gtk+-3.24.24.tar.xz" version="3.24.24"
+>
     </branch>
     <dependencies>
       <dep package="glib"/>
@@ -325,8 +324,8 @@
        substantial infrastructure that's resistant to installing with
        jhbuild, so we'll freeze at the 2.40 branch. -->
   <autotools id="librsvg" autogenargs="--disable-Bsymbolic">
-    <branch module="librsvg/2.40/librsvg-2.40.17.tar.xz" version="2.40.17"
-	    hash="sha256:e6f6c5cbecc405bb945c7cd15061276035ae3173bbb3bb25e8a916779c7f69cc"/>
+    <branch module="librsvg/2.40/librsvg-2.40.21.tar.xz" version="2.40.21"
+/>
     <dependencies>
       <dep package="libcroco"/>
       <dep package="meta-gtk-osx-freetype"/>

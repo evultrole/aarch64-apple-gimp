@@ -124,14 +124,14 @@ fi
 echo "Building DMG"
 if [ -z "${CIRCLECI}" ]
 then
-  DMGNAME="gimp-${GIMP_VERSION}-x86_64.dmg"
+  DMGNAME="gimp-${GIMP_VERSION}-arm64.dmg"
 else
-  DMGNAME="gimp-${GIMP_VERSION}-x86_64-b${CIRCLE_BUILD_NUM}-${CIRCLE_BRANCH////-}.dmg"
+  DMGNAME="gimp-${GIMP_VERSION}-arm64-b${CIRCLE_BUILD_NUM}-${CIRCLE_BRANCH////-}.dmg"
 fi
 
 mkdir -p /tmp/artifacts/
 rm -f /tmp/tmp.dmg
-rm -f "gimp-${GIMP_VERSION}-x86_64.dmg"
+rm -f "gimp-${GIMP_VERSION}-arm64.dmg"
 
 cd create-dmg
 

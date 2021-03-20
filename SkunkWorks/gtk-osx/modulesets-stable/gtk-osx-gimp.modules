@@ -6,6 +6,7 @@
   <repository type="tarball" name="gimp" href="https://download.gimp.org/pub/"/>
   <repository type="git" name="git.gnome.org" href="https://gitlab.gnome.org/GNOME"/>
   <repository type="git" name="git-jtojnar" href="https://gitlab.gnome.org/jtojnar/"/>
+  <repository type="git" name="git.gitlab.com" href="https://gitlab.com/"/>
   <repository type="tarball" name="ftp.gimp.org" href="https://ftp.gimp.org/pub/"/>
   <repository type="tarball" name="poppler.freedesktop.org" href="https://poppler.freedesktop.org/"/>
   <repository type="tarball" name="videolan" href="https://downloads.videolan.org/pub/videolan/x265/"/>
@@ -30,9 +31,9 @@
   <!-- librsvg build requires rust compiler to be installed, see https://rustup.rs -->
   <autotools id="librsvg-24" autogenargs="--disable-Bsymbolic">
     <branch repo="ftp.gnome.org"
-      module="librsvg/2.46/librsvg-2.46.3.tar.xz"
-      version="2.46.3"
-      hash="sha256:768e46467d874161a277bd696551f4f364b3c8d51eeedeb9b4fe1277a2496ae8"/>
+      module="librsvg/2.46/librsvg-2.46.4.tar.xz"
+      version="2.46.4"
+/>
     <dependencies>
       <dep package="libcroco"/>
       <dep package="meta-gtk-osx-freetype"/>
@@ -107,26 +108,41 @@
     </branch>
   </autotools>
 
+  <autotools id="graphviz" supports-non-srcdir-builds="no" autogen-sh="autoreconf">
+   <branch repo="git.gitlab.com" module="graphviz/graphviz.git" checkoutdir="graphviz"/>
+    <dependencies>
+      <dep package="libgd"/>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libgd" supports-non-srcdir-builds="no" autogen-sh="autoreconf">
+<branch repo="github-tarball" module="libgd/libgd/releases/download/gd-2.3.2/libgd-2.3.2.tar.xz" version="2.3.3"/>
+
+</autotools>
+
   <meson id="gegl" mesonargs="-Dvapigen=disabled">
     <branch repo="ftp.gimp.org"
-      version="0.4.26"
-      hash="sha256:0f371e2ed2b92162fefd3dde743e648ca08a6a1b2b05004867fbddc7e211e424"
-      module="gegl/0.4/gegl-0.4.26.tar.xz">
+      version="0.4.28"
+      module="gegl/0.4/gegl-0.4.28.tar.xz">
     </branch>
     <after>
-      <dep package="libnsgif"/>
       <dep package="suitesparse"/>
       <dep package="openexr"/>
       <dep package="libwebp"/>
       <dep package="librsvg-24"/>
     </after>
     <dependencies>
+      <dep package="graphviz"/>
+      <dep package="libnsgif"/>
       <dep package="babl"/>
       <dep package="json-glib"/>
       <dep package="p2tc"/>
       <dep package="gexiv2"/>
     </dependencies>
   </meson>
+
+
 
   <autotools id="suitesparse"
     supports-non-srcdir-builds="no"
@@ -151,9 +167,9 @@
 
   <meson id="babl" mesonargs="-Denable-vapi=false">
     <branch repo="ftp.gimp.org"
-      version="0.1.78"
-      module="babl/0.1/babl-0.1.78.tar.xz"
-      hash="sha256:17d5493633bff5585d9f375bc4df5925157cd1c70ccd7c22a635be75c172523a">
+      version="0.1.86"
+      module="babl/0.1/babl-0.1.86.tar.xz"
+>
     </branch>
     <dependencies>
       <dep package="lcms"/>
@@ -184,9 +200,8 @@
   </cmake>
 
   <autotools id="nasm" autogen-sh="configure">
-    <branch module="2.14.02/nasm-2.14.02.tar.xz"
-      version="2.14.02"
-      hash="sha256:e24ade3e928f7253aa8c14aa44726d1edf3f98643f87c9d72ec1df44b26be8f5"
+    <branch module="2.15.05/nasm-2.15.05.tar.xz"
+      version="2.15.05"
       repo="nasm"/>
   </autotools>
 
@@ -204,21 +219,18 @@
   </cmake>
 
   <autotools id="libde265" autogen-sh="configure" autogenargs="--disable-sherlock265" supports-non-srcdir-builds="no">
-    <branch module="strukturag/libde265/releases/download/v1.0.4/libde265-1.0.4.tar.gz"
-      version="1.0.4"
-      hash="sha256:c3f033bd59777624859c8d04a5b7ce4210adbce4a500943d2e211c4d517d0116"
+    <branch module="strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz"
+      version="1.0.8"
       repo="github-tarball"/>
   </autotools>
 
   <autotools id="libheif"
     supports-non-srcdir-builds="no"
     autogen-template="%(srcdir)s/%(autogen-sh)s --prefix %(prefix)s %(autogenargs)s &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s  %(autogenargs)s">
-    <branch module="strukturag/libheif/releases/download/v1.6.1/libheif-1.6.1.tar.gz"
-      version="1.6.1"
-      hash="sha256:a22611289464da08fa7e580c95ea5e1b1b522b96ee6807de9b3b4605efb621d1"
+    <branch module="strukturag/libheif/releases/download/v1.11.0/libheif-1.11.0.tar.gz"
+      version="1.11.0"
       repo="github-tarball">
       <!-- Fix for the gdk pixbuf loader -->
-      <patch file="https://patch-diff.githubusercontent.com/raw/strukturag/libheif/pull/194.patch" strip="1"/>
     </branch>
     <dependencies>
       <dep package="libde265"/>
@@ -242,10 +254,8 @@
   </autotools>
 
   <autotools id="libwmf" autogen-sh="configure" autogenargs="--with-freetype=$JHBUILD_PREFIX">
-    <branch module="wvware/libwmf/0.2.8.4/libwmf-0.2.8.4.tar.gz"
-      version="0.2.8.4"
-      hash="sha256:5b345c69220545d003ad52bfd035d5d6f4f075e65204114a9e875e84895a7cf8"
-      repo="sourceforge">
+    <branch module="/caolanm/libwmf/archive/refs/tags/v0.2.12.tar.gz"      version="0.2.12"
+      repo="github-tarball" checkoutdir="libwmf-0.2.12">
     </branch>
     <dependencies>
       <dep package="libpng"/>
@@ -255,24 +265,23 @@
     </after>
   </autotools>
 
-  <autotools id="openexr" autogen-sh="configure">
-    <branch module="openexr/openexr/releases/download/v2.3.0/openexr-2.3.0.tar.gz"
-      version="2.3.0"
-      hash="sha256:fd6cb3a87f8c1a233be17b94c74799e6241d50fc5efd4df75c7a4b9cf4e25ea6"
+  <cmake id="openexr">
+    <branch module="AcademySoftwareFoundation/openexr/archive/refs/tags/v2.5.5.tar.gz"
+      version="2.5.5"
+      checkoutdir="openexr-2.5.5"
       repo="github-tarball">
     </branch>
     <dependencies>
       <dep package="ilmbase"/>
     </dependencies>
-  </autotools>
+</cmake>
 
-  <autotools id="ilmbase" autogen-sh="configure">
-    <branch module="openexr/openexr/releases/download/v2.3.0/ilmbase-2.3.0.tar.gz"
-      version="2.3.0"
-      hash="sha256:456978d1a978a5f823c7c675f3f36b0ae14dba36638aeaa3c4b0e784f12a3862"
+  <cmake id="ilmbase">
+    <branch module="openexr/openexr/archive/v2.5.5.tar.gz"
+      version="2.5.5" checkoutdir="Ilmbase"
       repo="github-tarball">
     </branch>
-  </autotools>
+  </cmake>
 
   <cmake id="libmng"
     cmakeargs="-DMNG_INSTALL_LIB_DIR=$JHBUILD_PREFIX/lib -DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=true -DCMAKE_MACOSX_RPATH=true . -DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib"
