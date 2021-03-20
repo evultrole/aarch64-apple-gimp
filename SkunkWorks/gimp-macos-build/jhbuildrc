@@ -86,7 +86,7 @@ class _cmd_bootstrap_gtk_osx(jhbuild.commands.base.cmd_build):
                                           moduleset + '.modules'))):
             config.moduleset = moduleset
         else:
-            config.moduleset = 'https://raw.githubusercontent.com/evultrole/aarch64-apple-gimp/main/SkunkWorks/gtk-osx/modulesets-stable/bootstrap.modules'
+            config.moduleset = 'https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/modulesets-stable/bootstrap.modules'
 
         args = ['meta-bootstrap']
 
@@ -326,6 +326,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
         append_autogenargs("libnettle", "--host=aarch64-apple-darwin")
         append_autogenargs("libde265", "--host=aarch64-apple-darwin")
         append_autogenargs("ghostscript", "--host=aarch64-apple-darwin")
+        append_autogenargs("gnutls", "--host=aarch64-apple-darwin")
 
     # El Capitan needs bash to work around SIP. If you're using a
     # common bootstrap directory (e.g. $HOME/.local) then override
@@ -392,7 +393,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
 # Moduleset to use. You can override this in .jhbuildrc-custom or on
 # the command line.
 #
-moduleset = 'https://raw.githubusercontent.com/evultrole/aarch64-apple-gimp/main/SkunkWorks/gtk-osx/modulesets-stable/gtk-osx.modules'
+moduleset = 'http://gitlab.gnome.org/GNOME/gtk-osx/raw/master/modulesets-stable/gtk-osx.modules'
 use_local_modulesets = False
 modulesets_dir = ""
 
