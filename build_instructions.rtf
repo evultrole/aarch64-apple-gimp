@@ -112,7 +112,7 @@ cp $GIMP_MACOS_BUILD_DIR/jhbuildrc ~/.config/jhbuildrc\
 # Bootstrap the build environment and core tool modules\
 #\
 \
-python3 -m pip install --upgrade pip wheel pipenv\
+python3 -m pip install --upgrade pip wheel pipenv setuptools\
 source ~/.profile\
 $HOME/.new_local/bin/jhbuild bootstrap-gtk-osx-gimp\
 \
@@ -128,7 +128,7 @@ ln -s $HOME/gtk/inst/bin/python2.7 python2\
 ln -s $HOME/gtk/inst/bin/python2.7-config python2-config\
 ln -s python3 python\
 \
-python3 -m pip install --upgrade pip wheel pipenv\
+python3 -m pip install --upgrade pip wheel pipenv setuptools\
 \
 cd ~/Source\
 git clone https://github.com/samm-git/gtk-mac-bundler -b fix-otool\

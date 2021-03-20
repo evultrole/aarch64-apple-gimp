@@ -25,7 +25,7 @@
   <repository type="tarball" name="itstool" href="http://files.itstool.org/"/>
   <repository type="tarball" name="github-tarball" href="https://github.com/"/>
   <repository type="tarball" name="ragel"
-              href="http://www.colm.net/files/ragel/"/>
+              href="http://www.colm.net/files/"/>
 
   <autotools id='readline' autogen-sh="configure">
     <branch repo="ftp.gnu.org" module="readline/readline-8.0.tar.gz"
@@ -50,8 +50,7 @@
   </autotools>
 
   <autotools id="libtiff" autogen-sh="configure" autogenargs="--without-x">
-    <branch version="4.1.0" module="libtiff/tiff-4.1.0.tar.gz"
-	    hash="sha156:5d29f32517dadb6dbcd1255ea5bbc93a2b54b94fbf83653b4d65c7d6775b8634"
+    <branch version="4.2.0" module="libtiff/tiff-4.2.0.tar.gz"
 	    repo="libtiff">
 	<patch file="https://raw.githubusercontent.com/totaam/gtk-osx-build/master/patches/tiff-nohtml.patch" strip="1" />
     </branch>
@@ -68,8 +67,7 @@
 
   <autotools id="libxml2" autogen-sh="autoreconf"
              autogenargs='--libdir="$JHBUILD_LIBDIR" --with-python'>
-    <branch version="2.9.9" module="libxml2-2.9.9.tar.gz"
-            hash="sha256:94fb70890143e3c6549f265cee93ec064c80a84c42ad0f23e85ee1fd6540a871"
+    <branch version="2.9.10" module="libxml2-2.9.10.tar.gz"
 	    repo="xmlsoft.org"/>
     <after>
       <dep package="python"/>
@@ -77,9 +75,9 @@
     </after>
   </autotools>
 
+
   <autotools id="libxslt" autogen-sh="configure" autogenargs="--without-python">
     <branch version="1.1.34" module="libxslt-1.1.34.tar.gz"
-            hash="sha256:98b1bd46d6792925ad2dfe9a87452ea2adebf69dcb9919ffd55bf926a7f93f7f"
 	    repo="xmlsoft.org"/>
     <dependencies>
       <dep package="libxml2"/>
@@ -97,8 +95,8 @@
   </autotools>
 
   <autotools id="yelp-xsl">
-    <branch version="3.36.0" module="yelp-xsl/3.36/yelp-xsl-3.36.0.tar.xz"
-            hash="sha256:4fe51c0233b79a4c204c68498d45f09b342c30ed02c4e418506c0e35f0904ec3"/>
+    <branch version="3.38.3" module="yelp-xsl/3.38/yelp-xsl-3.38.3.tar.xz"
+            />
     <dependencies>
       <dep package="libxml2"/>
       <dep package="libxslt"/>
@@ -107,8 +105,8 @@
   </autotools>
 
   <autotools id="yelp-tools">
-    <branch version="3.32.2" module="yelp-tools/3.32/yelp-tools-3.32.2.tar.xz"
-            hash="sha256:183856b5ed0b0bb2c05dd1204af023946ed436943e35e789afb0295e5e71e8f9"/>
+    <branch version="3.38.0" module="yelp-tools/3.38/yelp-tools-3.38.0.tar.xz"
+/>
     <dependencies>
       <dep package="libxml2"/>
       <dep package="libxslt"/>
@@ -117,9 +115,9 @@
     </dependencies>
   </autotools>
 
-  <autotools id="gtk-doc" autogen-sh="configure">
-    <branch version="1.32" module="gtk-doc/1.32/gtk-doc-1.32.tar.xz"
-            hash="sha256:de0ef034fb17cb21ab0c635ec730d19746bce52984a6706e7bbec6fb5e0b907c"/>
+  <autotools id="gtk-doc" autogen-sh="autoreconf">
+    <branch version="1.33.2" module="gtk-doc/1.33/gtk-doc-1.33.2.tar.xz"
+/>
     <dependencies>
       <dep package="libxml2"/>
       <dep package="libxslt"/>
@@ -137,17 +135,18 @@
             hash="sha256:52a3f2209ab95559c1cf0a14f24338001f389615bf00e2585ef3dbc43ecf0a2e"/>
   </autotools>
 
-
   <autotools id="ragel" autogen-sh='autoreconf'>
-    <branch repo="ragel" module="ragel-6.10.tar.gz" version="6.10">
+    <branch repo="ragel" module="ragel/ragel-6.10.tar.gz" version="6.10">
       <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/ragel-6.9-setiosflags.patch" strip="1"/>
     </branch>
+    <dependencies>
+    </dependencies>
   </autotools>
 
   <autotools id="harfbuzz" autogen-sh="configure"
              autogenargs="--with-coretext --with-icu">
-    <branch repo="harfbuzz" module="harfbuzz-2.6.4.tar.xz" version="2.6.4"
-            hash="sha256:9413b8d96132d699687ef914ebb8c50440efc87b3f775d25856d7ec347c03c12">
+    <branch repo="github-tarball" module="harfbuzz/harfbuzz/releases/download/2.8.0/harfbuzz-2.8.0.tar.xz" version="2.8.0"
+>
     </branch>
     <dependencies>
       <dep package="ragel"/>
@@ -162,7 +161,7 @@
   <autotools id="freetype" autogen-sh="configure"
              skip-autogen="never"
              autogenargs="--without-bzip2 --without-harfbuzz">
-    <branch module="freetype/freetype-2.10.2.tar.gz" version="2.10.2"
+    <branch module="freetype/freetype-2.10.4.tar.gz" version="2.10.4"
             repo="sourceforge">
     </branch>
     <dependencies>
@@ -173,7 +172,7 @@
   <autotools id="fontconfig" autogen-sh="autoreconf"
              autogenargs="ac_cv_func_mkostemp=no --disable-docs '--with-add-fonts=/System/Library/Fonts,/Library/Fonts,~/Library/Fonts'">
     <!-- The ac_cv_func_mkostemp flag above is to deal with a known break in backward-compat when using the 10.12 SDK versus a deployment target < 10.12 -->
-    <branch repo="fontconfig" version="2.13.1" module="fontconfig-2.13.1.tar.bz2">
+    <branch repo="fontconfig" version="2.13.93" module="fontconfig-2.13.93.tar.xz">
     </branch>
     <dependencies>
       <dep package="freetype"/>

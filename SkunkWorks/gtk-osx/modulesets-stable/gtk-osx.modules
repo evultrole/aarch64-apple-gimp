@@ -88,8 +88,8 @@
   </metamodule>
 
   <meson id="glib" mesonargs="-Dinternal_pcre=true -Dlibmount=disabled">
-    <branch module="glib/2.64/glib-2.64.2.tar.xz"  version="2.64.2"
-            hash="sha256:9a2f21ed8f13b9303399de13a0252b7cbcede593d26971378ec6cb90e87f2277">
+    <branch module="glib/2.64/glib-2.64.6.tar.xz"  version="2.64.6"
+>
     </branch>
     <dependencies>
         <dep package="libffi"/>

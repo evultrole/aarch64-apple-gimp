@@ -21,9 +21,8 @@
   <repository type="tarball" name="github" href="https://github.com/"/>
 
   <autotools id='readline' autogen-sh="configure">
-    <branch repo="ftp.gnu.org" module="readline/readline-8.0.tar.gz"
-            hash="sha256:e339f51971478d369f8a053a330a190781acb9864cf4c541060f12078948e461"
-            version="8.0">
+    <branch repo="ftp.gnu.org" module="readline/readline-8.1.tar.gz"
+            version="8.1">
     </branch>
   </autotools>
 
@@ -36,20 +35,20 @@
   <autotools id="gnumake" autogen-sh="configure"
              autogenargs="--disable-dependency-tracking">
     <branch repo="ftp.gnu.org"
-            module="make/make-4.2.1.tar.bz2" version="4.2.1" hash="sha256:d6e262bf3601b42d2b1e4ef8310029e1dcf20083c5446b4b7aa67081fdffc589">
+            module="make/make-4.3.tar.gz" version="4.3.0">
     </branch>
   </autotools>
   <autotools id="gettext" autogen-sh="configure"
              autogenargs="--without-emacs --disable-java --disable-native-java --disable-libasprintf --disable-csharp --with-included-glib --with-included-libcroco">
     <branch repo="ftp.gnu.org"
-            module="gettext/gettext-0.20.2.tar.xz" version="0.20.2">
+            module="gettext/gettext-0.21.tar.xz" version="0.21.0">
     </branch>
   </autotools>
 
   <!-- cmakes ./configure is picky about invalid flags so we manually set it -->
   <autotools id="cmake" autogen-sh="bootstrap"
              autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s">
-    <branch repo="cmake" module="v3.17/cmake-3.17.2.tar.gz" version="3.17.2">
+    <branch repo="cmake" module="v3.19/cmake-3.19.7.tar.gz" version="3.19.7">
     </branch>
   </autotools>
 
@@ -76,8 +75,8 @@
 
 
   <autotools id="automake" autogen-sh="configure" bootstrap="true">
-    <branch repo="ftp.gnu.org" version="1.16"
-            module="automake/automake-1.16.2.tar.xz"/>
+    <branch repo="ftp.gnu.org" version="1.16.3"
+            module="automake/automake-1.16.3.tar.xz"/>
     <dependencies>
       <dep package="autoconf"/>
     </dependencies>
@@ -92,8 +91,8 @@
   <!-- MacOS provides 2.3 (presumably the last GPL2 version, gstreamer
        requires 2.4. -->
   <autotools id="bison" autogen-sh="configure">
-    <branch repo="ftp.gnu.org" module="bison/bison-3.6.tar.xz"
-            version="3.6">
+    <branch repo="ftp.gnu.org" module="bison/bison-3.7.6.tar.xz"
+            version="3.7.6">
     </branch>
     <dependencies>
       <dep package='flex'/>
@@ -107,7 +106,7 @@
   </autotools>
   
   <autotools id="expat" autogen-sh="configure">
-    <branch module="expat/expat-2.2.9.tar.bz2" version="2.2.9"
+    <branch module="expat/expat-2.2.10.tar.bz2" version="2.2.10"
             repo="sourceforge"/>
   </autotools>
 

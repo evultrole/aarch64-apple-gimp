@@ -163,10 +163,10 @@
 
   <cmake id="poppler"
     cmakeargs="-DENABLE_QT5:BOOL=OFF -DWITH_NSS3:BOOL=OFF -DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib">
-    <branch module="poppler-0.82.0.tar.xz"
-      version="0.82.0"
+    <branch module="poppler-21.03.0.tar.xz"
+      version="21.03.0"
       repo="poppler.freedesktop.org"
-      hash="sha256:234f8e573ea57fb6a008e7c1e56bfae1af5d1adf0e65f47555e1ae103874e4df"/>
+/>
     <after>
       <dep package="meta-gtk-osx-bootstrap"/>
       <dep package="meta-gtk-osx-core"/>
@@ -177,7 +177,7 @@
   </cmake>
 
   <cmake id="poppler-data">
-    <branch module="poppler-data-0.4.9.tar.gz" version="0.4.9" repo="poppler.freedesktop.org"/>
+    <branch module="poppler-data-0.4.10.tar.gz" version="0.4.10" repo="poppler.freedesktop.org"/>
     <after>
       <dep package="poppler"/>
     </after>
