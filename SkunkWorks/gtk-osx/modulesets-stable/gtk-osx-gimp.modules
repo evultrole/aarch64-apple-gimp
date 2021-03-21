@@ -123,8 +123,8 @@
 
   <meson id="gegl" mesonargs="-Dvapigen=disabled">
     <branch repo="ftp.gimp.org"
-      version="0.4.28"
-      module="gegl/0.4/gegl-0.4.28.tar.xz">
+      version="0.4.26"
+      module="gegl/0.4/gegl-0.4.26.tar.xz">
     </branch>
     <after>
       <dep package="suitesparse"/>
@@ -133,7 +133,6 @@
       <dep package="librsvg-24"/>
     </after>
     <dependencies>
-      <dep package="graphviz"/>
       <dep package="libnsgif"/>
       <dep package="babl"/>
       <dep package="json-glib"/>
