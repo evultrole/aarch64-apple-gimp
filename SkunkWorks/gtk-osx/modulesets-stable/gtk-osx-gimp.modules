@@ -9,6 +9,7 @@
   <repository type="git" name="git.gitlab.com" href="https://gitlab.com/"/>
   <repository type="tarball" name="ftp.gimp.org" href="https://ftp.gimp.org/pub/"/>
   <repository type="tarball" name="poppler.freedesktop.org" href="https://poppler.freedesktop.org/"/>
+  <repository type="tarball" name="freedesktop.org" href="https://www.freedesktop.org/"/>
   <repository type="tarball" name="videolan" href="https://downloads.videolan.org/pub/videolan/x265/"/>
   <repository type="tarball" name="github-tarball" href="https://github.com/"/>
   <repository type="tarball" name="sourceforge" href="http://downloads.sourceforge.net/sourceforge/"/>
@@ -21,11 +22,28 @@
   </branch>
   </autotools>
 
-  <autotools id="gimp-help-git" autogenargs="--without-gimp" supports-non-srcdir-builds="no" autogen-sh="autogen.sh">
-    <branch module="gimp-help" revision="master" repo="git.gnome.org"/>
+  <meson id="gvfs" autogen-sh="autoreconf">
+  <branch module="gvfs/1.44/gvfs-1.44.1.tar.xz" version="1.44.1" repo="ftp.gnome.org">
+  </branch>
+    <dependencies>
+      <dep package="gtk+-3"/>
+      <dep package="libgcrypt"/>
+      <dep package="libsoup"/>
+      <dep package="libarchive"/>
+      <dep package="libxml2"/>
+      <dep package="gettext"/>
+    </dependencies>
+  </meson>
+
+  <autotools id="gimp-help" autogenargs="--without-gimp" supports-non-srcdir-builds="no" autogen-sh="autogen.sh">
+    <branch module="gimp/help/gimp-help-2.10.0.tar.bz2" repo="ftp.gimp.org" version="2.10.0"/>
     <dependencies>
       <dep package="pngcrush"/>
     </dependencies>
+  </autotools>
+
+  <autotools id="desktop-file-utils" autogen-sh="autoreconf">
+    <branch module="software/desktop-file-utils/releases/desktop-file-utils-0.26.tar.xz" repo="freedesktop.org" version="0.26"/>
   </autotools>
 
   <!-- librsvg build requires rust compiler to be installed, see https://rustup.rs -->
@@ -294,10 +312,10 @@
 
   <!-- open-source library to encode and decode JPEG 2000 -->
   <cmake id="openjpeg">
-    <branch module="uclouvain/openjpeg/archive/v2.3.1.tar.gz"
-    version="2.3.1"
+    <branch module="uclouvain/openjpeg/archive/v2.4.0.tar.gz"
+    version="2.4.0"
     repo="github-tarball"
-    checkoutdir="openjpeg-2.3.1"/>
+    checkoutdir="openjpeg-2.4.0"/>
   </cmake>
 
   <autotools id="libmypaint" autogen-sh="configure">
@@ -308,38 +326,36 @@
       <dep package="gegl"/>
     </after>
     <branch
-      hash="sha256:59d13b14c6aca0497095f29ee7228ca2499a923ba8e1dd718a2f2ecb45a9cbff"
-      module="mypaint/libmypaint/releases/download/v1.4.0/libmypaint-1.4.0.tar.xz"
-      version="1.4.0"
+      module="mypaint/libmypaint/releases/download/v1.6.1/libmypaint-1.6.1.tar.xz"
+      version="1.6.1"
       repo="github-tarball"
-      checkoutdir="libmypaint-1.3.0"/>
+      checkoutdir="libmypaint-1.6.1"/>
   </autotools>
 
   <autotools id="mypaint-brushes"
-    autogen-template="pushd %(srcdir)s &amp;&amp; ACLOCAL=aclocal AUTOMAKE=automake ./%(autogen-sh)s &amp;&amp; popd &amp;&amp; %(srcdir)s/configure --prefix=%(prefix)s %(autogenargs)s">
+    autogen-sh="configure">
     <dependencies>
       <dep package="libmypaint"/>
     </dependencies>
-    <branch module="mypaint/mypaint-brushes/archive/v1.3.0.tar.gz"
-    version="1.3.0"
+    <branch module="mypaint/mypaint-brushes/releases/download/v1.3.1/mypaint-brushes-1.3.1.tar.xz"
+    version="1.3.1"
     repo="github-tarball"
-    checkoutdir="mypaint-brushes-1.3.0"/>
+    checkoutdir="mypaint-brushes-1.3.1"/>
   </autotools>
 
   <autotools id="json-c" autogen-sh="configure">
-    <branch module="json-c/json-c/archive/json-c-0.13.1-20180305.tar.gz"
-      version="0.13.1"
+    <branch module="json-c/json-c/archive/refs/tags/json-c-0.15-20200726.tar.gz"
+      version="0.15.0"
       repo="github-tarball"
       checkoutdir="json-c"/>
   </autotools>
 
   <meson id="gexiv2" mesonargs="-Dvapi=false">
     <branch repo="ftp.gnome.org"
-       version="0.12.0"
-       module="gexiv2/0.12/gexiv2-0.12.0.tar.xz"
-       hash="sha256:58f539b0386f36300b76f3afea3a508de4914b27e78f58ee4d142486a42f926a">
+       version="0.12.2"
+       module="gexiv2/0.12/gexiv2-0.12.2.tar.xz"
+>
        <!-- issue 20 - backport of gimp bugfix for gexiv2 (gexiv-side) - do not raise warnings for unsupported tags -->
-       <patch file="https://gitlab.gnome.org/GNOME/gimp/raw/master/build/patches/gexiv2-mr20.patch" strip="1"/>
     </branch>
     <dependencies>
       <dep package="glib"/>
@@ -349,10 +365,10 @@
 
   <cmake id="exiv2" cmakeargs="-DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib">
     <branch repo="www.exiv2.org"
-      checkoutdir="exiv2-0.27.2-Source"
-      version="0.27.2"
-      module="exiv2-0.27.2-Source.tar.gz"
-      hash="sha256:2652f56b912711327baff6dc0c90960818211cf7ab79bb5e1eb59320b78d153f">
+      checkoutdir="exiv2-0.27.3-Source"
+      version="0.27.3"
+      module="exiv2-0.27.3-Source.tar.gz"
+>
     </branch>
   </cmake>
 
@@ -362,7 +378,7 @@
     makeinstallargs="install install-so"
     autogenargs="--disable-cups --enable-arm-neon=no">
     <branch repo="github-tarball"
-      version="9.50"
+      version="9.53.3"
       module="ArtifexSoftware/ghostpdl-downloads/releases/download/gs9533/ghostscript-9.53.3.tar.xz"
 >
     </branch>
@@ -371,21 +387,27 @@
     </dependencies>
   </autotools>
 
-  <autotools id="libarchive"  autogenargs="--without-xml2 -without-lzo2 --without-nettle --without-openssl --with-expat">
+  <autotools id="libarchive"  autogenargs="-without-lzo2">
     <branch repo="github-tarball"
-      version="3.4.1"
-      module="libarchive/libarchive/releases/download/v3.4.1/libarchive-3.4.1.tar.xz"
-      hash="sha256:bb84e02f08cc3027e08e2473fc46eb7724ba9244e9c6ef8d122f68addd6042f7"/>
+      version="3.5.1"
+      module="libarchive/libarchive/releases/download/3.5.1/libarchive-3.5.1.tar.xz"
+/>
+    <dependencies>
+      <dep package="libxml2"/>
+      <dep package="libnettle"/>
+      <dep package="openssl"/>
+      <dep package="expat"/>
+    </dependencies>
   </autotools>
 
   <autotools id="util-linux"
     autogen-template="%(srcdir)s/%(autogen-sh)s --prefix %(prefix)s %(autogenargs)s &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s  %(autogenargs)s"
     autogenargs="--disable-dependency-tracking --disable-silent-rules --disable-ipcs --disable-ipcrm --disable-wall --enable-libuuid">
     <branch repo="github-tarball"
-      version="2.34"
-      module="karelzak/util-linux/archive/v2.34.tar.gz"
+      version="2.36.2"
+      module="karelzak/util-linux/archive/refs/tags/v2.36.2.tar.gz"
       checkoutdir="util-linux"
-      hash="sha256:1d0c1a38f8c14a2c251681907203cccc78704f5702f2ef4b438bed08344242f7"/>
+/>
   </autotools>
 
   <autotools id="libyaml"
@@ -393,10 +415,10 @@
     autogen-template="%(srcdir)s/bootstrap &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s %(autogenargs)s"
     autogenargs="--disable-dependency-tracking">
     <branch repo="github-tarball"
-      version="0.2.2"
-      module="yaml/libyaml/archive/0.2.2.tar.gz"
+      version="0.2.5"
+      module="yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz"
       checkoutdir="libyaml"
-      hash="sha256:46bca77dc8be954686cff21888d6ce10ca4016b360ae1f56962e6882a17aa1fe"/>
+/>
   </autotools>
 
   <meson id="appstream-glib" mesonargs="-Dstemmer=false -Drpm=false">
