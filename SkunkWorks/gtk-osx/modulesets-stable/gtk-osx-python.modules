@@ -117,7 +117,7 @@
     </after>
   </distutils>
 
-  <meson id="pycairo">
+<meson id="pycairo">
     <branch module="/pygobject/pycairo/releases/download/v1.18.1/pycairo-1.18.1.tar.gz" repo="github-tarball"
             version="1.18.1"
 	    hash="sha256:70172e58b6bad7572a3518c26729b074acdde15e6fee6cbab6d3528ad552b786">

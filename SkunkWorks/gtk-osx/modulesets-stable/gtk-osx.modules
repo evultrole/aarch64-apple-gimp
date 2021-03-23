@@ -88,7 +88,7 @@
   </metamodule>
 
   <meson id="glib" mesonargs="-Dinternal_pcre=true -Dlibmount=disabled">
-    <branch module="glib/2.64/glib-2.64.6.tar.xz"  version="2.64.6"
+    <branch module="glib/2.66/glib-2.66.8.tar.xz"  version="2.66.8"
 >
     </branch>
     <dependencies>
@@ -106,9 +106,9 @@
   </autotools>
 
   <meson id="gobject-introspection">
-    <branch module="gobject-introspection/1.64/gobject-introspection-1.64.1.tar.xz"
-            version="1.64.1"
-            hash="sha256:80beae6728c134521926affff9b2e97125749b38d38744dc901f4010ee3e7fa7">
+    <branch module="gobject-introspection/1.66/gobject-introspection-1.66.1.tar.xz"
+            version="1.66.1"
+>
       <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/girscanner-objc.patch" strip="1"/>
     </branch>
     <dependencies>
@@ -129,15 +129,15 @@
   </meson>
 
   <meson id="pango">
-    <branch version="1.44.7" module="pango/1.44/pango-1.44.7.tar.xz"
+    <branch version="1.46.2" module="pango/1.46/pango-1.46.2.tar.xz"
             >
-  <patch file="https://gitlab.gnome.org/samm-git/gtk-osx/raw/gimp/patches/DJM_pango_fallthrough.patch" strip="1"/>
       <!-- MacOS clang doesn't like fallthrough comments - use __attribute__ method instead -->
     </branch>
     <dependencies>
       <dep package="glib"/>
       <dep package="cairo"/>
       <dep package="fribidi"/>
+      <dep package="gnutls"/>
       <dep package="harfbuzz"/>
      </dependencies>
     <after>

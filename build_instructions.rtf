@@ -26,27 +26,8 @@ python3\
 # Variables\
 #\
 \
-mkdir -p ~/
-\f1\fs22 \cf2 \CocoaLigature0 Library/Python/3.8/lib/python/site-packages\
 
-\f0\fs24 \cf0 \CocoaLigature1 mkdir -p ~/
-\f1\fs22 \cf2 \CocoaLigature0 Library/Python/2.7/lib/python/site-packages
-\f0\fs24 \cf0 \CocoaLigature1 \
-mkdir -p ~/
-\f1\fs22 \cf2 \CocoaLigature0 gtk/inst/lib/python3.8\
-
-\f0\fs24 \cf0 \CocoaLigature1 mkdir -p ~/
-\f1\fs22 \cf2 \CocoaLigature0 gtk/inst/lib/python2.7
-\f0\fs24 \cf0 \CocoaLigature1 \
-ln -s ~/
-\f1\fs22 \cf2 \CocoaLigature0 Library/Python/3.8/lib/python/site-packages 
-\f0\fs24 \cf0 \CocoaLigature1 ~/
-\f1\fs22 \cf2 \CocoaLigature0 gtk/inst/lib/python3.8/site-packages\
-
-\f0\fs24 \cf0 \CocoaLigature1 ln -s ~/
-\f1\fs22 \cf2 \CocoaLigature0 Library/Python/2.7/lib/python/site-packages 
-\f0\fs24 \cf0 \CocoaLigature1 ~/
-\f1\fs22 \cf2 \CocoaLigature0 gtk/inst/lib/python2.7/site-packages\
+\f1\fs22 \cf2 \CocoaLigature0 \
 
 \f0\fs24 \cf0 \CocoaLigature1 \
 \
@@ -61,7 +42,9 @@ MACOS_SDK_VERSION=11.1\
 #\
 echo 'export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX$\{MACOS_SDK_VERSION\}.sdk' > ~/.profile\
 echo 'export MACOSX_DEPLOYMENT_TARGET=$\{MACOS_SDK_VERSION\}' >> ~/.profile\
-echo 'export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH:$HOME/.new_local/bin:$HOME/
+echo 'export PATH="$HOME/
+\f1\fs22 \cf2 \CocoaLigature0 .new_local/share/pyenv/versions/3.9.2/bin:
+\f0\fs24 \cf0 \CocoaLigature1 $HOME/.cargo/bin:$HOME/.local/bin:$PATH:$HOME/.new_local/bin:$HOME/
 \f1\fs22 \cf3 \CocoaLigature0 Library/Python/3.8/bin
 \f0\fs24 \cf0 \CocoaLigature1 "'>> ~/.profile\
 \
@@ -72,32 +55,29 @@ echo 'export ARCHFLAGS="-arch x86_64"' >> ~/.profile\
 \
 \
 #Setup python links in local profile to allow expected behavior of python = python3 for most programs\
-\
-cd aarch64-apple-gimp\
-chmod +x python3-config\
-mkdir -p ~/.local/bin\
-cp python3-config ~/.local/bin/\
-ln -s /usr/bin/python3 ~/.local/bin/python\
-\
-\
-#\
-# Install jhbuild toolset\
-#\
-#run python once to make sure command line tools are installed, press ctrl+d to quit\
-python3 \
-mkdir -p ~/.config\
-chmod +x ./gtk-osx-setup.sh \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
 
 \f1\fs22 \cf2 \CocoaLigature0 source ~/.profile 
 \f0\fs24 \cf0 \CocoaLigature1 \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 ./gtk-osx-setup.sh\
+\cf0 chmod +x ./aarch64-apple-gimp/
+\f1\fs22 \cf2 \CocoaLigature0 gtk-osx-setup.sh
+\f0\fs24 \cf0 \CocoaLigature1 \
 \
-#\
-#Install jhbuild configs and setup working directories\
-#\
-cd $HOME\
+#setup python environment for the build\
+./aarch64-apple-gimp/
+\f1\fs22 \cf2 \CocoaLigature0 gtk-osx-setup.sh\
+
+\f0\fs24 \cf0 \CocoaLigature1 \
+#check for success of python install, it errors for no apparent reason about 20% of the time\
+#run again with pip environment flag, sets up pip modules for the newly installed pythong\
+\
+rm -rf .new_local/bin\
+PIPENV=1 ./aarch64-apple-gimp/
+\f1\fs22 \cf2 \CocoaLigature0 gtk-osx-setup.sh\
+
+\f0\fs24 \cf0 \CocoaLigature1 \
+python3 -m pip install --upgrade pip wheel pipenv setuptools meson\
 \
 ln -s aarch64-apple-gimp/Skunkworks Skunkworks\
 \
@@ -114,23 +94,14 @@ cp $GIMP_MACOS_BUILD_DIR/jhbuildrc ~/.config/jhbuildrc\
 # Bootstrap the build environment and core tool modules\
 #\
 \
-python3 -m pip install --upgrade pip wheel pipenv meson\
-source ~/.profile\
 $HOME/.new_local/bin/jhbuild bootstrap-gtk-osx-gimp\
 \
 #\
 # Install bundler app\
 #\
-jhbuild build python python3\
-rm  $HOME/.local/bin/*\
-cd $HOME/.local/bin/\
-ln -s $HOME/gtk/inst/bin/python3.8 python3\
-ln -s $HOME/gtk/inst/bin/python3.8-config python3-config\
-ln -s $HOME/gtk/inst/bin/python2.7 python2\
-ln -s $HOME/gtk/inst/bin/python2.7-config python2-config\
-ln -s python3 python\
 \
-python3 -m pip install --upgrade pip wheel pipenv setuptools meson\
+\
+python3 -m pip install --upgrade pip wheel pipenv setuptools meson pygments\
 \
 cd ~/Source\
 git clone https://github.com/samm-git/gtk-mac-bundler -b fix-otool\
@@ -142,7 +113,7 @@ make install\
 #\
 # Install base/bootstrap modules - this includes gtk+\
 #\
-source ~/.profile && jhbuild build icu55 meta-gtk-osx-freetype meta-gtk-osx-bootstrap meta-gtk-osx-core\
+source ~/.profile && jhbuild build python icu55 meta-gtk-osx-freetype meta-gtk-osx-bootstrap meta-gtk-osx-core\
 \
 #\
 # Configure jhbuild to use local moduleset file, allowing us to experiment without pushing changes to \
@@ -150,6 +121,9 @@ source ~/.profile && jhbuild build icu55 meta-gtk-osx-freetype meta-gtk-osx-boot
 #\
 echo "use_local_modulesets = True" >> ~/.config/jhbuildrc-custom \
 echo "modulesets_dir = '~/.cache/jhbuild/'" >> ~/.config/jhbuildrc-custom\
+\
+\
+jhbuild build suitesparse lcms libunistring gmp libnettle libtasn1 gnutls libjpeg readline glib-networking openjpeg gtk-mac-integration poppler poppler-data json-glib p2tc exiv2 gexiv2 ilmbase openexr libwebp libcroco librsvg-24 json-c  libmypaint mypaint-brushes libde265 nasm x265 libheif aalib shared-mime-info iso-codes libwmf libmng ghostscript pycairo pygobject pygtk gtk-mac-integration-python\
 \
 #\
 # Build gimp dependencies in (roughly correct) order, minus babl/gegl and WebKit\

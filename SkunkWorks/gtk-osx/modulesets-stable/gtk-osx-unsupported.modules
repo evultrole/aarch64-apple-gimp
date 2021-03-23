@@ -11,8 +11,6 @@
               href='https://github.com/'/>
   <repository type="tarball" name="curl.haxx.se"
               href="http://curl.haxx.se/download/"/>
-  <repository type="tarball" name="p11-glue"
-              href="http://p11-glue.freedesktop.org/releases/"/>
 
   <metamodule id="meta-gtk-osx-unsupported">
     <dependencies>
@@ -31,14 +29,14 @@
 
   <!-- Iso-codes >= 3.68 requires Python3, a dependency too far. -->
   <autotools id="iso-codes" autogen-sh="configure">
-    <branch checkoutdir="iso-codes-iso-codes-3.67-080f941e075fef791b22feae659e8a510f57fe2c" module="iso-codes-3.67.tar.xz" version="3.67"
+    <branch checkoutdir="iso-codes-4.6.0" module="iso-codes-4.6.0.tar.xz" version="4.6.0"
 	    repo="iso-codes"/>
   </autotools>
 
   <autotools id="p11-kit" autogen-sh="configure"
              autogenargs="--without-trust-paths">
-    <branch repo="p11-glue" version="0.23.2"
-	    module="p11-kit-0.23.2.tar.gz">
+    <branch repo="github-tarball" version="0.23.22"
+	    module="p11-glue/p11-kit/releases/download/0.23.22/p11-kit-0.23.22.tar.xz">
       <patch file="https://gitlab.gnome.org/GNOME/gtk-osx/raw/master/patches/p11-kit-dirfd.patch"
        strip="1"/>
     </branch>

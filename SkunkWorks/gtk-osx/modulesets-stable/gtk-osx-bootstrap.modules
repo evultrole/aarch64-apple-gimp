@@ -28,8 +28,8 @@
               href="http://www.colm.net/files/"/>
 
   <autotools id='readline' autogen-sh="configure">
-    <branch repo="ftp.gnu.org" module="readline/readline-8.0.tar.gz"
-      version="8.0">
+    <branch repo="ftp.gnu.org" module="readline/readline-8.1.tar.gz"
+      version="8.1">
     </branch>
   </autotools>
 
@@ -144,12 +144,12 @@
   </autotools>
 
   <autotools id="harfbuzz" autogen-sh="configure"
-             autogenargs="--with-coretext --with-icu">
-    <branch repo="github-tarball" module="harfbuzz/harfbuzz/releases/download/2.8.0/harfbuzz-2.8.0.tar.xz" version="2.8.0"
->
+             autogenargs="--with-coretext --with-icu --with-gobject --enable-introspection">
+    <branch repo="github-tarball" module="harfbuzz/harfbuzz/releases/download/2.8.0/harfbuzz-2.8.0.tar.xz" version="2.8.0">
     </branch>
     <dependencies>
       <dep package="ragel"/>
+      <dep package="gobject-introspection"/>
       <dep package="glib"/>
     </dependencies>
     <after>
@@ -181,7 +181,7 @@
 
   <autotools id="hicolor-icon-theme" autogen-sh="configure"
 	     supports-non-srcdir-builds="no">
-    <branch module="hicolor-icon-theme-0.15.tar.xz" repo="icon-theme"
+    <branch module="hicolor-icon-theme-0.17.tar.xz" repo="icon-theme"
             version="0.15"/>
   </autotools>
 

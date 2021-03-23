@@ -179,15 +179,14 @@ Libglade itself is deprecated. This is the last release. -->
     </dependencies>
   </autotools>
 
-  <autotools id="gsettings-desktop-schemas" autogen-sh="configure"
-             autogenargs="--enable-introspection=yes">
-    <branch module="gsettings-desktop-schemas/3.24/gsettings-desktop-schemas-3.24.0.tar.xz"
-            version="3.24.0"
-            hash="sha256:f6573a3f661d22ff8a001cc2421d8647717f1c0e697e342d03c6102f29bbbb90"/>
+  <meson id="gsettings-desktop-schemas">
+    <branch module="gsettings-desktop-schemas/40/gsettings-desktop-schemas-40.0.tar.xz"
+            version="40.0"
+/>
     <dependencies>
       <dep package="gobject-introspection"/>
     </dependencies>
-  </autotools>
+  </meson>
 
 <!-- SQLite3 is provided by MacOSX in /usr/lib/libsqlite.3.dylib -->
   <autotools id="sqlite" autogenargs="--disable-tcl --enable-threadsafe"
@@ -275,8 +274,8 @@ Libglade itself is deprecated. This is the last release. -->
   </autotools>
 
   <autotools id="libunistring" autogen-sh="configure">
-    <branch repo="ftp.gnu.org" module="libunistring/libunistring-0.9.7.tar.gz"
-	    version="0.9.7">
+    <branch repo="ftp.gnu.org" module="libunistring/libunistring-0.9.10.tar.gz"
+	    version="0.9.10">
     </branch>
   </autotools>
 

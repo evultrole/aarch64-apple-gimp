@@ -98,7 +98,7 @@ PIP=`python3 -m pip`
 if test ! -x "`eval echo $PIP`" ; then
     mv=`python --version 2>&1 | cut -b 12-13`
     if test $mv -lt 11 ; then
-        curl https://bootstrap.pypa.io/pip/3.4/get-pip.py -o "$DEVPREFIX/get-pip.py"
+        curl https://bootstrap.pypa.io/pip/get-pip.py -o "$DEVPREFIX/get-pip.py"
         python "$DEVPREFIX/get-pip.py" --user
         rm "$DEVPREFIX/get-pip.py"
     else
@@ -115,7 +115,7 @@ PIPENV="$PYTHONUSERBASE/bin/pipenv"
 
 # Install jhbuild
 if test ! -d "$DEV_SRC_ROOT/jhbuild/.git" ; then
-    git clone -b "3.35.1" $GITLAB/jhbuild.git "$DEV_SRC_ROOT/jhbuild"
+    git clone -b "3.38.0" $GITLAB/jhbuild.git "$DEV_SRC_ROOT/jhbuild"
     cd "$DEV_SRC_ROOT/jhbuild"
 else #Get the latest if it's already installed
     cd "$DEV_SRC_ROOT/jhbuild"
@@ -141,13 +141,13 @@ verify_ssl = true
 
 [packages]
 six = "*"
-meson = {version="==0.51.1"}
+meson = {version="==0.57.1"}
 
 [scripts]
 jhbuild = "$DEVPREFIX/libexec/run_jhbuild.py"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9.2"
 EOF
     cat <<EOF > "$DEVPREFIX/etc/pipenv-env"
 export PYTHONUSERBASE="$PYTHONUSERBASE"

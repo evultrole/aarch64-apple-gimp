@@ -10,6 +10,7 @@
   <repository type="tarball" name="ftp.gimp.org" href="https://ftp.gimp.org/pub/"/>
   <repository type="tarball" name="poppler.freedesktop.org" href="https://poppler.freedesktop.org/"/>
   <repository type="tarball" name="freedesktop.org" href="https://www.freedesktop.org/"/>
+  <repository type="tarball" name="dbus.freedesktop.org" href="https://dbus.freedesktop.org/"/>
   <repository type="tarball" name="videolan" href="https://downloads.videolan.org/pub/videolan/x265/"/>
   <repository type="tarball" name="github-tarball" href="https://github.com/"/>
   <repository type="tarball" name="sourceforge" href="http://downloads.sourceforge.net/sourceforge/"/>
@@ -22,18 +23,60 @@
   </branch>
   </autotools>
 
-  <meson id="gvfs" autogen-sh="autoreconf">
-  <branch module="gvfs/1.44/gvfs-1.44.1.tar.xz" version="1.44.1" repo="ftp.gnome.org">
+<autotools id="expat" autogen-sh="configure">
+    <branch module="expat/expat-2.2.10.tar.bz2" version="2.2.10"
+            repo="sourceforge"/>
+  </autotools>
+
+<autotools id="dbus" autogen-sh="autoreconf">
+<branch repo="dbus.freedesktop.org" module="releases/dbus/dbus-1.12.20.tar.gz" version="1.12.20"/>
+    <dependencies>
+      <dep package="expat"/>
+    </dependencies>
+ 
+</autotools>
+
+  <autotools id="gvfs" autogen-sh="autogen.sh" autogenargs="--disable-avahi \
+                    --disable-fuse \
+                    --disable-cdda \
+                    --disable-gphoto2 \
+                    --disable-samba \
+                    --disable-gdu \
+                    --disable-udisks2 \
+                    --disable-libsystemd-login \
+                    --disable-admin \
+                    --disable-gudev \
+                    --disable-afc \
+                    --disable-bluray \
+                    --disable-libmtp \
+                    --enable-goa \
+                    --enable-http \
+                    --enable-archive \
+                    --enable-afp \
+                    --enable-always-build-tests \
+                    --disable-silent-rules">
+  <branch module="gvfs/1.36/gvfs-1.36.1.tar.xz" version="1.36.1" repo="ftp.gnome.org">
   </branch>
     <dependencies>
+      <dep package="gsettings-desktop-schemas"/>
       <dep package="gtk+-3"/>
       <dep package="libgcrypt"/>
       <dep package="libsoup"/>
+      <dep package="dbus"/>
       <dep package="libarchive"/>
       <dep package="libxml2"/>
       <dep package="gettext"/>
+      <dep package="gcr"/>
     </dependencies>
-  </meson>
+  </autotools>
+
+<autotools id="gcr" autogensh="autoreconf" autogenargs="--without-gtk">
+<branch repo="ftp.gnome.org" module="gcr/3.34/gcr-3.34.0.tar.xz" version="3.34.0"/>
+    <dependencies>
+      <dep package="p11-kit"/>
+      <dep package="libtasn1"/>
+    </dependencies>
+</autotools>
 
   <autotools id="gimp-help" autogenargs="--without-gimp" supports-non-srcdir-builds="no" autogen-sh="autogen.sh">
     <branch module="gimp/help/gimp-help-2.10.0.tar.bz2" repo="ftp.gimp.org" version="2.10.0"/>
@@ -176,11 +219,11 @@
     </branch>
   </autotools>
 
-  <autotools id="json-glib" autogen-sh="configure">
-    <branch module="json-glib/1.2/json-glib-1.2.8.tar.xz"
-      version="1.2.8"
-      hash="sha256:fd55a9037d39e7a10f0db64309f5f0265fa32ec962bf85066087b83a2807f40a"/>
-  </autotools>
+  <meson id="json-glib">
+    <branch module="json-glib/1.6/json-glib-1.6.2.tar.xz"
+      version="1.6.2"
+/>
+  </meson>
 
   <meson id="babl" mesonargs="-Denable-vapi=false">
     <branch repo="ftp.gimp.org"
@@ -318,7 +361,7 @@
     checkoutdir="openjpeg-2.4.0"/>
   </cmake>
 
-  <autotools id="libmypaint" autogen-sh="configure">
+  <autotools id="libmypaint" autogen-sh="autoreconf">
     <dependencies>
       <dep package="json-c"/>
     </dependencies>
@@ -344,8 +387,8 @@
   </autotools>
 
   <autotools id="json-c" autogen-sh="configure">
-    <branch module="json-c/json-c/archive/refs/tags/json-c-0.15-20200726.tar.gz"
-      version="0.15.0"
+    <branch module="json-c/json-c/archive/json-c-0.13.1-20180305.tar.gz"
+      version="0.13.1"
       repo="github-tarball"
       checkoutdir="json-c"/>
   </autotools>

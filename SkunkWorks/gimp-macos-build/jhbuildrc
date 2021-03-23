@@ -318,6 +318,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
         append_autogenargs("gmp", "--host=x86_64-apple-darwin ABI=64")
         append_autogenargs("liboil", "--host=x86_64-apple-darwin")
         append_autogenargs("gnutls", "--host=x86_64-apple-darwin")
+        append_autogenargs("gvfs", "--host=x86_64-apple-darwin")
     elif architectures == ["arm64"]:
         append_autogenargs("glib", "--build=aarch64-apple-darwin")
         append_autogenargs("gmp", "--host=aarch64-apple-darwin ABI=64")
@@ -328,6 +329,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
         append_autogenargs("ghostscript", "--host=aarch64-apple-darwin")
         append_autogenargs("gnutls", "--host=aarch64-apple-darwin")
         append_autogenargs("webkit", "--host=aarch64-apple-darwin")
+        append_autogenargs("gvfs", "--host=aarch64-apple-darwin --build=aarch64-apple-darwin")
 
     # El Capitan needs bash to work around SIP. If you're using a
     # common bootstrap directory (e.g. $HOME/.local) then override
