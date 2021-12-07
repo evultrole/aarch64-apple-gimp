@@ -93,3 +93,18 @@
  #define WEBCORE_NAVIGATOR_PLATFORM "Win32"
  #else
 
+
+--- a/Tools/gtk/gtkdoc.py 2016-04-10 00:48:37.000000000 -0600
++++ b/Tools/gtk/gtkdoc.py 2021-12-07 04:11:12.000000000 -0600
+
+@@ -154,7 +154,7 @@
+         if not os.access(path, os.F_OK | os.R_OK):
+             return
+         self.logger.debug('deleting %s', path)
+-        os.unlink(path)
++#broken with current Bison versions        os.unlink(path)
+ 
+     def _create_directory_if_nonexistent(self, path):
+         try:
+         
+         
