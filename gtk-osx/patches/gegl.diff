@@ -1,0 +1,41 @@
+diff --git a/gegl/meson.build b/gegl/meson.build
+index 020639be9..56561d302 100644
+--- a/gegl/meson.build
++++ b/gegl/meson.build
+@@ -91,6 +91,7 @@ gegl_lib = library(api_name,
+     gmodule,
+   ],
+   c_args: [ gegl_cflags, ],
++  link_args: [ '-framework', 'OpenCL' ],
+   install: true,
+   version: so_version,
+ )
+diff --git a/gegl/module/geglmoduledb.c b/gegl/module/geglmoduledb.c
+index 8821df216..f7d7936f0 100644
+--- a/gegl/module/geglmoduledb.c
++++ b/gegl/module/geglmoduledb.c
+@@ -310,8 +310,11 @@ valid_module_name (const gchar *filename)
+           return FALSE;
+         }
+     }
+-
++#ifdef __APPLE__ /* G_MODULE_SUFFIX is defined to .so instead of .dylib */
++  if (! gegl_datafiles_check_extension (basename, ".dylib" ))
++#else
+   if (! gegl_datafiles_check_extension (basename, "." G_MODULE_SUFFIX))
++#endif
+     {
+       g_free (basename);
+
+diff --git a/opencl/meson.build b/opencl/meson.build
+index 52f804784..5b003ba47 100644
+--- a/opencl/meson.build
++++ b/opencl/meson.build
+@@ -57,6 +57,6 @@ foreach source : opencl_sources
+   opencl_headers += custom_target(source + '.h',
+     input : source,
+     output: source +'.h',
+-    command: [ python, cltostring, '@INPUT@', '@OUTPUT@' ],
++    command: [ 'python3.9', cltostring, '@INPUT@', '@OUTPUT@' ],
+   )
+ endforeach

@@ -1,0 +1,11 @@
+diff --git a/babl/meson.build b/babl/meson.build
+index d19210a..398c54f 100644
+--- a/babl/meson.build
++++ b/babl/meson.build
+@@ -148,6 +148,7 @@ if build_gir
+     namespace: 'Babl',
+     nsversion: api_version,
+     header: 'babl.h',
++    export_packages: 'babl-0.1',
+     install: true,
+   )

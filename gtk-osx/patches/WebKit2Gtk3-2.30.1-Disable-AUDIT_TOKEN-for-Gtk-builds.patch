@@ -1,0 +1,25 @@
+From c4c4a0b4ff33baad5e859f69ecdf8d41f343cca4 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Mon, 9 Nov 2020 09:27:37 -0800
+Subject: [PATCH 4/7] Disable AUDIT_TOKEN for Gtk builds.
+
+---
+ Source/WTF/wtf/PlatformHave.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Source/WTF/wtf/PlatformHave.h b/Source/WTF/wtf/PlatformHave.h
+index 4ec77e7..5a83520 100644
+--- a/Source/WTF/wtf/PlatformHave.h
++++ b/Source/WTF/wtf/PlatformHave.h
+@@ -190,7 +190,7 @@
+ #define HAVE_SYS_TIMEB_H 1
+ #endif
+ 
+-#if OS(DARWIN)
++#if !PLATFORM(GTK) && OS(DARWIN)
+ #define HAVE_AUDIT_TOKEN 1
+ #endif
+ 
+-- 
+2.2.2
+

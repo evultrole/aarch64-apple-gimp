@@ -1,0 +1,13 @@
+--- a/Source/WebCore/platform/graphics/ColorComponents.h	2021-02-26 01:57:13.000000000 -0800
++++ b/Source/WebCore/platform/graphics/ColorComponents.h	2021-08-26 17:28:59.000000000 -0700
+@@ -27,7 +27,8 @@
+ 
+ #include <algorithm>
+ #include <array>
+-#include <math.h>
++#include <cmath>
++#include <cstdlib>
+ #include <tuple>
+ 
+ namespace WebCore {
+

@@ -1,0 +1,27 @@
+From f52897a18a73ab6ff406016ada80932511ec5e25 Mon Sep 17 00:00:00 2001
+From: P. F. Chimento <philip.chimento@gmail.com>
+Date: Wed, 6 Apr 2011 23:28:22 +0200
+Subject: [PATCH] Fix variable name for OS X build
+
+There was a syntax error in book_manager_add_from_xcode_docset,
+which broke the build on OS X.
+---
+ src/dh-book-manager.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/dh-book-manager.c b/src/dh-book-manager.c
+index 4416d7f..aa1d605 100644
+--- a/src/dh-book-manager.c
++++ b/src/dh-book-manager.c
+@@ -563,7 +563,7 @@ book_manager_add_from_xcode_docset (DhBookManager *book_manager,
+                                ".devhelp2") == 0) {
+                         gchar *book_path;
+ 
+-                        book_path = g_build_filename (path, name, NULL);
++                        book_path = g_build_filename (dir_path, name, NULL);
+                         /* Add book from filepath */
+                         book_manager_add_from_filepath (book_manager,
+                                                         book_path);
+-- 
+1.7.3.2
+

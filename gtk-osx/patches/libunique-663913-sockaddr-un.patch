@@ -1,0 +1,48 @@
+From 82526c33fac5e6d9ebf64b741f804fb3c604e691 Mon Sep 17 00:00:00 2001
+From: Philip Chimento <philip.chimento@gmail.com>
+Date: Thu, 10 Nov 2011 23:20:08 +0100
+Subject: [PATCH] Don't use UNIX_PATH_MAX in struct sockaddr_un
+
+Use sizeof (uaddr.sun_path) in uniquebackend-bacon.c, since the
+fixed value of UNIX_PATH_MAX is not portable and caused crashes on
+OSX, for example.
+---
+ unique/bacon/uniquebackend-bacon.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/unique/bacon/uniquebackend-bacon.c b/unique/bacon/uniquebackend-bacon.c
+index bf5e297..c762df5 100644
+--- a/unique/bacon/uniquebackend-bacon.c
++++ b/unique/bacon/uniquebackend-bacon.c
+@@ -45,10 +45,6 @@
+ #include "uniquemessage-bacon.h"
+ #include "uniquebackend-bacon.h"
+ 
+-#ifndef UNIX_PATH_MAX
+-#define UNIX_PATH_MAX 108
+-#endif
+-
+ struct _UniqueBackendBacon
+ {
+   UniqueBackend parent_instance;
+@@ -258,7 +254,7 @@ try_client (UniqueBackendBacon *backend)
+ 
+   g_assert (backend->socket_path != NULL);
+ 
+-  path_len = MIN (strlen (backend->socket_path) + 1, UNIX_PATH_MAX);
++  path_len = MIN (strlen (backend->socket_path) + 1, sizeof (uaddr.sun_path));
+ 
+   uaddr.sun_family = AF_UNIX;
+   strncpy (uaddr.sun_path, backend->socket_path, path_len);
+@@ -289,7 +285,7 @@ create_server (UniqueBackendBacon *backend)
+ 
+   g_assert (backend->socket_path != NULL);
+ 
+-  path_len = MIN (strlen (backend->socket_path) + 1, UNIX_PATH_MAX);
++  path_len = MIN (strlen (backend->socket_path) + 1, sizeof (uaddr.sun_path));
+ 
+   uaddr.sun_family = AF_UNIX;
+   strncpy (uaddr.sun_path, backend->socket_path, path_len);
+-- 
+1.7.3.2
+

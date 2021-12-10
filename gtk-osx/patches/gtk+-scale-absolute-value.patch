@@ -1,0 +1,32 @@
+From 36315cbe2b3c9d1c1b7508d9494a251eddbc4452 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Thu, 14 Oct 2021 12:41:05 -0700
+Subject: [PATCH] [quartz]Use the absolute value of Scale values for
+ CGContextScaleSCM
+
+In macOS-12.sdk CGContextConverSizeToDeviceSpace returns a negative
+height and passing that to CGContextScaleCTM in turn causes the cairo
+surface to draw outside the window where it can't be seen. Passing the
+absolute values of the scale factors fixes the display on macOS 12 without
+affecting earlier macOS versions.
+---
+ gdk/quartz/gdkwindow-quartz.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
+index 1a3389bb32..a5c5c31945 100644
+--- a/gdk/quartz/gdkwindow-quartz.c
++++ b/gdk/quartz/gdkwindow-quartz.c
+@@ -183,8 +183,7 @@ gdk_window_impl_quartz_get_context (GdkWindowImplQuartz *window_impl,
+    * in gdk_quartz_ref_cairo_surface () */
+   scale = CGContextConvertSizeToDeviceSpace (cg_context,
+                                              CGSizeMake (1.0, 1.0));
+-  CGContextScaleCTM (cg_context, 1.0 / scale.width, 1.0 / scale.height);
+-
++  CGContextScaleCTM (cg_context, 1.0 / fabs(scale.width), 1.0 / fabs(scale.height));
+   return cg_context;
+ }
+ 
+-- 
+2.30.1 (Apple Git-130)
+

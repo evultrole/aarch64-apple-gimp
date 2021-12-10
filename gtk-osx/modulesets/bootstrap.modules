@@ -1,0 +1,158 @@
+<?xml version="1.0" standalone="no"?> <!--*- mode: nxml -*-->
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="tarball" name="ftp.gnu.org"
+              href="https://ftp.gnu.org/gnu/"/>
+  <repository type="tarball" name="pkgconfig"
+              href="http://pkgconfig.freedesktop.org/releases/"/>
+  <repository type="tarball" name="python"
+              href="http://www.python.org/ftp/python/"/>
+  <repository type="tarball" name="sourceforge"
+              href="http://downloads.sourceforge.net/sourceforge/"/>
+  <repository type="tarball" name="tukaani.org"
+              href="http://tukaani.org/"/>
+  <repository type="tarball" name="cmake"
+              href="https://cmake.org/files/"/>
+  <repository type="tarball" name="cpan" href="http://search.cpan.org/CPAN/" />
+  <repository type="tarball" name="intltool"
+              href="http://launchpad.net/intltool/trunk/"/>
+  <repository type="tarball" name="github-tarball" href="https://github.com/"/>
+  <repository type="git" name="github" href="https://git@github.com/"/>
+
+  <autotools id="xz" autogen-sh="configure" bootstrap="true">
+    <branch repo="tukaani.org" module="xz/xz-5.2.5.tar.bz2" version="5.2.5"
+            hash="sha256:5117f930900b341493827d63aa910ff5e011e0b994197c3b71c08a20228a42df"/>
+  </autotools>
+
+  <!-- gnu make 4.xx, needed to unbreak parallel builds for the webkit -->
+  <autotools id="gnumake" autogen-sh="configure"  bootstrap="true"
+             autogenargs="--disable-dependency-tracking">
+    <branch repo="ftp.gnu.org"
+            module="make/make-4.3.tar.gz" version="4.3"
+            hash="sha256:e05fdde47c5f7ca45cb697e973894ff4f5d79e13b750ed57d7b66d8defc78e19">
+    </branch>
+  </autotools>
+
+  <autotools id="gettext" autogen-sh="configure"
+             autogenargs="--without-emacs --disable-java --disable-native-java --disable-libasprintf --disable-csharp --with-included-glib --with-included-libcroco --with-included-libunistring"
+             hash="sha256:d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192">
+    <branch repo="ftp.gnu.org"
+            module="gettext/gettext-0.21.tar.xz" version="0.21">
+    </branch>
+  </autotools>
+
+  <!-- cmakes ./configure is picky about invalid flags so we manually set it -->
+  <autotools id="cmake" autogen-sh="bootstrap"  bootstrap="true"
+             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s">
+    <branch repo="cmake" module="v3.20/cmake-3.20.0.tar.gz" version="3.20.0">
+    </branch>
+  </autotools>
+  <!-- The version of m4 provided with Xcode is now too old, see
+       https://savannah.gnu.org/support/index.php?110397 -->
+  <autotools id="m4" autogen-sh="configure" bootstrap="true">
+    <branch repo="ftp.gnu.org"
+            module="m4/m4-1.4.18.tar.xz" version="1.4.18"
+            hash="sha256:f2c1e86ca0a404ff281631bdc8377638992744b175afb806e25871a24a934e07">
+      <patch file="vasnprintf.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="autoconf" autogen-sh="configure" bootstrap="true">
+    <branch repo="ftp.gnu.org"
+            module="autoconf/autoconf-2.71.tar.xz" version="2.71"
+            hash="shas56:f14c83cfebcc9427f2c3cea7258bd90df972d92eb26752da4ddad81c87a0faa4"/>
+    <dependencies>
+      <dep package="m4"/>
+      <dep package="xz"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="autoconf-archive" autogen-sh="configure" bootstrap="true">
+    <branch repo="ftp.gnu.org"
+            module="autoconf-archive/autoconf-archive-2021.02.19.tar.xz"
+            version="2021-02-19"
+            hash="sha256:e8a6eb9d28ddcba8ffef3fa211653239e9bf239aba6a01a6b7cfc7ceaec69cbd"/>
+  </autotools>
+
+  <autotools id="libtool" autogen-sh="configure" bootstrap="true">
+    <branch repo="ftp.gnu.org"
+            module="libtool/libtool-2.4.6.tar.gz" version="2.4.6"
+            hash="sha256:e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3">
+      <patch file="libtool-apple-sort.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="automake" autogen-sh="configure" bootstrap="true">
+    <branch repo="ftp.gnu.org" version="1.16.3"
+            module="automake/automake-1.16.3.tar.xz"
+            hash="sha256:ff2bf7656c4d1c6fdda3b8bebb21f09153a736bcba169aaf65eab25fa113bf3a"/>
+    <dependencies>
+      <dep package="autoconf"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="pkg-config" autogen-sh="configure" bootstrap="true"
+             autogenargs="--with-internal-glib">
+    <branch repo="pkgconfig"
+            module="pkg-config-0.29.2.tar.gz" version="0.29.2"
+            hash="sha256:6fc69c01688c9458a57eb9a1664c9aba372ccda420a02bf4429fe610e7e7d591"/>
+  </autotools>
+
+  <!-- MacOS provides 2.3 (presumably the last GPL2 version, gstreamer
+       requires 2.4. -->
+  <autotools id="bison" autogen-sh="configure">
+    <branch repo="ftp.gnu.org" module="bison/bison-3.7.6.tar.xz"
+            version="3.7.6"
+            hash="sha256:67d68ce1e22192050525643fc0a7a22297576682bef6a5c51446903f5aeef3cf">
+    </branch>
+    <dependencies>
+      <dep package='flex'/>
+    </dependencies>
+  </autotools>
+
+  <!-- As of 29 March 2021 Flex hasn't had an update since May 2017. -->
+  <autotools id="flex" autogen-sh="configure" autogenargs="--disable-libfl">
+    <branch module="westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz"
+            repo="github-tarball" version="2.6.4"
+            hash="sha256:e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995"/>
+  </autotools>
+
+  <!-- This is generated by tarring up the needed docbook stylesheets
+       for gtk-doc to work. If someone wants to work on a setup that
+       uses the real docbook source from upstream, feel free to do so,
+       it used to be a huge amount of work, but might be easier these
+       days.
+
+  -->
+  <autotools id="gtk-osx-docbook" autogen-sh="configure"
+             supports-non-srcdir-builds="no" >
+    <branch module="jralls/gtk-osx-docbook" revision="master" repo="github"/>
+  </autotools>
+
+  <autotools id="intltool" autogen-sh="configure">
+    <branch repo="intltool" module="0.51.0/+download/intltool-0.51.0.tar.gz"
+            version="0.51.0"
+            hash="sha256:67c74d94196b153b774ab9f89b2fa6c6ba79352407037c8c14d5aeb334e959cd"/>
+    <!--dependencies>
+      <dep package="perl-xml-parser"/>
+    </dependencies-->
+  </autotools>
+
+  <metamodule id="meta-bootstrap">
+    <dependencies>
+      <dep package="xz"/>
+      <dep package="gettext" /> <!-- Needed for 64-bit -->
+      <dep package="cmake"/>
+      <dep package="autoconf-archive" />
+      <dep package="libtool" />
+      <dep package="automake"/>
+      <dep package="pkg-config" />
+      <dep package="bison"/>
+      <dep package="flex"/>
+      <dep package="gtk-osx-docbook"/>
+      <dep package="intltool"/>
+      <dep package="gnumake"/>
+    </dependencies>
+  </metamodule>
+
+</moduleset>

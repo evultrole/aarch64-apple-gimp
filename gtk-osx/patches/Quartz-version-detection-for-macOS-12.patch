@@ -1,0 +1,67 @@
+From a752e338381bc37dbe8d4c04ec23e4f6fd911b30 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Wed, 8 Sep 2021 18:01:50 -0700
+Subject: [PATCH] Update Quartz version detection for macOS 12.
+
+---
+ gdk/quartz/gdkglobals-quartz.c | 16 +++++++---------
+ gdk/quartz/gdkquartz.h         |  3 ++-
+ 2 files changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/gdk/quartz/gdkglobals-quartz.c b/gdk/quartz/gdkglobals-quartz.c
+index 72aed1c92d..30649efe8a 100644
+--- a/gdk/quartz/gdkglobals-quartz.c
++++ b/gdk/quartz/gdkglobals-quartz.c
+@@ -29,28 +29,26 @@ GdkWindow *_gdk_root = NULL;
+ GdkOSXVersion
+ gdk_quartz_osx_version (void)
+ {
+-  static gint32 minor = GDK_OSX_UNSUPPORTED;
++  static gint32 vkey = GDK_OSX_UNSUPPORTED;
+ 
+-  if (minor == GDK_OSX_UNSUPPORTED)
++  if (vkey == GDK_OSX_UNSUPPORTED)
+     {
+ #if MAC_OS_X_VERSION_MIN_REQUIRED < 101000
+-      OSErr err = Gestalt (gestaltSystemVersionMinor, (SInt32*)&minor);
++      OSErr err = Gestalt (gestaltSystemVersionMinor, (SInt32*)&vkey);
+ 
+       g_return_val_if_fail (err == noErr, GDK_OSX_UNSUPPORTED);
+ #else
+       NSOperatingSystemVersion version;
+ 
+       version = [[NSProcessInfo processInfo] operatingSystemVersion];
+-      minor = version.minorVersion;
+-      if (version.majorVersion == 11)
+-        minor += 16;
++      vkey = version.majorVersion == 10 ? version.minorVersion : version.majorVersion + 5;
+ #endif
+     }
+ 
+-  if (minor < GDK_OSX_MIN)
++  if (vkey < GDK_OSX_MIN)
+     return GDK_OSX_UNSUPPORTED;
+-  else if (minor > GDK_OSX_CURRENT)
++  else if (vkey > GDK_OSX_CURRENT)
+     return GDK_OSX_NEW;
+   else
+-    return minor;
++    return vkey;
+ }
+diff --git a/gdk/quartz/gdkquartz.h b/gdk/quartz/gdkquartz.h
+index dd1b4f41af..2d53dcbce6 100644
+--- a/gdk/quartz/gdkquartz.h
++++ b/gdk/quartz/gdkquartz.h
+@@ -42,7 +42,8 @@ typedef enum
+   GDK_OSX_MOJAVE = 14,
+   GDK_OSX_CATALINA = 15,
+   GDK_OSX_BIGSUR = 16,
+-  GDK_OSX_CURRENT = 15,
++  GDK_OSX_MONTEREY = 17,
++  GDK_OSX_CURRENT = 17,
+   GDK_OSX_NEW = 99
+ } GdkOSXVersion;
+ 
+-- 
+2.30.1 (Apple Git-130)
+

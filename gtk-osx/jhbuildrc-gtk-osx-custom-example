@@ -1,0 +1,152 @@
+# -*- mode: python -*-
+
+# All of jhbuild is Python, so there are all sorts of interesting
+# things you can do to customize your build with python commands.
+
+# The URL for repositories can be overridden. This is how you'd set
+# your developer access to an SVN repo. It doesn't work, of course,
+# because gnome has migrated to git.
+#
+# repos["svn.gnome.org"] = "svn+ssh://myusername@svn.gnome.org/svn/"
+
+# You can set the default setup here.
+#
+# _gtk_osx_default_build = "fw-10.4"
+# 
+# or set things up with an environment variable: 
+
+_jhb = os.environ.get("JHB")
+if _jhb is None:
+    # The default setup...
+    # checkoutroot = os.path.expanduser("~/Source/gtk")
+    # prefix = "/opt/gtk"
+    pass
+# Do note, though, that jhbuildrc-gtk-osx also uses $JHB to find
+# another customization file that is loaded after this one. You can,
+# of course, define your own environment variables for passing in
+# parameters.
+
+# The moduleset can be overridden.
+#
+# moduleset = "gtk-osx"
+
+# As can the default modules to build.
+#
+# modules = [ "meta-gtk-osx-gtk2", "meta-gstreamer" ]
+
+# You can skip modules.
+#
+# skip.append("libglade")
+#
+#or put them back:
+#
+# if "libglade" in skip:
+#	skip.remove("libglade")
+
+# Uncomment the following if you're running OSX 10.11 or later and SIP (see https://developer.apple.com/library/prerelease/mac/documentation/Security/Conceptual/System_Integrity_Protection_Guide/RuntimeProtections/RuntimeProtections.html)
+# causes shell-script build failures. You'll also need to edit those
+# shell scripts to change the shebang from /bin/sh to $PREFIX/bin/bash.
+# Note that /usr/bin/env bash won't work, because it will also strip
+# the DYLD_* and LD_* environment variables!
+# Note as well that any installed dependencies must use their full
+# paths for their id (use install_name_tool -id to fix). Boost is a
+# particular violator of this rule.
+# if "bash" in skip:
+#     skip.remove("bash")
+
+# In addition, you can override _exec_prefix (used to set $M4 and
+# $LIBTOOLIZE); by default it's set to prefix. You might want to reset
+# it if you want to bootstrap to one directory and build in another
+# (or more likely, several others). Mind that this is fiddly and
+# requires tweaking a bunch of things to get autoconf to consistently
+# find the right m4 files. Not really recommended. Similarly, you can
+# override tarballdir so that you need download tarballs only once for
+# multiple builds. This works just as you'd expect and can save quite
+# a bit of time if you're maintaining several trees.
+
+# _exec_prefix = os.path.join(os.path.expanduser("~"), "Source", "bootstrap")
+# tarballdir = os.path.join(os.path.expanduser("~"), "Source", "Download")
+
+# .jhbuildrc has a master function, setup_sdk(target, architecture)
+# which sets up the build environment. You *must* call it in jhbuildrc-custom.
+
+# Target is the earliest version of MacOS on which the result binary
+# can run, in the form "10.X" or "native" (the default). It sets
+# MACOS_DEPLOYMENT_TARGET and the -macosx-version-min CFLAG.
+
+# From Xcode 7/MacOSX10.11.sdk on Apple has provided a new format
+# dylib stub that links with dylibs from earlier versions of MacOS and
+# has been tested to work back to 10.6 if MACOS_X_VERSION_MIN is set
+# appropriately. Earlier SDKs lack this feature and may or may not
+# actually work on MacOS X versions earlier than the SDK's; whether
+# they do depends on whether the SDK contains a newer "compatibility
+# version" library than the system on which you're attempting to run
+# and which is required by your application.
+
+# Architecture is a list for backwards compatibility; it can contain
+# "i386" and/or "x86_64" and defaults to the machine's architecture if
+# left out. Passing both architectures will in theory build a
+# universal binary but this is untested. Since MacOS X 10.7 and later
+# run only on x86_64 systems it doesn't make sense to change this
+# unless you're targeting 10.6. 32-bit ("i386") programs run fine on
+# 64-bit systems.
+
+# There are also some utility functions which you may find useful:
+#
+# environ_append(key, value, separator=' '), environ_prepend(key,
+# value, separator=' '), and environ_remove(key, value, separator=':')
+# append, prepend, or remove value to/from the environment variable key
+# with separator between the value and the existing text of the
+# variable. This is primarily intended for manipulating search paths.
+#
+# append_autogenargs(module, args) and remove_autogenargs(module,
+# args) add or remove args from the list of arguments passed to the
+# module's autogen-sh attribute during the configure phase of the
+# module's build.
+#
+# setup_debug() and setup_release() add either "-O0 -ggdb3" or
+# "-O2" respectively to CFLAGS, CXXFLAGS, and OBJCFLAGS.
+
+#  Set up a particular target and SDK: For default operation, set the
+# architecture and SDK for the native machine:
+setup_sdk()
+
+# Comment out the previous and uncomment this one to build for all
+# systems running SnowLeopard and later:
+# setup_sdk(target="10.6")
+
+# Modify the arguments passed to configure:
+#
+# module_autogenargs["libglade"] = "--enable-static"
+#
+# or simply  add to them:
+#
+# append_autogenargs("libglade", "--enable-static")
+# 
+# Note that in either case the args will be added *after* the args in
+# the module's autogenargs attribute.
+#
+# Tell Git to use a different module and branch (not tag!):
+#
+# branches["gtk-engines"] = ("gtk-css-engine", "bzr")
+#
+# Or just switch branches
+#
+# branches["gtk+-2.0"] = (None, "gtk-2-18")
+#
+# Tarballs take a whole URL for branches:
+#
+# branches["python"] = "http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tar.bz2"
+#
+# Note that if the module has hash, md5sum, or size attributes and the
+# branch download doesn't match, jhbuild will error out. Open a shell,
+# untar the tarball yourself, quit the shell, and select "ignore
+# error". Don't try this with modules that need patches unless you're
+# sure that the updated version doesn't need them.
+#
+# Set an environment variable:
+#
+# os.environ["CC"] = "/usr/bin/gcc-4.0"
+
+
+# And more...

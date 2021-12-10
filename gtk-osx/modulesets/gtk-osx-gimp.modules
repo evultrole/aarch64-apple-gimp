@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="tarball" name="ftp.gnome.org" default="yes" href="http://ftp.gnome.org/pub/GNOME/sources/"/>
+  <repository type="tarball" name="gimp" href="https://download.gimp.org/pub/"/>
+  <repository type="git" name="git.gnome.org" href="https://gitlab.gnome.org/GNOME"/>
+  <repository type="git" name="git-jtojnar" href="https://gitlab.gnome.org/jtojnar/"/>
+  <repository type="tarball" name="ftp.gimp.org" href="https://ftp.gimp.org/pub/"/>
+  <repository type="tarball" name="poppler.freedesktop.org" href="https://poppler.freedesktop.org/"/>
+  <repository type="tarball" name="videolan" href="https://downloads.videolan.org/pub/videolan/x265/"/>
+  <repository type="tarball" name="github-tarball" href="https://github.com/"/>
+  <repository type="tarball" name="sourceforge" href="http://downloads.sourceforge.net/sourceforge/"/>
+  <repository type="tarball" name="savannah" href="http://download.savannah.nongnu.org/releases/"/>
+  <repository type="tarball" name="www.exiv2.org" href="http://www.exiv2.org/builds/"/>
+  <repository type="tarball" name="nasm" href="https://www.nasm.us/pub/nasm/releasebuilds/"/>
+  <repository type="tarball" name="mirrorservice-ossp"
+	      href="https://www.mirrorservice.org/sites/ftp.ossp.org/pkg/lib/"/>
+
+  <!-- gimp-help-git fails on libxml2 import test. Disabling while looking for the solution.
+       XXX Fix the autogenargs option when removing the comments. Double-hyphen must not
+           happen within a comment (for compatibility reasons).
+  -->
+
+  <autotools id="gimp-help-git" autogenargs="--without-gimp" supports-non-srcdir-builds="no" autogen-sh="autogen.sh">
+    <branch module="gimp-help" revision="gimp-help-2-10" repo="git.gnome.org"/>
+    <dependencies>
+      <dep package="pngcrush"/>
+      <dep package="python3"/>
+      <dep package="libxml2"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="pngcrush" supports-non-srcdir-builds="no" autogen-sh="true" autogen-template="%(autogen-sh)s">
+    <branch module="pmt/pngcrush-1.8.13.tar.xz"
+      version="1.8.13"
+      hash="sha256:8fc18bcbcc65146769241e20f9e21e443b0f4538d581250dce89b1e969a30705"
+      repo="sourceforge">
+      <!-- implement "make install" command to make jhbuild happy -->
+      <patch file="pngcrush-install.patch" strip="0"/>
+    </branch>
+  </autotools>
+
+  <metamodule id="gimp-common-deps">
+    <dependencies>
+      <dep package="lcms"/>
+      <dep package="glib-networking"/>
+      <dep package="poppler"/>
+      <dep package="poppler-data"/>
+      <dep package="fontconfig"/>
+      <dep package="gegl"/>
+      <dep package="libmypaint"/>
+      <dep package="mypaint-brushes"/>
+      <dep package="libheif"/>
+      <dep package="aalib"/>
+      <dep package="libwebp"/>
+      <dep package="shared-mime-info"/>
+      <dep package="iso-codes"/>
+      <dep package="librsvg-24"/>
+      <dep package="gexiv2"/>
+      <dep package="libwmf"/>
+      <dep package="openexr"/>
+      <dep package="libmng"/>
+      <dep package="ghostscript"/>
+    </dependencies>
+  </metamodule>
+
+  <autotools id="gimp299" autogen-sh="autogen.sh" autogenargs="--without-x --with-build-id=org.gimp.GIMP_official --with-revision=0">
+    <branch module="gimp/v2.99/gimp-2.99.8.tar.bz2"
+      version="2.99.8"
+      hash="sha256:dd916bd3474ef2efc652a0510280977ab8ea95e3d95d918394b0662261c32aae"
+      repo="ftp.gimp.org">
+      <patch file="gimp-2.99.8-gsettings.patch" strip="1"/>
+    </branch>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+      <dep package="webkit"/>
+    </after>
+    <dependencies>
+      <dep package="gimp-common-deps"/>
+      <dep package="python3"/>
+      <dep package="meta-gtk-osx-python3"/>
+      <dep package="appstream-glib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="p2tc" supports-non-srcdir-builds="no" autogen-sh="autogen.sh">
+    <branch module="poly2tri-c" tag="p2tc-0.1" repo="git-jtojnar" checkoutdir="poly2tri-c-p2tc-0.1.0">
+    </branch>
+  </autotools>
+
+  <meson id="gegl">
+    <branch repo="ftp.gimp.org"
+      version="0.4.32"
+      hash="sha256:668e3c6b9faf75fb00512701c36274ab6f22a8ba05ec62dbf187d34b8d298fa1"
+      module="gegl/0.4/gegl-0.4.32.tar.xz">
+      <patch file="gegl-0.4.32-no_python_tests.patch" strip="1"/>
+      <patch file="Issue-288-gegl-broken-meson-build.patch" strip="1"/>
+    </branch>
+    <after>
+      <dep package="suitesparse"/>
+      <dep package="openexr"/>
+      <dep package="libwebp"/>
+      <dep package="librsvg-24"/>
+    </after>
+    <dependencies>
+      <dep package="babl"/>
+      <dep package="json-glib"/>
+      <dep package="p2tc"/>
+      <dep package="gexiv2"/>
+      <dep package="libnsgif"/>
+    </dependencies>
+  </meson>
+
+  <autotools id="suitesparse"
+    supports-non-srcdir-builds="no"
+    makeargs="BLAS='-framework Accelerate' LAPACK='-framework Accelerate' config library"
+    makeinstallargs="'INSTALL=$(DESTDIR)/${prefix}' PREFIX=${prefix} install"
+    skip-autogen="true">
+    <branch module="DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.tar.gz"
+      version="5.6.0"
+      rename-tarball="SuiteSparse-5.6.0.tar.gz"
+      checkoutdir="SuiteSparse"
+      repo="github-tarball"
+      hash="sha256:76d34d9f6dafc592b69af14f58c1dc59e24853dcd7c2e8f4c98ffa223f6a1adb">
+      <patch file="suitesparse.diff" strip="0"/>
+    </branch>
+  </autotools>
+
+  <autotools id="json-glib" autogen-sh="configure">
+    <branch module="json-glib/1.2/json-glib-1.2.8.tar.xz"
+      version="1.2.8"
+      hash="sha256:fd55a9037d39e7a10f0db64309f5f0265fa32ec962bf85066087b83a2807f40a"/>
+  </autotools>
+
+  <meson id="babl">
+    <branch repo="ftp.gimp.org"
+      version="0.1.88"
+      module="babl/0.1/babl-0.1.88.tar.xz"
+      hash="sha256:4f0d7f4aaa0bb2e725f349adf7b351a957d9fb26d555d9895a7af816b4167039">
+      <patch file="babl-exports.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="lcms"/>
+      <dep package="gobject-introspection"/>
+    </dependencies>
+  </meson>
+
+  <cmake id="poppler"
+    cmakeargs="-DENABLE_QT5:BOOL=OFF -DWITH_NSS3:BOOL=OFF -DENABLE_BOOST=OFF -DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib">
+    <branch module="poppler-21.11.0.tar.xz"
+      version="21.11.0"
+      repo="poppler.freedesktop.org"
+      hash="sha256:31b76b5cac0a48612fdd154c02d9eca01fd38fb8eaa77c1196840ecdeb53a584"/>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </after>
+    <dependencies>
+      <dep package="openjpeg"/>
+    </dependencies>
+  </cmake>
+
+  <cmake id="poppler-data">
+    <branch module="poppler-data-0.4.11.tar.gz" version="0.4.11" repo="poppler.freedesktop.org"/>
+    <after>
+      <dep package="poppler"/>
+    </after>
+  </cmake>
+
+  <autotools id="nasm" autogen-sh="configure">
+    <branch module="2.14.02/nasm-2.14.02.tar.xz"
+      version="2.14.02"
+      hash="sha256:e24ade3e928f7253aa8c14aa44726d1edf3f98643f87c9d72ec1df44b26be8f5"
+      repo="nasm"/>
+  </autotools>
+
+  <cmake id="x265" cmakeargs="-DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib">
+    <branch checkoutdir="x265_3.2.1"
+      module="x265_3.2.1.tar.gz" version="3.2.1"
+      hash="sha256:fb9badcf92364fd3567f8b5aa0e5e952aeea7a39a2b864387cec31e3b58cbbcc"
+      repo="videolan">
+      <!-- no cmake files in the root folder -->
+      <patch file="x265-cmake.patch" strip="0"/>
+    </branch>
+    <dependencies>
+      <dep package="nasm"/>
+    </dependencies>
+  </cmake>
+
+  <autotools id="libde265" autogen-sh="configure" autogenargs="--disable-sherlock265" supports-non-srcdir-builds="no">
+    <branch module="strukturag/libde265/releases/download/v1.0.4/libde265-1.0.4.tar.gz"
+      version="1.0.4"
+      hash="sha256:c3f033bd59777624859c8d04a5b7ce4210adbce4a500943d2e211c4d517d0116"
+      repo="github-tarball"/>
+  </autotools>
+
+  <autotools id="libheif"
+    supports-non-srcdir-builds="no"
+    autogenargs="--disable-go"
+    autogen-template="%(srcdir)s/%(autogen-sh)s --prefix %(prefix)s %(autogenargs)s &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s  %(autogenargs)s">
+    <branch module="strukturag/libheif/releases/download/v1.6.1/libheif-1.6.1.tar.gz"
+      version="1.6.1"
+      hash="sha256:a22611289464da08fa7e580c95ea5e1b1b522b96ee6807de9b3b4605efb621d1"
+      repo="github-tarball">
+      <!-- Fix for the gdk pixbuf loader -->
+      <patch file="https://patch-diff.githubusercontent.com/raw/strukturag/libheif/pull/194.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="libde265"/>
+      <dep package="x265"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="aalib" autogen-sh="configure" autogenargs="--without-x --with-curses-driver=no">
+    <branch module="aa-project/aalib-1.4rc5.tar.gz"
+      version="1.4.0"
+      hash="sha256:fbddda9230cf6ee2a4f5706b4b11e2190ae45f5eda1f0409dc4f99b35e0a70ee"
+      repo="sourceforge"
+      checkoutdir="aalib-1.4.0">
+      <!--
+      # Fix malloc/stdlib issue on macOS
+      # Fix underquoted definition of AM_PATH_AALIB in aalib.m4
+      # Fix various missing include directives across several files
+      -->
+      <patch file="DJM_aalib_merged_patch.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="libwmf" autogen-sh="configure" autogenargs="--with-freetype=$JHBUILD_PREFIX">
+    <branch module="wvware/libwmf/0.2.8.4/libwmf-0.2.8.4.tar.gz"
+      version="0.2.8.4"
+      hash="sha256:5b345c69220545d003ad52bfd035d5d6f4f075e65204114a9e875e84895a7cf8"
+      repo="sourceforge">
+    </branch>
+    <dependencies>
+      <dep package="libpng"/>
+    </dependencies>
+    <after>
+      <dep package="gdk-pixbuf"/>
+    </after>
+  </autotools>
+
+  <autotools id="openexr" autogen-sh="configure">
+    <branch module="openexr/openexr/releases/download/v2.3.0/openexr-2.3.0.tar.gz"
+      version="2.3.0"
+      hash="sha256:fd6cb3a87f8c1a233be17b94c74799e6241d50fc5efd4df75c7a4b9cf4e25ea6"
+      repo="github-tarball">
+    </branch>
+    <dependencies>
+      <dep package="ilmbase"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="ilmbase" autogen-sh="configure">
+    <branch module="openexr/openexr/releases/download/v2.3.0/ilmbase-2.3.0.tar.gz"
+      version="2.3.0"
+      hash="sha256:456978d1a978a5f823c7c675f3f36b0ae14dba36638aeaa3c4b0e784f12a3862"
+      repo="github-tarball">
+    </branch>
+  </autotools>
+
+  <cmake id="libmng"
+    cmakeargs="-DMNG_INSTALL_LIB_DIR=$JHBUILD_PREFIX/lib -DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=true -DCMAKE_MACOSX_RPATH=true . -DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib"
+    hash="sha256:4a462fdd48d4bc82c1d7a21106c8a18b62f8cc0042454323058e6da0dbb57dd3">
+    <branch module="project/libmng/libmng-devel/2.0.3/libmng-2.0.3.tar.xz" version="2.0.3" repo="sourceforge"/>
+    <dependencies>
+      <dep package="libjpeg"/>
+      <dep package="lcms"/>
+    </dependencies>
+  </cmake>
+
+  <!-- open-source library to encode and decode JPEG 2000 -->
+  <cmake id="openjpeg">
+    <branch module="uclouvain/openjpeg/archive/v2.3.1.tar.gz"
+    version="2.3.1"
+    repo="github-tarball"
+    checkoutdir="openjpeg-2.3.1"/>
+  </cmake>
+
+  <autotools id="libmypaint" autogen-sh="configure">
+    <dependencies>
+      <dep package="json-c"/>
+    </dependencies>
+    <after>
+      <dep package="gegl"/>
+    </after>
+    <branch
+      hash="sha256:59d13b14c6aca0497095f29ee7228ca2499a923ba8e1dd718a2f2ecb45a9cbff"
+      module="mypaint/libmypaint/releases/download/v1.4.0/libmypaint-1.4.0.tar.xz"
+      version="1.4.0"
+      repo="github-tarball"
+      checkoutdir="libmypaint-1.3.0"/>
+  </autotools>
+
+  <autotools id="mypaint-brushes"
+    autogen-template="pushd %(srcdir)s &amp;&amp; ACLOCAL=aclocal AUTOMAKE=automake ./%(autogen-sh)s &amp;&amp; popd &amp;&amp; %(srcdir)s/configure --prefix=%(prefix)s %(autogenargs)s">
+    <dependencies>
+      <dep package="libmypaint"/>
+    </dependencies>
+    <branch module="mypaint/mypaint-brushes/archive/v1.3.0.tar.gz"
+    version="1.3.0"
+    repo="github-tarball"
+    checkoutdir="mypaint-brushes-1.3.0"/>
+  </autotools>
+
+  <autotools id="json-c" autogen-sh="configure">
+    <branch module="json-c/json-c/archive/json-c-0.13.1-20180305.tar.gz"
+      version="0.13.1"
+      repo="github-tarball"
+      checkoutdir="json-c"/>
+  </autotools>
+
+  <meson id="gexiv2">
+    <branch repo="ftp.gnome.org"
+       version="0.12.3"
+       module="gexiv2/0.12/gexiv2-0.12.3.tar.xz"
+       hash="sha256:d23b7972a2fc6f840150bad1ed79c1cbec672951e180c1e1ec33ca6c730c59f3">
+       <patch file="gexiv2-0.12.3-stop-python-tests.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="exiv2"/>
+    </dependencies>
+  </meson>
+
+  <cmake id="exiv2" cmakeargs="-DCMAKE_INSTALL_NAME_DIR=$JHBUILD_PREFIX/lib">
+    <branch repo="www.exiv2.org"
+      checkoutdir="exiv2-0.27.2-Source"
+      version="0.27.2"
+      module="exiv2-0.27.2-Source.tar.gz"
+      hash="sha256:2652f56b912711327baff6dc0c90960818211cf7ab79bb5e1eb59320b78d153f">
+    </branch>
+  </cmake>
+
+  <autotools id="ghostscript"
+    makeargs="all so"
+    supports-non-srcdir-builds="no"
+    makeinstallargs="install install-so"
+    autogenargs="--disable-cups">
+    <branch repo="github-tarball"
+      version="9.50"
+      module="ArtifexSoftware/ghostpdl-downloads/releases/download/gs950/ghostscript-9.50.tar.xz"
+      hash="sha256:db9bb0817b6f22974e6d5ad751975f346420c2c86a0afcfe6b4e09c47803e7d4">
+      <patch file="ghostscript-lib.patch" strip="0"/>
+      <patch file="ghostscript-9.50-add-required-config-files.patch" strip="1"/>
+    </branch>
+    <!-- <branch repo="github-tarball"
+      version="9.55.0"
+      module="ArtifexSoftware/ghostpdl-downloads/releases/download/gs9550/ghostscript-9.55.0.tar.gz"
+      hash="sha256:31e2064be67e15b478a8da007d96d6cd4d2bee253e5be220703a225f7f79a70b">
+      <patch file="ghostscript-9.55.0-leptonica-MacOSX10.12.sdk-no-open_memstream.patch" strip="1"/>
+    </branch> -->
+    <dependencies>
+      <dep package="lcms"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libarchive"  autogenargs="--without-xml2 -without-lzo2 --without-nettle --without-openssl --with-expat">
+    <branch repo="github-tarball"
+      version="3.4.1"
+      module="libarchive/libarchive/releases/download/v3.4.1/libarchive-3.4.1.tar.xz"
+      hash="sha256:bb84e02f08cc3027e08e2473fc46eb7724ba9244e9c6ef8d122f68addd6042f7"/>
+  </autotools>
+
+  <autotools id="util-linux"
+    autogen-template="%(srcdir)s/%(autogen-sh)s --prefix %(prefix)s %(autogenargs)s &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s  %(autogenargs)s"
+    autogenargs="--disable-dependency-tracking --disable-silent-rules --disable-ipcs --disable-ipcrm --disable-wall --enable-libuuid">
+    <branch repo="github-tarball"
+      version="2.34"
+      module="karelzak/util-linux/archive/v2.34.tar.gz"
+      checkoutdir="util-linux"
+      hash="sha256:1d0c1a38f8c14a2c251681907203cccc78704f5702f2ef4b438bed08344242f7"/>
+  </autotools>
+
+  <autotools id="libyaml"
+    supports-non-srcdir-builds="no"
+    autogen-template="%(srcdir)s/bootstrap &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s %(autogenargs)s"
+    autogenargs="--disable-dependency-tracking">
+    <branch repo="github-tarball"
+      version="0.2.2"
+      module="yaml/libyaml/archive/0.2.2.tar.gz"
+      checkoutdir="libyaml"
+      hash="sha256:46bca77dc8be954686cff21888d6ce10ca4016b360ae1f56962e6882a17aa1fe"/>
+  </autotools>
+
+  <autotools id="uuid" supports-non-srcdir-builds="no">
+    <branch repo="mirrorservice-ossp"
+      version="1.6.2"
+      module="uuid/uuid-1.6.2.tar.gz"
+      hash="sha256:11a615225baa5f8bb686824423f50e4427acd3f70d394765bdff32801f0fd5b0"/>
+  </autotools>
+
+  <meson id="appstream-glib" mesonargs="-Dstemmer=false -Drpm=false">
+    <branch repo="github-tarball"
+      checkoutdir="appstream-glib"
+      version="0.7.18"
+      module="hughsie/appstream-glib/archive/appstream_glib_0_7_18.zip"
+      hash="sha256:7b0aebc7dda1694b01aaae7e00e207b4a38d3b5274adbfbfbabb1df749c5d899">
+    </branch>
+    <dependencies>
+      <dep package="freetype"/>
+      <dep package="gdk-pixbuf"/>
+      <dep package="glib"/>
+      <dep package="gtk+-3.0"/>
+      <dep package="json-glib"/>
+      <dep package="libarchive"/>
+      <dep package="libsoup"/>
+      <dep package="libyaml"/>
+      <dep package="uuid"/>
+    </dependencies>
+  </meson>
+
+</moduleset>

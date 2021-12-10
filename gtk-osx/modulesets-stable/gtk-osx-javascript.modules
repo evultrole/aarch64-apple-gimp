@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+
+  <repository type="tarball" name="ftp.gnome.org" default="yes"
+              href="http://ftp.gnome.org/pub/GNOME/sources/"/>
+  <repository type="tarball" name="mozilla"
+              href="https://ftp.mozilla.org/pub/"/>
+
+  <metamodule id="meta-gtk-osx-javascript">
+    <dependencies>
+      <dep package="gjs"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-gtk3"/>
+      <dep package="meta-gtk-osx-gtk3.14"/>
+      <dep package="meta-gtk-osx-bootstrap"/>
+    </after>
+  </metamodule>
+
+  <meson id="gjs" mesonargs="-Dinstalled_tests=true -Dskip_dbus_tests=true -Dskip_gtk_tests=true" >
+    <branch version="1.68.0" module="gjs/1.68/gjs-1.68.0.tar.xz"
+            hash="sha256:f00e74a00e81ab61bb92669e0f1c8bb613cc019586097f06aed0572efcaf1aef">
+      <!-- Code coverage depends on a non-existant function in a non-existant header. -->
+      <patch file="gjs-remove-js::CodeCoverage.patch" strip="1"/>
+
+    </branch>
+    <dependencies>
+      <dep package="gobject-introspection"/>
+      <dep package="spidermonkey"/>
+    </dependencies>
+  </meson>
+
+  <autotools id="spidermonkey" autogen-sh="configure"
+             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s %(autogenargs)s"
+             autogenargs="--with-system-nspr --with-system-icu --disable-jemalloc --with-intl-api --enable-optimize --enable-coverage">
+    <branch repo="mozilla" version="78.1.0" 
+            checkoutdir="firefox-78.1.0" source-subdir="js/src"
+            module="firefox/releases/78.1.0esr/firefox-78.1.0esr.source.tar.xz" 
+            hash="sha256:3600a396d9312c5e9f637b267926ca4771d84a56b26b960cc7d72e98683b64a2">
+      <patch file="firefox78-rust-manifest-and-max-sdk.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="libffi"/>
+      <dep package="icu"/>
+      <dep package="nspr"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="nspr" autogen-sh="configure"
+             autogenargs="--enable-64bit" check-target="false">
+    <branch repo="mozilla" version="4.30" source-subdir="nspr"
+            module="nspr/releases/v4.30/src/nspr-4.30.tar.gz"
+            href="sha256:8d4cd8f8409484dc4c3d31e180354bfc506573eccf86cd691106a1ef7edc913b">
+    </branch>
+  </autotools>
+
+</moduleset>

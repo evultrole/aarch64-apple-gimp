@@ -1,0 +1,9 @@
+Remove build dependency on Python3
+--- libsoup/tld-parser.py.orig	2018-06-23 14:15:29.000000000 +0200
++++ libsoup/tld-parser.py	2018-06-23 14:15:43.000000000 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python3
++#!/usr/bin/env python
+
+ # Generate tld rules
+ # Copyright (C) 2012 Red Hat, Inc.

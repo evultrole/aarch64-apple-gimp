@@ -1,0 +1,13 @@
+diff -Naur a/tests/meson.build b/tests/meson.build
+--- a/tests/meson.build	2021-09-05 18:26:29.000000000 +0100
++++ b/tests/meson.build	2021-09-19 21:59:33.000000000 +0100
+@@ -41,9 +41,6 @@
+ subdir('mipmap')
+ subdir('opencl')
+ subdir('compositions')
+-if pygobject3.found()
+-  subdir('python')
+-endif
+ if get_option('operation-test')
+   subdir('operations')
+ endif

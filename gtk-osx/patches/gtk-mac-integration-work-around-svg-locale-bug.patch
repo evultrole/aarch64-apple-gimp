@@ -1,0 +1,33 @@
+From 9774a706d1d89abaaf3dfbd9522b28934cc29138 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Sat, 18 Sep 2021 13:11:02 -0700
+Subject: [PATCH] Set C locale when creating a menu item.
+
+Works around macOS bug described in https://gitlab.gnome.org/GNOME/gtk-mac-integration/-/issues/14.
+---
+ src/GNSMenuItem.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/GNSMenuItem.c b/src/GNSMenuItem.c
+index 48ec0d1..81d2547 100644
+--- a/src/GNSMenuItem.c
++++ b/src/GNSMenuItem.c
+@@ -44,6 +44,7 @@ idle_call_activate (ClosureData *action)
+ 
+   /* All menu items have the action "activate", which will be handled by this child class
+    */
++  const char* locale = setlocale(LC_NUMERIC, "C");
+   self = [ super initWithTitle: title action: @selector (activate: ) keyEquivalent: @"" ];
+ 
+   if (self)
+@@ -58,6 +59,7 @@ idle_call_activate (ClosureData *action)
+       notUsed = NO;
+       g_weak_ref_set (&menuItem, GTK_MENU_ITEM (gtkmenuitem));
+     }
++  setlocale(LC_NUMERIC, locale);
+   return self;
+ }
+ 
+-- 
+2.30.1 (Apple Git-130)
+

@@ -1,0 +1,55 @@
+--- a/CMakeLists.txt	2021-03-15 17:04:01.000000000 -0700
++++ b/CMakeLists.txt	2021-07-29 13:42:38.000000000 -0700
+@@ -72,6 +72,8 @@
+ # Name of the config file used by Graphviz
+ set(GVPLUGIN_CONFIG_FILE config${GRAPHVIZ_PLUGIN_VERSION})
+ 
++set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${LIBRARY_INSTALL_DIR}")
++
+ # ============================ Library dependencies ============================
+ if (WIN32)
+     list(APPEND CMAKE_PREFIX_PATH ${WINDOWS_DEPENDENCY_DIR})
+--- a/plugin/core/CMakeLists.txt	2021-03-15 17:04:01.000000000 -0700
++++ b/plugin/core/CMakeLists.txt	2021-07-29 13:42:09.000000000 -0700
+@@ -53,6 +53,8 @@
+     ARCHIVE DESTINATION ${LIBRARY_INSTALL_DIR}
+ )
+ 
++set_target_properties(gvplugin_core PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}")
++
+ # Specify library version and soversion
+ set_target_properties(gvplugin_core PROPERTIES
+     VERSION ${GRAPHVIZ_PLUGIN_VERSION}.0.0
+--- a/plugin/pango/CMakeLists.txt	2021-03-15 17:04:01.000000000 -0700
++++ b/plugin/pango/CMakeLists.txt	2021-07-29 13:43:13.000000000 -0700
+@@ -40,6 +40,8 @@
+     ARCHIVE DESTINATION ${LIBRARY_INSTALL_DIR}
+ )
+ 
++set_target_properties(gvplugin_pango PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}")
++
+ # Include DLLs with this library on Windows
+ if (WIN32)
+     install(
+--- a/plugin/neato_layout/CMakeLists.txt	2021-03-15 17:04:01.000000000 -0700
++++ b/plugin/neato_layout/CMakeLists.txt	2021-07-29 13:42:57.000000000 -0700
+@@ -45,6 +45,8 @@
+     ARCHIVE DESTINATION ${LIBRARY_INSTALL_DIR}
+ )
+ 
++set_target_properties(gvplugin_neato_layout PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}")
++
+ # Specify library version and soversion
+ set_target_properties(gvplugin_neato_layout PROPERTIES
+     VERSION ${GRAPHVIZ_PLUGIN_VERSION}.0.0
+--- a/plugin/dot_layout/CMakeLists.txt	2021-03-15 17:04:01.000000000 -0700
++++ b/plugin/dot_layout/CMakeLists.txt	2021-07-29 13:42:28.000000000 -0700
+@@ -30,6 +30,8 @@
+     ARCHIVE DESTINATION ${LIBRARY_INSTALL_DIR}
+ )
+ 
++set_target_properties(gvplugin_dot_layout PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}")
++
+ # Specify library version and soversion
+ set_target_properties(gvplugin_dot_layout PROPERTIES
+     VERSION ${GRAPHVIZ_PLUGIN_VERSION}.0.0

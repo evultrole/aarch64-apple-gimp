@@ -1,0 +1,35 @@
+From 5f2c208df57203fe0149bd588a5b9528ad7cdd6a Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Mon, 9 Nov 2020 09:42:08 -0800
+Subject: [PATCH 7/7] Fix Socket signal defines for Darwin (and maybe BSD).
+
+---
+ Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp b/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
+index 3d54402..b053dd1 100644
+--- a/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
++++ b/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
+@@ -31,6 +31,7 @@
+ #include "DataReference.h"
+ #include "SharedMemory.h"
+ #include "UnixMessage.h"
++#include <sys/types.h>
+ #include <sys/socket.h>
+ #include <unistd.h>
+ #include <errno.h>
+@@ -56,6 +57,10 @@
+ #endif
+ #endif // SOCK_SEQPACKET
+ 
++#ifndef MSG_NOSIGNAL // Not defined in Darwin's socket implementation.
++#define MSG_NOSIGNAL 0x2000
++#endif
++
+ namespace IPC {
+ 
+ static const size_t messageMaxSize = 4096;
+-- 
+2.2.2
+

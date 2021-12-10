@@ -1,0 +1,46 @@
+From ab145a5642e7725bd2e8313e96a8ff0fdc53a49c Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Sat, 22 Apr 2017 16:35:27 -0700
+Subject: [PATCH 3/3] [GTK] Fix some missing/misnamed includes.
+
+---
+ .../platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.h   | 4 ++--
+ .../platform/graphics/texmap/coordinated/CoordinatedGraphicsState.h   | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.h b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.h
+index bf25111..06b0782 100644
+--- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.h
++++ b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.h
+@@ -30,8 +30,8 @@
+ #include "GraphicsLayerTransform.h"
+ #include "Image.h"
+ #include "IntSize.h"
+-#include "TextureMapperAnimation.h"
+-#include "TextureMapperPlatformLayer.h"
++#include "../TextureMapperAnimation.h"
++#include "../TextureMapperPlatformLayer.h"
+ #include "TiledBackingStore.h"
+ #include "TiledBackingStoreClient.h"
+ #include "TransformationMatrix.h"
+diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsState.h b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsState.h
+index c810530..3f09b58 100644
+--- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsState.h
++++ b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedGraphicsState.h
+@@ -36,11 +36,11 @@
+ #include "IntRect.h"
+ #include "IntSize.h"
+ #include "SurfaceUpdateInfo.h"
+-#include "TextureMapperAnimation.h"
++#include "../TextureMapperAnimation.h"
+ #include "TransformationMatrix.h"
+ 
+ #if USE(COORDINATED_GRAPHICS_THREADED)
+-#include "TextureMapperPlatformLayerProxy.h"
++#include "../TextureMapperPlatformLayerProxy.h"
+ #endif
+ 
+ namespace WebCore {
+-- 
+2.2.2
+

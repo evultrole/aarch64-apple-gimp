@@ -1,0 +1,348 @@
+From c3b35fd601ab47bb9fd903322759f02f936faa62 Mon Sep 17 00:00:00 2001
+From: Jehan <jehan@girinstud.io>
+Date: Sun, 9 May 2021 02:17:23 +0200
+Subject: [PATCH] Issue #5640: Selection tools not showing selection on
+ Wayland.
+
+As suggested in a comment (itself coming from an IRC discussion), we
+should not use gdk_window_(begin|end)_draw_frame() functions as this
+works on X, but not on Wayland anymore. Instead draw directly during
+draw() call of the shell widget, and force it to happen regularly, to
+update the marching ants, via gtk_widget_queue_draw_region().
+
+This is tested and works on Wayland. Please everyone, test thoroughly to
+make sure it works well in all situations, and also that we don't get
+any unexpected slowdowns.
+
+Since the symptoms are very similar, it is highly possible that it also
+fixes the issue #5952 too, for selection not showing on macOS since Big
+Sur 11 (maybe they changed the same way as Wayland did). Unfortunately I
+can't check this myself. Please test, whoever has access to a macOS Big
+Sur and can build GIMP!
+
+(cherry picked from commit 4fee04b83989dd00c57483bc6bf915f784b483db)
+---
+ app/display/gimpdisplayshell-selection.c | 146 +++++++++++------------
+ app/display/gimpdisplayshell-selection.h |   2 +
+ app/display/gimpdisplayshell.c           |  17 +++
+ app/display/gimpdisplayshell.h           |   1 +
+ 4 files changed, 93 insertions(+), 73 deletions(-)
+
+diff --git a/app/display/gimpdisplayshell-selection.c b/app/display/gimpdisplayshell-selection.c
+index 3098ddcb31..54cb398f33 100644
+--- a/app/display/gimpdisplayshell-selection.c
++++ b/app/display/gimpdisplayshell-selection.c
+@@ -63,8 +63,6 @@ struct _Selection
+ static void      selection_start          (Selection          *selection);
+ static void      selection_stop           (Selection          *selection);
+ 
+-static void      selection_draw           (Selection          *selection,
+-                                           cairo_t            *cr);
+ static void      selection_undraw         (Selection          *selection);
+ 
+ static void      selection_render_mask    (Selection          *selection);
+@@ -72,12 +70,13 @@ static void      selection_render_mask    (Selection          *selection);
+ static void      selection_zoom_segs      (Selection          *selection,
+                                            const GimpBoundSeg *src_segs,
+                                            GimpSegment        *dest_segs,
+-                                           gint                n_segs);
++                                           gint                n_segs,
++                                           gint                canvas_offset_x,
++                                           gint                canvas_offset_y);
+ static void      selection_generate_segs  (Selection          *selection);
+ static void      selection_free_segs      (Selection          *selection);
+ 
+ static gboolean  selection_start_timeout  (Selection          *selection);
+-static gboolean  selection_timeout        (Selection          *selection);
+ 
+ static gboolean  selection_window_state_event      (GtkWidget           *shell,
+                                                     GdkEventWindowState *event,
+@@ -104,6 +103,7 @@ gimp_display_shell_selection_init (GimpDisplayShell *shell)
+   selection->show_selection = gimp_display_shell_get_show_selection (shell);
+ 
+   shell->selection = selection;
++  shell->selection_update = g_get_monotonic_time ();
+ 
+   g_signal_connect (shell, "window-state-event",
+                     G_CALLBACK (selection_window_state_event),
+@@ -246,15 +246,41 @@ selection_stop (Selection *selection)
+     }
+ }
+ 
+-static void
+-selection_draw (Selection *selection,
+-                cairo_t   *cr)
++void
++gimp_display_shell_selection_draw (GimpDisplayShell *shell,
++                                   cairo_t          *cr)
+ {
+-  if (selection->segs_in)
++  if (gimp_display_get_image (shell->display) &&
++      shell->selection && shell->selection->show_selection)
+     {
+-      gimp_display_shell_draw_selection_in (selection->shell, cr,
+-                                            selection->segs_in_mask,
+-                                            selection->index % 8);
++      GimpDisplayConfig *config = shell->display->config;
++      gint64             time   = g_get_monotonic_time ();
++
++      if ((time - shell->selection_update) / 1000 > config->marching_ants_speed &&
++          shell->selection->paused == 0)
++        {
++          shell->selection_update = time;
++          shell->selection->index++;
++        }
++
++      selection_generate_segs (shell->selection);
++
++      if (shell->selection->segs_in)
++        {
++          gimp_display_shell_draw_selection_in (shell->selection->shell, cr,
++                                                shell->selection->segs_in_mask,
++                                                shell->selection->index % 8);
++        }
++
++      if (shell->selection->segs_out)
++        {
++          if (shell->selection->shell->rotate_transform)
++            cairo_transform (cr, shell->selection->shell->rotate_transform);
++
++          gimp_display_shell_draw_selection_out (shell->selection->shell, cr,
++                                                 shell->selection->segs_out,
++                                                 shell->selection->n_segs_out);
++        }
+     }
+ }
+ 
+@@ -310,7 +336,9 @@ static void
+ selection_zoom_segs (Selection          *selection,
+                      const GimpBoundSeg *src_segs,
+                      GimpSegment        *dest_segs,
+-                     gint                n_segs)
++                     gint                n_segs,
++                     gint                canvas_offset_x,
++                     gint                canvas_offset_y)
+ {
+   const gint xclamp = selection->shell->disp_width + 1;
+   const gint yclamp = selection->shell->disp_height + 1;
+@@ -324,11 +352,11 @@ selection_zoom_segs (Selection          *selection,
+     {
+       if (! selection->shell->rotate_transform)
+         {
+-          dest_segs[i].x1 = CLAMP (dest_segs[i].x1, -1, xclamp);
+-          dest_segs[i].y1 = CLAMP (dest_segs[i].y1, -1, yclamp);
++          dest_segs[i].x1 = CLAMP (dest_segs[i].x1, -1, xclamp) + canvas_offset_x;
++          dest_segs[i].y1 = CLAMP (dest_segs[i].y1, -1, yclamp) + canvas_offset_y;
+ 
+-          dest_segs[i].x2 = CLAMP (dest_segs[i].x2, -1, xclamp);
+-          dest_segs[i].y2 = CLAMP (dest_segs[i].y2, -1, yclamp);
++          dest_segs[i].x2 = CLAMP (dest_segs[i].x2, -1, xclamp) + canvas_offset_x;
++          dest_segs[i].y2 = CLAMP (dest_segs[i].y2, -1, yclamp) + canvas_offset_y;
+         }
+ 
+       /*  If this segment is a closing segment && the segments lie inside
+@@ -359,6 +387,10 @@ selection_generate_segs (Selection *selection)
+   GimpImage          *image = gimp_display_get_image (selection->shell->display);
+   const GimpBoundSeg *segs_in;
+   const GimpBoundSeg *segs_out;
++  gint                canvas_offset_x = 0;
++  gint                canvas_offset_y = 0;
++
++  selection_free_segs (selection);
+ 
+   /*  Ask the image for the boundary of its selected region...
+    *  Then transform that information into a new buffer of GimpSegments
+@@ -368,29 +400,29 @@ selection_generate_segs (Selection *selection)
+                          &selection->n_segs_in, &selection->n_segs_out,
+                          0, 0, 0, 0);
+ 
++  if (selection->n_segs_in || selection->n_segs_out)
++    gtk_widget_translate_coordinates (GTK_WIDGET (selection->shell->canvas),
++                                      GTK_WIDGET (selection->shell),
++                                      0, 0,
++                                      &canvas_offset_x, &canvas_offset_y);
++
+   if (selection->n_segs_in)
+     {
+       selection->segs_in = g_new (GimpSegment, selection->n_segs_in);
+       selection_zoom_segs (selection, segs_in,
+-                           selection->segs_in, selection->n_segs_in);
++                           selection->segs_in, selection->n_segs_in,
++                           canvas_offset_x, canvas_offset_y);
+ 
+       selection_render_mask (selection);
+     }
+-  else
+-    {
+-      selection->segs_in = NULL;
+-    }
+ 
+   /*  Possible secondary boundary representation  */
+   if (selection->n_segs_out)
+     {
+       selection->segs_out = g_new (GimpSegment, selection->n_segs_out);
+       selection_zoom_segs (selection, segs_out,
+-                           selection->segs_out, selection->n_segs_out);
+-    }
+-  else
+-    {
+-      selection->segs_out = NULL;
++                           selection->segs_out, selection->n_segs_out,
++                           canvas_offset_x, canvas_offset_y);
+     }
+ }
+ 
+@@ -401,7 +433,7 @@ selection_free_segs (Selection *selection)
+   selection->n_segs_in = 0;
+ 
+   g_clear_pointer (&selection->segs_out, g_free);
+-  selection->segs_out = NULL;
++  selection->n_segs_out = 0;
+ 
+   g_clear_pointer (&selection->segs_in_mask, cairo_pattern_destroy);
+ }
+@@ -409,61 +441,29 @@ selection_free_segs (Selection *selection)
+ static gboolean
+ selection_start_timeout (Selection *selection)
+ {
+-  selection_free_segs (selection);
+   selection->timeout = 0;
+ 
+-  if (! gimp_display_get_image (selection->shell->display))
+-    return FALSE;
+-
+-  selection_generate_segs (selection);
+-
+-  selection->index = 0;
+-
+   /*  Draw the ants  */
+-  if (selection->show_selection)
++  if (gimp_display_get_image (selection->shell->display) &&
++      selection->show_selection)
+     {
+-      GimpDisplayConfig *config = selection->shell->display->config;
+-      cairo_t           *cr;
++      GdkWindow             *window;
++      cairo_rectangle_int_t  rect;
++      cairo_region_t        *region;
+ 
+-      cr = gdk_cairo_create (gtk_widget_get_window (selection->shell->canvas));
+-
+-      selection_draw (selection, cr);
+-
+-      if (selection->segs_out)
+-        {
+-          if (selection->shell->rotate_transform)
+-            cairo_transform (cr, selection->shell->rotate_transform);
+-
+-          gimp_display_shell_draw_selection_out (selection->shell, cr,
+-                                                 selection->segs_out,
+-                                                 selection->n_segs_out);
+-        }
++      window = gtk_widget_get_window (selection->shell->canvas);
+ 
+-      cairo_destroy (cr);
++      rect.x      = 0;
++      rect.y      = 0;
++      rect.width  = gdk_window_get_width  (window);
++      rect.height = gdk_window_get_height (window);
+ 
+-      if (selection->segs_in && selection->shell_visible)
+-        selection->timeout = g_timeout_add_full (G_PRIORITY_DEFAULT_IDLE,
+-                                                 config->marching_ants_speed,
+-                                                 (GSourceFunc) selection_timeout,
+-                                                 selection, NULL);
++      region = cairo_region_create_rectangle (&rect);
++      gtk_widget_queue_draw_region (GTK_WIDGET (selection->shell), region);
++      cairo_region_destroy (region);
+     }
+ 
+-  return FALSE;
+-}
+-
+-static gboolean
+-selection_timeout (Selection *selection)
+-{
+-  cairo_t *cr;
+-
+-  cr = gdk_cairo_create (gtk_widget_get_window (selection->shell->canvas));
+-
+-  selection->index++;
+-  selection_draw (selection, cr);
+-
+-  cairo_destroy (cr);
+-
+-  return TRUE;
++  return G_SOURCE_REMOVE;
+ }
+ 
+ static void
+diff --git a/app/display/gimpdisplayshell-selection.h b/app/display/gimpdisplayshell-selection.h
+index 2f63c80175..c7b0a5f7a0 100644
+--- a/app/display/gimpdisplayshell-selection.h
++++ b/app/display/gimpdisplayshell-selection.h
+@@ -31,5 +31,7 @@ void   gimp_display_shell_selection_resume   (GimpDisplayShell     *shell);
+ void   gimp_display_shell_selection_set_show (GimpDisplayShell     *shell,
+                                               gboolean              show);
+ 
++void   gimp_display_shell_selection_draw     (GimpDisplayShell     *shell,
++                                              cairo_t              *cr);
+ 
+ #endif  /*  __GIMP_DISPLAY_SHELL_SELECTION_H__  */
+diff --git a/app/display/gimpdisplayshell.c b/app/display/gimpdisplayshell.c
+index 9603e4fae4..5cc8369dec 100644
+--- a/app/display/gimpdisplayshell.c
++++ b/app/display/gimpdisplayshell.c
+@@ -151,6 +151,8 @@ static void      gimp_display_shell_unmap          (GtkWidget        *widget);
+ static void      gimp_display_shell_screen_changed (GtkWidget        *widget,
+                                                     GdkScreen        *previous);
+ static gboolean  gimp_display_shell_popup_menu     (GtkWidget        *widget);
++static gboolean  gimp_display_shell_draw           (GtkWidget        *widget,
++                                                    cairo_t          *cr);
+ 
+ static void      gimp_display_shell_real_scaled    (GimpDisplayShell *shell);
+ static void      gimp_display_shell_real_scrolled  (GimpDisplayShell *shell);
+@@ -255,6 +257,7 @@ gimp_display_shell_class_init (GimpDisplayShellClass *klass)
+   widget_class->unmap              = gimp_display_shell_unmap;
+   widget_class->screen_changed     = gimp_display_shell_screen_changed;
+   widget_class->popup_menu         = gimp_display_shell_popup_menu;
++  widget_class->draw               = gimp_display_shell_draw;
+ 
+   klass->scaled                    = gimp_display_shell_real_scaled;
+   klass->scrolled                  = gimp_display_shell_real_scrolled;
+@@ -1053,6 +1056,20 @@ gimp_display_shell_popup_menu (GtkWidget *widget)
+   return TRUE;
+ }
+ 
++static gboolean
++gimp_display_shell_draw (GtkWidget *widget,
++                         cairo_t   *cr)
++{
++  GtkWidgetClass   *widget_class = g_type_class_peek_parent (parent_class);
++  GimpDisplayShell *shell        = GIMP_DISPLAY_SHELL (widget);
++  gboolean          stop_handlers;
++
++  stop_handlers = widget_class->draw (widget, cr);
++  gimp_display_shell_selection_draw (shell, cr);
++
++  return stop_handlers;
++}
++
+ static void
+ gimp_display_shell_real_scaled (GimpDisplayShell *shell)
+ {
+diff --git a/app/display/gimpdisplayshell.h b/app/display/gimpdisplayshell.h
+index 1da9d8f65b..b38123cd6a 100644
+--- a/app/display/gimpdisplayshell.h
++++ b/app/display/gimpdisplayshell.h
+@@ -96,6 +96,7 @@ struct _GimpDisplayShell
+   gboolean           show_all;         /*  show the entire image              */
+ 
+   Selection         *selection;        /*  Selection (marching ants)          */
++  gint64             selection_update; /*  Last selection index update        */
+ 
+   GList             *children;
+ 
+-- 
+2.30.0
+

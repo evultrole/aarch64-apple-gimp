@@ -1,0 +1,244 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="git" name="git.gnome.org" default="yes"
+              href="https://gitlab.gnome.org/GNOME"/>
+  <repository type="tarball" name="github-tarball" href="https://github.com/"/>
+  <repository type="git" name="github.com" href="https://git@github.com/"/>
+  <repository type="tarball" name="ftp.gnome.org"
+              href="http://download.gnome.org/sources/"/>
+  <repository type="tarball" name="ftp.gnu.org" href="https://ftp.gnu.org/gnu/"/>
+  <repository type="tarball" name="shared-mime-info"
+              href="https://gitlab.freedesktop.org/xdg/shared-mime-info/uploads/"/>
+  <repository type="tarball" name="iso-codes"
+              href="https://salsa.debian.org/iso-codes-team/iso-codes/uploads/"/>
+  <repository type="tarball" name="sourceforge"
+              href="http://downloads.sourceforge.net/sourceforge/"/>
+  <repository type="tarball" name="graphviz"
+              href="https://gitlab.com/graphviz/graphviz/-/archive/"/>
+  <repository type="tarball" name="sqlite" href="http://www.sqlite.org/"/>
+  <repository type="tarball" name="frodo"
+              href="http://frodo.looijaard.name/system/files/software/"/>
+  <repository type="tarball" name="paguire" href="https://releases.pagure.org/"/>
+  <repository type="tarball" name="pcre" href="https://ftp.pcre.org/pub/"/>
+
+   <cmake id="graphviz">
+    <branch module="2.47.0/graphviz-2.47.0.tar.bz2" version="2.47.0"
+            repo="graphviz"
+            hash="sha256:dade5b374ce483bf28f2e535baef02280ba8ab86fbe6e93252ab0de48396b714">
+      <patch file="graphviz-remove-rpath.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="pango"/>
+      <dep package="librsvg"/>
+    </dependencies>
+  </cmake>
+
+  <autotools id="vala" autogen-sh="configure">
+    <branch repo="ftp.gnome.org" version="0.52.0"
+            module="vala/0.52/vala-0.52.0.tar.xz"
+            hash="sha256:1de26310db465aca525679d3b5a3c1d8db2e067c4cbc0e5ddd015cd938bac68b"/>
+    <dependencies>
+      <dep package="graphviz"/>
+    </dependencies>
+    <after>
+      <dep package="meta-gtk-osx-bootstrap"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </after>
+  </autotools>
+
+  <autotools id="expat" autogen-sh="configure">
+    <branch module="expat/expat-2.3.0.tar.bz2" version="2.3.0"
+            repo="sourceforge"
+            hash="sha256:f122a20eada303f904d5e0513326c5b821248f2d4d2afbf5c6f1339e511c0586"/>
+  </autotools>
+
+  <meson id="amtk" >
+    <branch module="amtk/5.3/amtk-5.3.1.tar.xz" version="5.3.1"
+            hash="sha256:d5aa236c5d71dc41aa4674f345560a67a27f21c0efc97c9b3da09cb582b4638b">
+      <patch file="amtk-build-on-macOS.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="gtk+-3.0"/>
+    </dependencies>
+  </meson>
+
+  <meson id="devhelp-gtk3">
+    <branch module="devhelp/3.38/devhelp-3.38.1.tar.xz" version="3.38.1"
+            hash="sha256:4da8f5951b3a5920df73d057beab3ebe1855a75eae41208a9d89305a6b114a8f">
+      <patch file="devhelp-3-build-on-macOS.patch" strip="1"/>
+    </branch>
+  <dependencies>
+      <dep package="webkit2gtk3"/>
+      <dep package="amtk"/>
+      <dep package="gsettings-desktop-schemas"/>
+      <!-- Without shared-mime-info, HTML documents display as plain text -->
+      <dep package="shared-mime-info"/>
+    </dependencies>
+  </meson>
+
+  <meson id="glade" mesonargs="-Dmac_bundle=true -Dman=false" >
+    <branch module="glade/3.38/glade-3.38.2.tar.xz" version="3.38.2"
+            hash="sha256:98fc87647d88505c97dd2f30f2db2d3e9527515b3af11694787d62a8d28fbab7">
+    </branch>
+    <dependencies>
+      <dep package="itstool"/>
+      <dep package="meta-gtk-osx-gtk3"/>
+    </dependencies>
+  </meson>
+
+  <!-- gtksourceview got a major version ahead: 4.x.x supports recent versions of gtk+-3 and 5.x.x is for gtk4.
+  -->
+  <meson id="gtksourceview3" mesonargs="-Dvapi=false">
+    <branch module="gtksourceview/4.8/gtksourceview-4.8.1.tar.xz"
+            version="4.8.1"
+            hash="sha256:d163d71b5fcafbc5b1eec6dd841edbdbcddd3a7511cd5fdcffd86b8bbfe69ac1">
+    </branch>
+    <dependencies>
+      <dep package="gtk+-3.0"/>
+    </dependencies>
+  </meson>
+
+  <autotools id="libpcre2" autogen-sh="configure">
+    <branch repo="pcre" version="20.36"
+            module="pcre/pcre2-10.36.tar.bz2"
+            hash="sha256:a9ef39278113542968c7c73a31cfcb81aca1faa64690f400b907e8ab6b4a665c"/>
+  </autotools>
+
+  <meson id="gtksourceview4">
+    <branch module="gtksourceview/5.0/gtksourceview-5.0.0.tar.xz"
+            version="5.0.0"
+            hash="sha256:64826633c0c8d2c6a6eb4ec653215ef04e31e13a2d4156a09ca5fd9013acd9c3">
+    </branch>
+    <dependencies>
+      <dep package="gtk-4"/>
+      <dep package="libpcre2"/>
+    </dependencies>
+  </meson>
+
+  <autotools id="frodo-getopt" autogen-sh="configure"
+             supports-non-srcdir-builds="no">
+    <branch repo="frodo" version="1.1.6" module="getopt/getopt-1.1.6.tar.gz"
+            hash="sha256:d0bf1dc642a993e7388a1cddfb9409bed375c21d5278056ccca3a0acd09dc5fe">
+       <patch file="frodo-getopt-autotools.patch" strip="1"/>
+    </branch>
+  </autotools>
+  <autotools id="xmlto" autogen-sh="autoreconf">
+    <branch module="xmlto/xmlto-0.0.28.tar.bz2"
+            version="0.0.28" repo="paguire"
+            hash="sha256:1130df3a7957eb9f6f0d29e4aa1c75732a7dfb6d639be013859b5c7ec5421276">
+      <patch file="xmlto-allow-net-access.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="frodo-getopt"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="lcms" autogen-sh="configure" autogenargs="--disable-dependency-tracking">
+    <branch module="lcms/lcms2-2.12.tar.gz" version="2.12" repo="sourceforge" />
+  </autotools>
+
+  <meson id="shared-mime-info" supports-non-srcdir-builds="no" >
+    <branch module="0ee50652091363ab0d17e335e5e74fbe/shared-mime-info-2.1.tar.xz"
+            repo="shared-mime-info" version="2.1"
+            hash="sha256:b2d40cfcdd84e835d0f2c9107b3f3e77e9cf912f858171fe779946da634e8563">
+      <patch file="shared-mime-info-2.1-freedesktop-generate.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="xmlto"/>
+    </dependencies>
+  </meson>
+
+  <meson id="gsettings-desktop-schemas">
+    <branch module="gsettings-desktop-schemas/40/gsettings-desktop-schemas-40.0.tar.xz"
+            version="40.0"
+            hash="sha256:f1b83bf023c0261eacd0ed36066b76f4a520bbcb14bb69c402b7959257125685"/>
+    <dependencies>
+      <dep package="gobject-introspection"/>
+    </dependencies>
+  </meson>
+
+<!-- SQLite3 is also available from the macOS SDK -->
+  <autotools id="sqlite" autogenargs="--disable-tcl --enable-threadsafe"
+	     autogen-sh="configure">
+    <branch module="2021/sqlite-autoconf-3350400.tar.gz" version='3.35.4'
+            repo="sqlite"
+            hash="sha256:7771525dff0185bfe9638ccce23faa0e1451757ddbda5a6c853bb80b923a512d"/>
+  </autotools>
+
+<!-- Goocanvas2 is for gtk+-3. -->
+
+  <autotools id="goocanvas2" supports-non-srcdir-builds="no">
+    <branch module="goocanvas/2.0/goocanvas-2.0.4.tar.xz" version="2.0.4"
+	    hash="sha256:c728e2b7d4425ae81b54e1e07a3d3c8a4bd6377a63cffa43006045bceaa92e90"/>
+    <after>
+      <dep package="gtk+-3.0"/>
+    </after>
+  </autotools>
+
+<!-- Goocanvas3 is for gtk-4. -->
+
+  <autotools id="goocanvas3" supports-non-srcdir-builds="no">
+    <branch module="goocanvas/3.0/goocanvas-3.0.0.tar.xz" version="3.0.0"
+	    hash="sha256:670a7557fe185c2703a14a07506156eceb7cea3b4bf75076a573f34ac52b401a"/>
+    <after>
+      <dep package="gtk-4"/>
+    </after>
+  </autotools>
+
+  <autotools id="hunspell" autogen-sh="autoreconf">
+    <branch module="hunspell/hunspell/archive/v1.7.0.tar.gz" version="1.7.0"
+            repo="github-tarball" checkoutdir="hunspell-1.7.0"
+            rename-tarball="hunspell-1.7.0.tar.gz"
+            hash="sha256:bb27b86eb910a8285407cf3ca33b62643a02798cf2eef468c0a74f6c3ee6bc8a"/>
+  </autotools>
+
+  <autotools id="enchant" autogen-sh="configure"
+             autogenargs="--enable-relocatable" >
+    <branch module="AbiWord/enchant/releases/download/v2.2.15/enchant-2.2.15.tar.gz" 
+            repo="github-tarball" version="2.2.15"
+            hash="sha256:3b0f2215578115f28e2a6aa549b35128600394304bd79d6f28b0d3b3d6f46c03">
+    </branch>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+    <after>
+      <dep package="hunspell"/>
+    </after>
+  </autotools>
+
+  <autotools id="gtkspell3" autogen-sh="configure" autogenargs="--enable-vala=no">
+    <branch module="gtkspell/gtkspell3-3.0.10.tar.xz" repo="sourceforge"
+            version="3.0.10"
+            hash="sha256:b040f63836b347eb344f5542443dc254621805072f7141d49c067ecb5a375732">
+      <patch file="0001-Enable-use-of-XDG_DATA_DIRS-for-locating-iso-code-fi.patch" strip="1"/>
+      <patch file="gtkspell-3-install.sh-wrong-sh-path.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="enchant"/>
+      <dep package="iso-codes"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gmp">
+     <branch repo="ftp.gnu.org" module="gmp/gmp-6.2.1.tar.bz2" version="6.2.1"
+             hash="sha256:eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c">
+    </branch>
+  </autotools>
+
+  <autotools id='readline' autogen-sh="configure">
+    <branch repo="ftp.gnu.org" module="readline/readline-8.1.tar.gz"
+            version="8.1"
+            hash="sha256:f8ceb4ee131e3232226a17f51b164afc46cd0b9e6cef344be87c65962cb82b02">
+    </branch>
+  </autotools>
+
+  <autotools id="iso-codes" autogen-sh="configure">
+    <branch module="049ce6aac94d842be809f4063950646c/iso-codes-4.1.tar.xz"
+            version="4.1" repo="iso-codes"
+            hash="sha256:67117fb76f32c8fb5e37d2d60bce238f1f8e865cc7b569a57cbc3017ca15488a"/>
+  </autotools>
+
+</moduleset>

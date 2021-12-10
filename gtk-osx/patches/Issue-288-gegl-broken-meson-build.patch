@@ -1,0 +1,16 @@
+diff --git a/gegl/meson.build b/gegl/meson.build
+index 6e769f440..6d606f9e8 100644
+--- a/gegl/meson.build
++++ b/gegl/meson.build
+@@ -93,6 +93,11 @@ install_headers(gegl_headers,
+ 
+ gegl_ldflags = os_osx ? ['-framework', 'OpenCL'] : []
+ 
++opencl_dep = declare_dependency(
++    sources : [opencl_headers],
++    link_with : [gegl_sources],
++)
++
+ gegl_lib = library(api_name,
+   gegl_sources,
+   include_directories: [rootInclude, geglInclude],

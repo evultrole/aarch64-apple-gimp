@@ -1,0 +1,13 @@
+diff --git a/leptonica/src/environ.h b/leptonica/src/environ.h.new
+index 9692505..bf989e6 100644
+--- a/leptonica/src/environ.h
++++ b/leptonica/src/environ.h.new
+@@ -172,7 +172,7 @@ typedef uintptr_t l_uintptr_t;
+  * To use them on MacOS, which does not support these functions, set it to 0.
+  *-------------------------------------------------------------------------*/
+ #if !defined(HAVE_CONFIG_H) && !defined(ANDROID_BUILD) && !defined(OS_IOS) && \
+-    !defined(_WIN32)
++    !defined(_WIN32) && !defined(__APPLE__) 
+ #define  HAVE_FMEMOPEN    1
+ #endif  /* ! HAVE_CONFIG_H etc. */
+ 

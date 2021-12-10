@@ -1,0 +1,23 @@
+--- a/configure.ac	2021-05-13 11:44:23.000000000 -0700
++++ b/configure.ac	2021-11-08 11:13:54.000000000 -0800
+@@ -905,7 +905,17 @@
+ 	fi
+     fi
+     pythondir='$(PYTHON_SITE_PACKAGES)'
+-    PYTHON_LIBS=`python$PYTHON_VERSION-config --ldflags`
++    py_ver_major=$(echo $PYTHON_VERSION | cut -d . -f 1)
++    py_ver_minor=$(echo $PYTHON_VERSION | cut -d . -f 2)
++    if test $py_ver_major -eq 3 -a $py_ver_minor -ge 8
++    then
++       PYTHON_LIBS=`python$PYTHON_VERSION-config --ldflags --embed`
++    elif test $py_ver_major -gt 3
++    then
++       PYTHON_LIBS=`python$PYTHON_VERSION-config --ldflags --embed`
++    else
++        PYTHON_LIBS=`python$PYTHON_VERSION-config --ldflags`
++    fi
+ else
+     PYTHON=
+ fi
+
+Diff finished.  Mon Nov  8 11:28:35 2021

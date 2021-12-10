@@ -1,0 +1,49 @@
+--- a/gtk/gtkapplicationwindow.c	2015-07-21 07:22:36.000000000 -0700
++++ b/gtk/gtkapplicationwindow.c	2018-05-26 11:11:10.000000000 -0700
+@@ -29,7 +29,7 @@
+ #include "gtkintl.h"
+ #include "gtksettings.h"
+ 
+-#ifdef HAVE_GIO_UNIX
++#if !defined(HAVE_GIO_UNIX) && !defined(__APPLE__)
+ #include <gio/gdesktopappinfo.h>
+ #endif
+ 
+@@ -255,7 +255,7 @@
+ {
+   gchar *retval = NULL;
+ 
+-#ifdef HAVE_GIO_UNIX
++#if !defined(HAVE_GIO_UNIX) && !defined(__APPLE__)
+   GDesktopAppInfo *app_info;
+   const gchar *app_name = NULL;
+   gchar *desktop_file;
+--- a/gtk/gtk-launch.c	2014-11-26 18:54:55.000000000 -0800
++++ b/gtk/gtk-launch.c	2018-05-26 11:16:49.000000000 -0700
+@@ -28,7 +28,7 @@
+ #include <glib.h>
+ #include <glib/gi18n.h>
+ #include <gio/gio.h>
+-#ifdef G_OS_UNIX
++#if !defined(G_OS_UNIX) && !defined(__APPLE)
+ #include <gio/gdesktopappinfo.h>
+ #endif
+ #include <gtk.h>
+@@ -47,7 +47,7 @@
+   GOptionContext *context = NULL;
+   gchar *summary;
+   gchar *app_name;
+-#ifdef G_OS_UNIX
++#if !defined(G_OS_UNIX) && !defined(__APPLE)
+   gchar *desktop_file_name;
+ #endif
+   GAppInfo *info = NULL;
+@@ -109,7 +109,7 @@
+   gtk_init (&argc, &argv);
+ 
+   app_name = *args;
+-#ifdef G_OS_UNIX
++#if !defined(G_OS_UNIX) && !defined(__APPLE)
+   if (g_str_has_suffix (app_name, ".desktop"))
+     desktop_file_name = g_strdup (app_name);
+   else 

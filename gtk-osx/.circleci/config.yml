@@ -1,0 +1,176 @@
+version: 2.1
+jobs:
+  build-gimp-2-99:
+    macos:
+        xcode: "13.1.0"
+
+    steps:
+        # for local builds, this needs to be checked out to `~/project`
+        - checkout
+        - run:
+            name: Cleanup /usr/local
+            command: PATH=$(echo "$PATH" | sed -e 's/\/usr\/local\/bin://')
+        - run:
+            name: Setup Python3
+            command: |
+              cd ~/
+              curl -L 'https://www.python.org/ftp/python/3.9.7/python-3.9.7-macos11.pkg' > python-3.9.7-macosx11.pkg
+              sudo installer -pkg python-3.9.7-macosx11.pkg -target /
+              # Certificates are outdated, most likely after the recent
+              # Let's Encrypt root certs fiasco. This fixes it by
+              # updating the certs.
+              open /Applications/Python\ 3.9/Install\ Certificates.command
+        - run:
+            name: Setup 10.12 SDK
+            command: |
+              cd /Library/Developer/CommandLineTools/SDKs
+              sudo curl -L 'https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz' | sudo tar -xzf -
+              echo 'export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX10.12.sdk' > ~/.profile
+              echo 'export MACOSX_DEPLOYMENT_TARGET=10.12' >> ~/.profile
+        - restore_cache:
+            keys:
+              - 1-jhbuild-v3-v4
+              - 1-jhbuild-v3-
+        - run:
+            name: Setup JHBuild
+            command: |
+              cd $HOME
+              mkdir -p ~/.config && cp ~/project/jhbuildrc-gtk-osx-gimp-2.99 ~/.config/jhbuildrc-custom
+              echo 'export PATH="$HOME/.local/bin:$PATH:$HOME/.new_local/bin"' >> ~/.profile
+              echo 'export ARCHFLAGS="-arch x86_64"' >> ~/.profile
+              source ~/.profile
+              PIPENV_YES=1 ~/project/gtk-osx-setup.sh
+              $HOME/.new_local/bin/jhbuild bootstrap-gtk-osx-gimp
+              cat ~/.profile
+        - save_cache:
+            paths:
+              - ~/.new_local
+              - ~/gtk
+              - ~/.config
+            key: 1-jhbuild-v3-v4
+        - run:
+            name: Setup gtk-mac-bundler
+            command: |
+              cd ~/Source
+              git clone https://gitlab.gnome.org/lukaso/gtk-mac-bundler
+              cd gtk-mac-bundler
+              make install
+        - restore_cache:
+            keys:
+              - 2-gimp-v3-v4
+              - 2-webkit-v3-v4
+              - 2-gimp-deps-v3-v4
+              - 2-bootstrap-v3-v4
+              - 2-gimp-v3-
+              - 2-webkit-v3-
+              - 2-gimp-deps-v3-
+              - 2-bootstrap-v3-
+        - run:
+            name: Bootstrap
+            command: |
+              source ~/.profile && jhbuild build icu libnsgif meta-gtk-osx-freetype meta-gtk-osx-bootstrap meta-gtk-osx-gtk3
+        - run:
+            name: Cleanup
+            command: find  ~/gtk/source -type d -mindepth 1 -maxdepth 1 | xargs -I% rm -rf %/*
+        - save_cache:
+            paths:
+              - ~/gtk
+            key: 2-bootstrap-v3-v4
+        - run:
+            name: Build GIMP dependencies (without gegl/babl)
+            command: |
+              # dependencies from 2.99 build: at-spi2-core build-essential desktop-file-utils ffmpeg ghostscript git glib-networking gobject-introspection graphviz graphviz-dev gtk-doc-tools hicolor-icon-theme intltool iso-codes libappstream-glib-dev libbz2-dev libdbus-glib-1-dev libexif-dev libgexiv2-dev libgirepository1.0-dev libgtk-3-bin libgtk-3-dev libgudev-1.0-dev libjson-glib-dev liblcms2-dev liblzma-dev libmng-dev libmypaint-dev libopenexr-dev libpoppler-glib-dev libraw-dev libraw20 librsvg2-dev libspiro-dev libsuitesparse-dev libtiff-dev libtiff5-dev libtool libumfpack5 libwebp-dev libwmf-dev libxmu-dev libxpm-dev luajit meson mypaint-brushes poppler-data python3 valac xauth xvfb
+              # source ~/.profile && jhbuild build suitesparse lcms libunistring gmp libnettle libtasn1 gnutls libjpeg readline python glib-networking openjpeg  gtk-mac-integration poppler poppler-data
+              # source ~/.profile && jhbuild build json-glib p2tc exiv2 gexiv2 ilmbase openexr libwebp libcroco librsvg-24 json-c
+              # source ~/.profile && jhbuild build libmypaint mypaint-brushes libde265 nasm x265 libheif aalib shared-mime-info iso-codes libwmf libmng ghostscript
+              # source ~/.profile && jhbuild build pycairo pygobject pygtk gtk-mac-integration-python
+              source ~/.profile && jhbuild build python3
+        - run:
+            name: Build all WebKit dependencies
+            command: |
+              source ~/.profile && jhbuild build enchant libpsl sqlite vala gnutls libgpg-error glib-networking
+              source ~/.profile && jhbuild buildone libsoup libgcrypt libwebp
+        - run:
+            name: Cleanup
+            command: find  ~/gtk/source -type d -mindepth 1 -maxdepth 1 | xargs -I% rm -rf %/*
+        - save_cache:
+            paths:
+              - ~/gtk
+            key: 2-gimp-deps-v3-v4
+        # - run:
+            # name: Build WebKit v1
+            # no_output_timeout: 1h
+            # command: source ~/.profile && jhbuild buildone webkit
+        # - run:
+        #     name: Cleanup
+        #     command: find  ~/gtk/source -type d -mindepth 1 -maxdepth 1 | xargs -I% rm -rf %/*
+        # - save_cache:
+        #     paths:
+        #       - ~/gtk
+        #     key: 2-webkit-v3-v4
+        - run:
+            name: Build and test babl/gegl
+            command: source ~/.profile && jhbuild build --check babl gegl
+        - run:
+            name: Build GIMP
+            # XXX `make check` is not working reliably under circle ci, so we are
+            # not using --check flag
+            command: |
+              source ~/.profile
+              jhbuild build gimp299
+        #- run:
+            #name: Building GIMP help (en) from git
+            #command: source ~/.profile && ALL_LINGUAS=en jhbuild build gimp-help-git
+        - run:
+            name: Cleanup
+            command: find  ~/gtk/source -type d -mindepth 1 -maxdepth 1 | xargs -I% rm -rf %/*
+        - save_cache:
+            paths:
+              - ~/gtk
+            key: 2-gimp-v3-v4
+        - run:
+            name: Importing signing certificate
+            command: |
+              set +e
+              mkdir ${HOME}/codesign && cd ${HOME}/codesign
+              echo "$osx_crt" | base64 -D > gnome.pfx
+              curl 'https://developer.apple.com/certificationauthority/AppleWWDRCA.cer' > apple.cer
+              security create-keychain -p "" signchain
+              security set-keychain-settings signchain
+              security unlock-keychain -u signchain
+              security list-keychains  -s "${HOME}/Library/Keychains/signchain-db" "${HOME}/Library/Keychains/login.keychain-db"
+              security import apple.cer -k signchain  -T /usr/bin/codesign
+              security import gnome.pfx  -k signchain -P "$osx_crt_pw" -T /usr/bin/codesign
+              security set-key-partition-list -S apple-tool:,apple: -k "" signchain
+              rm -rf ${HOME}/codesign
+              exit 0
+        - run:
+            name: Creating DMG package
+            command: |
+              source ~/.profile
+              cd ${HOME}/project/package
+
+              # Authorize applescript on circle ci build
+              epochdate=$(($(date +'%s * 1000 + %-N / 1000000')))
+              tcc_service_appleevents="replace into access (service,client,client_type,auth_value,auth_reason,auth_version,indirect_object_identifier_type,indirect_object_identifier,flags,last_modified) values (\"kTCCServiceAppleEvents\",\"/usr/sbin/sshd\",1,2,4,1,0,\"com.apple.finder\",0,$epochdate);"
+              sudo sqlite3 "/Users/distiller/Library/Application Support/com.apple.TCC/TCC.db" "$tcc_service_appleevents"
+
+              # run script
+              jhbuild run ./build299.sh
+        - run:
+            name:  Notarizing DMG package
+            command: |
+              set +e
+              source ~/.profile
+              cd ${HOME}/project/package
+              jhbuild run ./notarize.sh
+              exit 0
+        - store_artifacts:
+            path: /tmp/artifacts
+            destination: builds
+
+workflows:
+  version: 2
+  build-different-versions:
+    jobs:
+      - build-gimp-2-99

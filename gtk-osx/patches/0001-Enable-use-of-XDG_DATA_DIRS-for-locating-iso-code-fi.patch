@@ -1,0 +1,29 @@
+From afc08dfa25dc5a26d3f0ffae8bf31d3be0e89b57 Mon Sep 17 00:00:00 2001
+From: John Ralls <jralls@ceridwen.us>
+Date: Fri, 9 Sep 2016 15:46:34 -0700
+Subject: [PATCH] Enable use of XDG_DATA_DIRS for locating iso-code files.
+
+Permits using them in a relocatable package like a Mac application bundle.
+---
+ gtkspell/gtkspell-codetable.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/gtkspell/gtkspell-codetable.c b/gtkspell/gtkspell-codetable.c
+index b53951f..dcb5f1e 100644
+--- a/gtkspell/gtkspell-codetable.c
++++ b/gtkspell/gtkspell-codetable.c
+@@ -103,7 +103,10 @@ iso_codes_parse (const GMarkupParser *parser,
+   gchar *filename;
+   GError *error = NULL;
+ 
+-  filename = g_build_filename (ISO_CODES_PREFIX, "share", "xml", "iso-codes",
++  const gchar *dirname = g_getenv("XDG_DATA_DIRS");
++  if (dirname == NULL)
++       dirname = g_build_filename (ISO_CODES_PREFIX, "share", NULL);
++  filename = g_build_filename (dirname, "xml", "iso-codes",
+                                basename, NULL);
+   mapped_file = g_mapped_file_new (filename, FALSE, &error);
+   g_free (filename);
+-- 
+2.2.2
+

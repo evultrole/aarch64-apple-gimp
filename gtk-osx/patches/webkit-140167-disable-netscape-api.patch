@@ -1,0 +1,12 @@
+diff --git a/Source/autotools/SetupWebKitFeatures.m4 b/Source/autotools/SetupWebKitFeatures.m4
+--- a/Source/autotools/SetupWebKitFeatures.m4   (revision 174258)
++++ b/Source/autotools/SetupWebKitFeatures.m4   (working copy)
+@@ -146,7 +146,7 @@
+     ENABLE_MHTML=1 \
+     ENABLE_MOUSE_CURSOR_SCALE=0 \
+     ENABLE_NAVIGATOR_CONTENT_UTILS=0 \
+-    ENABLE_NETSCAPE_PLUGIN_API=1 \
++    ENABLE_NETSCAPE_PLUGIN_API=0 \
+     ENABLE_NETWORK_INFO=0 \
+     ENABLE_NOTIFICATIONS=0 \
+     ENABLE_ORIENTATION_EVENTS=0 \

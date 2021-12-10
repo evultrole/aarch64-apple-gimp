@@ -1,0 +1,8 @@
+diff --git a/Source/WTF/wtf/RandomDevice.cpp b/Source/WTF/wtf/RandomDevice.cpp
+@@ -41,6 +41,7 @@
+ #endif
+
+ #if OS(DARWIN)
++#include <CommonCrypto/CommonCryptoError.h>
+ #include <CommonCrypto/CommonRandom.h>
+ #endif

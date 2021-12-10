@@ -1,0 +1,133 @@
+diff -ruN a/aalib.m4 b/aalib.m4
+--- a/aalib.m4	2001-04-26 15:37:31.000000000 +0100
++++ b/aalib.m4	2020-12-04 13:00:10.000000000 +0000
+@@ -9,7 +9,7 @@
+ dnl AM_PATH_AALIB([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+ dnl Test for AALIB, and define AALIB_CFLAGS and AALIB_LIBS
+ dnl
+-AC_DEFUN(AM_PATH_AALIB,
++AC_DEFUN([AM_PATH_AALIB],
+ [dnl 
+ dnl Get the cflags and libraries from the aalib-config script
+ dnl
+diff -ruN a/src/aaedit.c b/src/aaedit.c
+--- a/src/aaedit.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aaedit.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,6 +1,6 @@
+ #include <string.h>
+ #include <ctype.h>
+-#include <malloc.h>
++#include <stdlib.h>
+ #include "aalib.h"
+ #include "aaint.h"
+ static void aa_editdisplay(struct aa_edit *e)
+diff -ruN a/src/aafire.c b/src/aafire.c
+--- a/src/aafire.c	2001-04-26 16:30:03.000000000 +0100
++++ b/src/aafire.c	2020-12-04 13:00:41.000000000 +0000
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <stdlib.h>
+ #include "aalib.h"
+ 
+ #define XSIZ aa_imgwidth(context)
+diff -ruN a/src/aainfo.c b/src/aainfo.c
+--- a/src/aainfo.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aainfo.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,4 +1,4 @@
+-
++#include <stdlib.h>
+ #include "aalib.h"
+ #include "aaint.h"
+ int main(int argc, char **argv)
+diff -ruN a/src/aakbdreg.c b/src/aakbdreg.c
+--- a/src/aakbdreg.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aakbdreg.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,4 +1,5 @@
+-#include <malloc.h>
++#include <stdlib.h>
++#include <string.h>
+ #include "config.h"
+ #include "aalib.h"
+ #include "aaint.h"
+diff -ruN a/src/aalib.c b/src/aalib.c
+--- a/src/aalib.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aalib.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,6 +1,6 @@
+ #include <stdio.h>
+ #include <string.h>
+-#include <malloc.h>
++#include <stdlib.h>
+ #include "aalib.h"
+ #include "aaint.h"
+ 
+diff -ruN a/src/aamoureg.c b/src/aamoureg.c
+--- a/src/aamoureg.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aamoureg.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,4 +1,5 @@
+-#include <malloc.h>
++#include <stdlib.h>
++#include <string.h>
+ #include "config.h"
+ #include "aalib.h"
+ #include "aaint.h"
+diff -ruN a/src/aarec.c b/src/aarec.c
+--- a/src/aarec.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aarec.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,5 +1,5 @@
+ #include <string.h>
+-#include <malloc.h>
++#include <stdlib.h>
+ #include "aalib.h"
+ #include "aaint.h"
+ aa_linkedlist *aa_kbdrecommended = NULL, *aa_mouserecommended = NULL,
+diff -ruN a/src/aaregist.c b/src/aaregist.c
+--- a/src/aaregist.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aaregist.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,4 +1,5 @@
+-#include <malloc.h>
++#include <stdlib.h>
++#include <string.h>
+ #include "config.h"
+ #include "aalib.h"
+ #include "aaint.h"
+diff -ruN a/src/aasavefont.c b/src/aasavefont.c
+--- a/src/aasavefont.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aasavefont.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,3 +1,4 @@
++#include <stdlib.h>
+ #include "aalib.h"
+ int main(int argc, char **argv)
+ {
+diff -ruN a/src/aatest.c b/src/aatest.c
+--- a/src/aatest.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aatest.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,3 +1,5 @@
++#include <stdlib.h>
++#include <string.h>
+ #include "aalib.h"
+ int main(int argc, char **argv)
+ {
+diff -ruN a/src/aax.c b/src/aax.c
+--- a/src/aax.c	2001-04-26 15:37:54.000000000 +0100
++++ b/src/aax.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,4 +1,3 @@
+-#include <malloc.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>
+diff -ruN a/src/aaxkbd.c b/src/aaxkbd.c
+--- a/src/aaxkbd.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aaxkbd.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,4 +1,3 @@
+-#include <malloc.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>
+diff -ruN a/src/aaxmouse.c b/src/aaxmouse.c
+--- a/src/aaxmouse.c	2001-04-26 15:37:31.000000000 +0100
++++ b/src/aaxmouse.c	2020-12-04 13:00:10.000000000 +0000
+@@ -1,4 +1,3 @@
+-#include <malloc.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>

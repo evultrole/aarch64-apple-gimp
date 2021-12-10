@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:gnome="http://api.gnome.org/doap-extensions#"
+         xmlns="http://usefulinc.com/ns/doap#">
+
+  <name xml:lang="en">Gtk-OSX</name>
+  <shortname>gtk-osx</shortname>
+  <shortdesc xml:lang="en">Build scripts and modules for OSX</shortdesc>
+  <description xml:lang="en">Gtk-OSX provides scripts, extensions, and
+  modulesets for build Gtk-based applications on (and for) Apple
+  Macintosh OS X.
+
+  Gtk-OSX is licensed under the GNU GPL. Nothing from Gtk-OSX is
+  incorporated into the application, so there is no obstacle to its use
+  by closed-source developers.</description>
+  <homepage rdf:resource="http://www.gtk+.org/" />
+  <license rdf:resource="http://usefulinc.com/doap/licenses/gpl" />
+  <bug-database rdf:resource="https://gitlab.gnome.org/GNOME/gtk-osx/issues/" />
+  <download-page rdf:resource="https://sourceforge.net/projects/gtk-osx/files/" />
+  <mailing-list rdf:resource="http://mail.gnome.org/mailman/listinfo/gtk-osx-users-list" />
+  <mailing-list rdf:resource="http://mail.gnome.org/mailman/listinfo/gtk-osx-devel-list" />
+
+
+  <programming-language>Python</programming-language>
+
+  <repository>
+    <GitRepository>
+        <browse rdf:resource="https://gitlab.gnome.org/GNOME/gtk-osx/"/>
+      <location rdf:resource="https://gitlab.gnome.org/GNOME/gtk-osx.git"/>
+    </GitRepository>
+  </repository>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>John Ralls</foaf:name>
+      <foaf:mbox rdf:resource="mailto:jralls@ceridwen.us"/>
+      <gnome:userid>jralls</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+</Project>

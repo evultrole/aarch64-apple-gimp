@@ -1,0 +1,185 @@
+
+--- a/Source/JavaScriptCore/API/JSBase.h	Sat Apr  9 23:48:36 2016
++++ b/Source/JavaScriptCore/API/JSBase.h	Thu Apr 27 13:48:12 2017
+@@ -142,9 +142,9 @@
+ /* Enable the Objective-C API for platforms with a modern runtime. */
+ #if !defined(JSC_OBJC_API_ENABLED)
+ #ifndef JSC_OBJC_API_AVAILABLE_MAC_OS_X_1080
+-#define JSC_OBJC_API_ENABLED (defined(__clang__) && defined(__APPLE__) && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090 && !defined(__i386__)) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)))
++#define JSC_OBJC_API_ENABLED (defined(__clang__) && defined(__APPLE__) && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090 && !defined(__i386__)) && !PLATFORM(GTK) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)))
+ #else
+-#define JSC_OBJC_API_ENABLED (defined(__clang__) && defined(__APPLE__) && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080 && !defined(__i386__)) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)))
++#define JSC_OBJC_API_ENABLED (defined(__clang__) && defined(__APPLE__) && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080 && !defined(__i386__)) && !PLATFORM(GTK) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)))
+ #endif
+ #endif
+ 
+--- a/Source/JavaScriptCore/API/ObjCCallbackFunction.h	Sat Apr  9 23:48:36 2016
++++ b/Source/JavaScriptCore/API/ObjCCallbackFunction.h	Tue Apr 25 15:31:47 2017
+@@ -29,7 +29,7 @@
+ 
+ #if JSC_OBJC_API_ENABLED
+ 
+-#import <JavaScriptCore/JSCallbackFunction.h>
++#import "JSCallbackFunction.h"
+ 
+ #if defined(__OBJC__)
+ JSObjectRef objCCallbackFunctionForMethod(JSContext *, Class, Protocol *, BOOL isInstanceMethod, SEL, const char* types);
+
+--- a/Source/WebCore/platform/gtk/RenderThemeGtk2.cpp	Sat Apr  9 23:48:37 2016
++++ b/Source/WebCore/platform/gtk/RenderThemeGtk2.cpp	Thu Apr 27 10:01:54 2017
+@@ -40,6 +40,7 @@
+ #include "PaintInfo.h"
+ #include "PlatformContextCairo.h"
+ #include "RenderElement.h"
++#include "RenderBox.h"
+ #include "TextDirection.h"
+ #include "UserAgentStyleSheets.h"
+ #include "WidgetRenderingContext.h"
+--- a/Source/JavaScriptCore/assembler/MacroAssembler.h~
++++ b/Source/JavaScriptCore/assembler/MacroAssembler.h
+@@ -986,7 +986,7 @@ public:
+         if (bitwise_cast<uint64_t>(value * 1.0) != bitwise_cast<uint64_t>(value))
+             return shouldConsiderBlinding();
+ 
+-        value = abs(value);
++        value = std::abs(value);
+         // Only allow a limited set of fractional components
+         double scaledValue = value * 8;
+         if (scaledValue / 8 != value)
+--- a/Source/autotools/FindDependencies.m4~
++++ b/Source/autotools/FindDependencies.m4
+@@ -104,7 +104,7 @@ GLIB_GSETTINGS
+ 
+ # TODO: use pkg-config (after CFLAGS in their .pc files are cleaned up).
+ case "$host" in
+-    *-*-darwin*)
++    *-*-foo*)
+         UNICODE_CFLAGS="-I$srcdir/Source/JavaScriptCore/icu -I$srcdir/Source/WebCore/icu"
+         UNICODE_LIBS="-licucore"
+         ;;
+--- a/Source/WebCore/accessibility/atk/WebKitAccessibleHyperlink.cpp
++++ b/Source/WebCore/accessibility/atk/WebKitAccessibleHyperlink.cpp
+@@ -390,7 +390,7 @@ static void webkitAccessibleHyperlinkInit(AtkHyperlink* link)
+ 
+ GType webkitAccessibleHyperlinkGetType()
+ {
+-    static volatile gsize typeVolatile = 0;
++    static gsize typeVolatile = 0;
+ 
+     if (g_once_init_enter(&typeVolatile)) {
+         static const GTypeInfo tinfo = {
+--- a/Source/WebCore/platform/network/ResourceErrorBase.cpp
++++ b/Source/WebCore/platform/network/ResourceErrorBase.cpp
+@@ -25,6 +25,7 @@
+  */
+ 
+ #include "config.h"
++#include <glib-object.h>
+ #include "ResourceError.h"
+ 
+ namespace WebCore {
+--- a/Source/WTF/wtf/gobject/GRefPtr.h
++++ b/Source/WTF/wtf/gobject/GRefPtr.h
+@@ -28,9 +28,6 @@
+ #include <wtf/RefPtr.h>
+ #include <algorithm>
+ 
+-extern "C" void g_object_unref(gpointer);
+-extern "C" gpointer g_object_ref_sink(gpointer);
+-
+ namespace WTF {
+ 
+ enum GRefPtrAdoptType { GRefPtrAdopt };
+--- a/Source/WebCore/accessibility/atk/WebKitAccessibleWrapperAtk.cpp
++++ b/Source/WebCore/accessibility/atk/WebKitAccessibleWrapperAtk.cpp
+@@ -1015,7 +1015,7 @@ static void webkitAccessibleClassInit(AtkObjectClass* klass)
+ GType
+ webkitAccessibleGetType(void)
+ {
+-    static volatile gsize typeVolatile = 0;
++    static gsize typeVolatile = 0;
+
+     if (g_once_init_enter(&typeVolatile)) {
+         static const GTypeInfo tinfo = {
+--- a/Source/WebKit/gtk/GNUmakefile.am
++++ b/Source/WebKit/gtk/GNUmakefile.am
+@@ -352,9 +352,9 @@ $(GENSOURCES_WEBKIT)/webkitmarshal.h: stamp-webkitmarshal.h
+ 	@true
+ 
+ stamp-webkitmarshal.cpp: $(WEBKIT_MARSHAL_LIST)
+-	$(AM_V_GEN) echo "extern \"C\" {" > $(GENSOURCES_WEBKIT)/webkitmarshal.cpp && \
+-	$(GLIB_GENMARSHAL) --prefix=webkit_marshal $(WEBKIT_MARSHAL_LIST) --body >> $(GENSOURCES_WEBKIT)/webkitmarshal.cpp && \
++	$(AM_V_GEN) $(GLIB_GENMARSHAL) --prefix=webkit_marshal $(WEBKIT_MARSHAL_LIST) --body >> $(GENSOURCES_WEBKIT)/webkitmarshal.cpp && \
+ 	echo '}' >> $(GENSOURCES_WEBKIT)/webkitmarshal.cpp && \
++	sed -i '' 's/^#include <glib-object\.h>/&\n\nextern "C" {/' $(GENSOURCES_WEBKIT)/webkitmarshal.cpp && \
+ 	echo timestamp > $(@F)
+ 
+ stamp-webkitmarshal.h: $(WEBKIT_MARSHAL_LIST)
+--- a/Source/WebCore/platform/graphics/SegmentedFontData.cpp
++++ b/Source/WebCore/platform/graphics/SegmentedFontData.cpp
+@@ -61,7 +61,7 @@ bool SegmentedFontData::containsCharacters(const UChar* characters, int length)
+ {
+     UChar32 c;
+     for (int i = 0; i < length; ) {
+-        U16_NEXT(characters, i, length, c)
++        U16_NEXT(characters, i, length, c);
+         if (!containsCharacter(c))
+             return false;
+     }
+--- a/Source/WebCore/dom/Document.cpp
++++ b/Source/WebCore/dom/Document.cpp
+@@ -3912,12 +3912,12 @@ static bool isValidNameNonASCII(const UChar* characters, unsigned length)
+     unsigned i = 0;
+ 
+     UChar32 c;
+-    U16_NEXT(characters, i, length, c)
++    U16_NEXT(characters, i, length, c);
+     if (!isValidNameStart(c))
+         return false;
+ 
+     while (i < length) {
+-        U16_NEXT(characters, i, length, c)
++        U16_NEXT(characters, i, length, c);
+         if (!isValidNamePart(c))
+             return false;
+     }
+@@ -3980,7 +3980,7 @@ bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, S
+     const UChar* s = qualifiedName.deprecatedCharacters();
+     for (unsigned i = 0; i < length;) {
+         UChar32 c;
+-        U16_NEXT(s, i, length, c)
++        U16_NEXT(s, i, length, c);
+         if (c == ':') {
+             if (sawColon) {
+                 ec = NAMESPACE_ERR;
+--- a/Source/JavaScriptCore/API/JSStringRef.cpp
++++ b/Source/JavaScriptCore/API/JSStringRef.cpp
+@@ -37,7 +37,7 @@ using namespace WTF::Unicode;
+ JSStringRef JSStringCreateWithCharacters(const JSChar* chars, size_t numChars)
+ {
+     initializeThreading();
+-    return OpaqueJSString::create(chars, numChars).leakRef();
++    return OpaqueJSString::create(reinterpret_cast<const UChar*>(chars), numChars).leakRef();
+ }
+ 
+ JSStringRef JSStringCreateWithUTF8CString(const char* string)
+@@ -62,7 +62,7 @@ JSStringRef JSStringCreateWithUTF8CString(const char* string)
+ JSStringRef JSStringCreateWithCharactersNoCopy(const JSChar* chars, size_t numChars)
+ {
+     initializeThreading();
+-    return OpaqueJSString::create(StringImpl::createWithoutCopying(chars, numChars)).leakRef();
++    return OpaqueJSString::create(StringImpl::createWithoutCopying(reinterpret_cast<const UChar*>(chars), numChars)).leakRef();
+ }
+ 
+ JSStringRef JSStringRetain(JSStringRef string)
+@@ -83,7 +83,9 @@ size_t JSStringGetLength(JSStringRef string)
+ 
+ const JSChar* JSStringGetCharactersPtr(JSStringRef string)
+ {
+-    return string->characters();
++    if (!string)
++        return nullptr;
++    return reinterpret_cast<const JSChar*>(string->characters());
+ }
+ 
+ size_t JSStringGetMaximumUTF8CStringSize(JSStringRef string)

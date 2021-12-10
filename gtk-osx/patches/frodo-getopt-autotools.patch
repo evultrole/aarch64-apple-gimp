@@ -1,0 +1,28 @@
+--- a/Makefile	2014-11-24 04:33:39.000000000 -0800
++++ b/Makefile	2021-04-09 15:26:46.000000000 -0700
+@@ -1,7 +1,7 @@
+ .SUFFIXES:
+ 
+ DESTDIR=
+-prefix=/usr/local
++prefix=${PREFIX}
+ bindir=$(prefix)/bin
+ mandir=$(prefix)/man
+ man1dir=$(mandir)/man1
+@@ -43,7 +43,7 @@
+          -Wnested-externs -Winline
+ OPTIMIZE=-O3 -fno-strength-reduce
+ CFLAGS=$(WARNINGS) $(OPTIMIZE)
+-LDFLAGS=
++LDFLAGS=-L ${PREFIX}/lib -lintl
+ 
+ sources=getopt.c
+ ifeq ($(LIBCGETOPT),0)
+
+Diff finished.  Fri Apr  9 15:28:12 2021
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e69de29..b53cf7a 100644
+--- a/configure
++++ b/configure
+@@ -0,0 +1,1 @@
++ #Do Nothing

@@ -1,0 +1,27 @@
+diff -u /Users/john/Development/gtk-build/gtk-stable-10.13-x86_64/src/xmlto-0.0.28/xmlto.in\~ /Users/john/Development/gtk-build/gtk-stable-10.13-x86_64/src/xmlto-0.0.28/xmlto.in
+--- a/xmlto.in	2015-11-16 06:07:10.000000000 -0800
++++ b/xmlto.in	2021-04-10 13:33:24.000000000 -0700
+@@ -225,7 +225,7 @@
+ export VERBOSE
+ 
+ # Disable network entities
+-XSLTOPTS="$XSLTOPTS --nonet"
++XSLTOPTS="$XSLTOPTS"
+ 
+ # The names parameter for the XSLT stylesheet
+ XSLTPARAMS=""
+@@ -542,10 +542,10 @@
+ 
+     [ "$VERBOSE" -ge 1 ] && \
+     echo >&2 \
+-	"\"${XMLLINT_PATH}\" --noout --nonet --xinclude --postvalid --noent ${SEARCHPATH_FORMATTED} \"${INPUT_FILE}\""
++	"\"${XMLLINT_PATH}\" --noout --xinclude --postvalid --noent ${SEARCHPATH_FORMATTED} \"${INPUT_FILE}\""
+     # eval is for SEARCHPATH_FORMATTED's proper expansion
+     # make sure expansions are protected from eval
+-    eval "\"${XMLLINT_PATH}\" --noout --nonet --xinclude --postvalid --noent ${SEARCHPATH_FORMATTED} \"${INPUT_FILE}\"" 2>"${VALIDATION}"
++    eval "\"${XMLLINT_PATH}\" --noout --xinclude --postvalid --noent ${SEARCHPATH_FORMATTED} \"${INPUT_FILE}\"" 2>"${VALIDATION}"
+     xmllint_status=$?
+ 
+     if [ $xmllint_status -ne 0 ]
+
+Diff finished.  Sat Apr 10 13:33:31 2021

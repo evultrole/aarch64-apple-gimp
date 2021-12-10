@@ -1,0 +1,285 @@
+<?xml version="1.0" standalone="no"?>
+<!--*- mode: xml -*-->
+<app-bundle>
+  <meta>
+    <!-- Where to pick up the GTK+ installation, icon themes,
+         etc. Note that "${env:JHBUILD_PREFIX}" is evaluated to the
+         value of the environment variable JHBUILD_PREFIX. You can
+         define additional prefixes and refer to them in paths
+         throughout this file on the form "${prefix:name}". This is
+         useful for installing certain libraries or even the
+        eapplication itself separately. Note that JHBUILD_PREFIX is
+         defined by jhbuild, so it you are not using jhbuild you can
+         either define your own or just hardcode the path here.
+    -->
+    <!-- <prefix name="default">${env:JHBUILD_PREFIX}</prefix> -->
+    <prefix name="default">${env:JHBUILD_PREFIX}</prefix>
+    <!-- The project directory is the default location of the created
+         app. If you leave out the path, the current directory is
+         used. Note the usage of an environment variable here again.
+    -->
+    <destination overwrite="yes">${env:HOME}/gimp299-osx-app</destination>
+    <image>
+      <!-- Not implemented yet (DMG image). -->
+    </image>
+    <!-- Comment this out to keep the install names in binaries -->
+    <!-- <run-install-name-tool/> does not work for the gimp -->
+    <!-- Optionally specify a launcher script to use. If the
+         application sets up everything needed itself, like
+         environment variable, linker paths, etc, a launcher script is
+         not needed. If the source path is left out, the default
+         script will be used.
+    -->
+    <!-- <launcher-script>${project}/launcher.sh</launcher-script > -->
+   <!-- <launcher-script>
+      ${project}/launcher-2.10.sh
+    </launcher-script> -->
+    <!-- Not implemented: Optional runtime, could be python or mono
+         for example.
+    -->
+    <!-- <runtime copy="yes">/usr/bin/python</runtime -->
+    <!-- Indicate the active gtk version to use. This is needed only
+         for gtk+-3.0 projects. -->
+    <gtk>gtk+-3.0</gtk>
+  </meta>
+  <!-- We need to pack our own Python to avoid compatibility problems. -->
+  <binary dest="${bundle}/Contents/MacOS">
+    ${prefix}/bin/python3.9
+  </binary>
+  <binary dest="${bundle}/Contents/MacOS">
+    ${prefix}/bin/gegl
+  </binary>
+  <!-- gimp additional binaries -->
+  <binary dest="${bundle}/Contents/MacOS">${prefix}/bin/gimp-console-2.99</binary>
+  <binary dest="${bundle}/Contents/MacOS">${prefix}/bin/gimp-debug-tool-2.99</binary>
+  <binary dest="${bundle}/Contents/MacOS">${prefix}/bin/gimptool-2.99</binary>
+
+  <!-- Copy in Info.plist -->
+  <plist>${project}/info-2.99.plist</plist>
+  <!-- Gtk+ is required by python modules which aren't searched for
+       dependencies, so we have to pull it in explicitly. It will
+       bring Pango and Cairo with it. Note the use of ${gtkversion},
+       which expands to either 2.0 or 3.0, depending on which value of
+       gtk is specified.-->
+  <binary>
+    ${prefix}/lib/libgegl-sc-0.4.dylib
+  </binary>
+  <!-- We have to pull in the python modules, which are mixed python
+       and loadable modules.  -->
+
+  <binary recurse="True">
+    ${prefix}/lib/python3.9/*.so
+  </binary>
+  <binary>
+    ${prefix}/lib/gio/modules
+  </binary>
+  <data recurse="True">
+    ${prefix}/lib/python3.9/*.py
+  </data>
+
+  <data>
+    ${prefix}/lib/python3.9/config-3.9-darwin/
+  </data>
+
+  <data>
+    ${prefix}/include/python3.9/pyconfig.h
+  </data>
+
+  <!-- Name of main gimp binary -->
+  <main-binary>${prefix}/bin/gimp-2.99</main-binary>
+  <!-- Copy in gimp plugins -->
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-jp2-load/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/align-layers/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/animation-optimize/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/animation-play/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/blinds/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/border-average/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/busy-dialog/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/checkerboard/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/cml-explorer/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/colormap-remap/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/colorxhtml/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/compose/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/contrast-retinex/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/crop-zealous/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/curve-bend/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/decompose/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/depth-merge/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/despeckle/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/destripe/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-aa/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-bmp/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-cel/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-compressor/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-csource/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-darktable/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-dds/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-desktop-link/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-dicom/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-exr/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-faxg3/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-fits/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-fli/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-gbr/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-gegl/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-gif-load/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-gif-save/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-gih/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-glob/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-header/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-heif/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-html-table/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-ico/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-jp2-load/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-jpeg/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-mng/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-openraster/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-pat/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-pcx/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-pdf-load/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-pdf-save/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-pix/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-png/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-pnm/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-ps/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-psd/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-psp/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-raw-data/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-raw-placeholder/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-rawtherapee/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-sgi/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-sunras/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-svg/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-tga/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-tiff/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-webp/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-wmf/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-xbm/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/file-xwd/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/film/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/flame/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/foggify/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/fractal-explorer/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/gfig/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/gimpressionist/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/gradient-flare/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/gradient-map/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/gradients-save-as-css/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/grid/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/guillotine/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/help/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/histogram-export/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/hot/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/ifs-compose/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/imagemap/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/jigsaw/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/lighting/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/mail/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/map-object/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/metadata-editor/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/metadata-viewer/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/nl-filter/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/pagecurl/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/palette-offset/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/palette-sort/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/palette-to-gradient/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/plugin-browser/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/print/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/procedure-browser/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/python-console/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/python-eval/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/qbist/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/sample-colorize/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/screenshot/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/script-fu/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/selection-to-path/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/smooth-palette/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/sparkle/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/sphere-designer/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/spyro-plus/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/tile/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/tile-small/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/unit-editor/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/van-gogh-lic/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/warp/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/wavelet-decompose/*</binary>
+  <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/web-browser/*</binary>
+  <!-- <binary recurse="True">${prefix}/lib/gimp/2.99/plug-ins/*</binary> -->
+  <!-- Copy in gimp modules -->
+  <binary>${prefix}/lib/gimp/2.99/modules/*.so</binary>
+  <!-- Copy in gimp python modules -->
+  <!-- <binary>${prefix}/lib/gimp/2.99/python/*.so</binary> -->
+  <!-- <data>${prefix}/lib/gimp/2.99/python/*.py</data> -->
+  <!-- Copy in GTK+ modules -->
+  <!-- <binary>${prefix}/lib/${gtkdir}/modules/*.so</binary> -->
+  <!-- Copy in babl modules -->
+  <binary>${prefix}/lib/babl-0.1/*.dylib</binary>
+  <!-- Copy in gegl modules -->
+  <binary>${prefix}/lib/gegl-0.4/*.dylib</binary>
+  <data>${prefix}/lib/gegl-0.4/*.json</data>
+  <!-- Copy in GTK+ themeing engines - Don't appear to exist in gtk 3 -->
+  <!-- <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/engines/*.so</binary> -->
+  <!-- Copy in GTK+ printer backends -->
+  <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/printbackends/*.so</binary>
+  <!-- Copy in GTK+ immodules -->
+  <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/immodules/*.so</binary>
+  <!-- Starting with 2.24, gdk-pixbuf installs into its own directory. -->
+  <!-- <binary>${prefix}/lib/gdk-pixbuf-2.0/${pkg:${gtk}:gtk_binary_version}/loaders/*.so</binary> -->
+  <binary>${prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so</binary>
+  <binary dest="${bundle}/Contents/MacOS">${prefix}/bin/gdk-pixbuf-query-loaders</binary>
+  <binary>${prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache</binary>
+  <!-- Translation filenames-->
+  <translations name="gtk30">
+    ${prefix}/share/locale
+  </translations>
+  <!-- GTK+3 data -->
+  <data>${prefix}/etc/gtk-3.0/*</data>
+  <!-- Fontconfig data; requires clean up -->
+  <data>
+    ${prefix}/etc/fonts
+  </data>
+  <!-- Gimp data -->
+  <data>${prefix}/etc/gimp/2.99/*</data>
+  <data dest="${bundle}/Contents/Resources/share/gimp">${prefix}/share/gimp</data>
+  <!-- brushes -->
+  <data>${prefix}/share/mypaint-data</data>
+  <!-- Pango data -->
+  <!-- <data>${prefix}/etc/pango/pango.modules</data> -->
+  <!-- XML data -->
+  <data>${prefix}/share/xml/catalog</data>
+  <!-- locale (TODO: trim) -->
+  <data>${prefix}/share/locale</data>
+  <data>${prefix}/lib/charset.alias</data>
+  <!-- Theme data-->
+  <data>${prefix}/share/themes</data>
+  <!-- iso codes -->
+  <data>${prefix}/share/xml/iso-codes</data>
+  <!-- libwmf fonts -->
+  <data>${prefix}/share/libwmf</data>
+  <!-- glib 2 schemas -->
+  <data recurse="True">
+    ${prefix}/share/glib-2.0/schemas/*
+  </data>
+  <!-- gi repository typlibs -->
+  <data>${prefix}/lib/girepository-1.0/*</data>
+  <!-- GTK+ theme data -->
+  <!-- <data>${prefix}/share/gtk-engines/*.xml</data> -->
+  <!-- mitch says this will change default theme, didn't work. -->
+  <!-- <data dest="${bundle}/Contents/Resources/etc/${gtkdir}/gtkrc">
+    ${project}/gtkrc
+  </data>
+-->
+  <!-- Interesting defaults -->
+  <!-- <data dest="${bundle}/Contents/Resources/etc/gimp/2.0/gimprc">
+    ${project}/gimprc
+  </data>
+-->
+  <!-- Icons -->
+  <data dest="${bundle}/Contents/Resources">${project}/gimp.icns</data>
+  <data dest="${bundle}/Contents/Resources">${project}/xcf.icns</data>
+
+  <!-- Icon theme, both tango and hicolor are required? -->
+  <icon-theme icons="all">
+    Adwaita
+  </icon-theme>
+</app-bundle>

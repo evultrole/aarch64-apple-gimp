@@ -1,0 +1,46 @@
+From 73b40f41830edc0eebb5ec65258ea4be52f46b77 Mon Sep 17 00:00:00 2001
+From: Jehan <jehan@girinstud.io>
+Date: Sun, 9 May 2021 15:32:49 +0200
+Subject: [PATCH] =?UTF-8?q?app:=20fix=20selection=20display=20on=20right/b?=
+ =?UTF-8?q?ottom=20borders=20when=20rulers=20are=E2=80=A6?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+… displayed.
+
+We should use the dimensions from the GimpDisplayShell not the the
+GimpCanvas. Indeed the canvas is shorter when rulers are visible, hence
+the selection next to the extreme sides (bottom and right sides of the
+canvas) was not drawn.
+
+(cherry picked from commit e8a531e51e12b66d664c3c7b7eb7317fe3eeb4d5)
+---
+ app/display/gimpdisplayshell-selection.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/app/display/gimpdisplayshell-selection.c b/app/display/gimpdisplayshell-selection.c
+index 54cb398f33..357931a231 100644
+--- a/app/display/gimpdisplayshell-selection.c
++++ b/app/display/gimpdisplayshell-selection.c
+@@ -309,7 +309,7 @@ selection_render_mask (Selection *selection)
+   cairo_surface_t *surface;
+   cairo_t         *cr;
+ 
+-  window = gtk_widget_get_window (selection->shell->canvas);
++  window = gtk_widget_get_window (GTK_WIDGET (selection->shell));
+   surface = gdk_window_create_similar_surface (window, CAIRO_CONTENT_ALPHA,
+                                                gdk_window_get_width  (window),
+                                                gdk_window_get_height (window));
+@@ -451,7 +451,7 @@ selection_start_timeout (Selection *selection)
+       cairo_rectangle_int_t  rect;
+       cairo_region_t        *region;
+ 
+-      window = gtk_widget_get_window (selection->shell->canvas);
++      window = gtk_widget_get_window (GTK_WIDGET (selection->shell));
+ 
+       rect.x      = 0;
+       rect.y      = 0;
+-- 
+2.30.0
+

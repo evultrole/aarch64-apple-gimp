@@ -1,0 +1,27 @@
+--- a/data/freedesktop_generate.sh	2020-12-31 11:12:16.000000000 -0800
++++ b/data/freedesktop_generate.sh	2021-11-07 13:50:19.000000000 -0800
+@@ -3,10 +3,17 @@
+ src_root="$1"
+ build_root="$2"
+ 
+-ninja -C "${build_root}" shared-mime-info-gmo
+-
+-itstool \
+-    --its "${src_root}/data/its/shared-mime-info.its" \
+-    --join "${src_root}/data/freedesktop.org.xml.in" \
+-    -o "${build_root}/data/freedesktop.org.xml" \
+-    "${build_root}/po/"*".gmo"
++if test ! -d "${build_root}/po/de"; then
++    ninja -C "${build_root}" shared-mime-info-gmo
++    itstool \
++        --its "${src_root}/data/its/shared-mime-info.its" \
++        --join "${src_root}/data/freedesktop.org.xml.in" \
++        -o "${build_root}/data/freedesktop.org.xml" \
++        "${build_root}/po/"*".gmo"
++else
++    itstool \
++        --its "${src_root}/data/its/shared-mime-info.its" \
++        --join "${src_root}/data/freedesktop.org.xml.in" \
++        -o "${build_root}/data/freedesktop.org.xml" \
++        "${build_root}/po/"*"/LC_MESSAGES/shared-mime-info.mo"
++fi

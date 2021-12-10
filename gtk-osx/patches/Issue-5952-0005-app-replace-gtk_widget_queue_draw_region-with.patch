@@ -1,0 +1,49 @@
+From 16adb3bf3da47930e8c42731bdcca34eee167de3 Mon Sep 17 00:00:00 2001
+From: Jehan <jehan@girinstud.io>
+Date: Fri, 22 Oct 2021 22:52:38 +0200
+Subject: [PATCH] =?UTF-8?q?app:=20replace=20gtk=5Fwidget=5Fqueue=5Fdraw=5F?=
+ =?UTF-8?q?region()=20with=E2=80=A6?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gtk_widget_queue_draw_area().
+
+gtk_widget_queue_draw_region() has been introduced in GTK 3.0.
+---
+ app/display/gimpdisplayshell-selection.c | 16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
+
+diff --git a/app/display/gimpdisplayshell-selection.c b/app/display/gimpdisplayshell-selection.c
+index eca6cc1039..85526619ca 100644
+--- a/app/display/gimpdisplayshell-selection.c
++++ b/app/display/gimpdisplayshell-selection.c
+@@ -458,20 +458,14 @@ selection_timeout (Selection *selection)
+ 
+   if ((time - selection->shell->selection_update) / 1000 > config->marching_ants_speed)
+     {
+-      GdkWindow             *window;
+-      cairo_rectangle_int_t  rect;
+-      cairo_region_t        *region;
++      GdkWindow *window;
+ 
+       window = gtk_widget_get_window (GTK_WIDGET (selection->shell));
+ 
+-      rect.x      = 0;
+-      rect.y      = 0;
+-      rect.width  = gdk_window_get_width  (window);
+-      rect.height = gdk_window_get_height (window);
+-
+-      region = cairo_region_create_rectangle (&rect);
+-      gtk_widget_queue_draw_region (GTK_WIDGET (selection->shell), region);
+-      cairo_region_destroy (region);
++      gtk_widget_queue_draw_area (GTK_WIDGET (selection->shell),
++                                  0, 0,
++                                  gdk_window_get_width (window),
++                                  gdk_window_get_height (window));
+     }
+ 
+   return G_SOURCE_CONTINUE;
+-- 
+2.30.0
+

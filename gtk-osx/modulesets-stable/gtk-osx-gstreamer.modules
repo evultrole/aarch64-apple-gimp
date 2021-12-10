@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+  <repository type="tarball" name="gstreamer" default="yes"
+              href="http://gstreamer.freedesktop.org/src/"/>
+  <repository type="tarball" name="sourceforge"
+              href="http://iweb.dl.sf.net/project/"/>
+  <repository type="tarball" name="ffmpeg"
+              href="https://ffmpeg.org/releases/"/>
+  <repository type="tarball" name="nasm"
+              href="https://www.nasm.us/pub/nasm/releasebuilds/"/>
+
+  <meson id="liborc" mesonargs="-Dgtk_doc=disabled -Dbenchmarks=disabled -Dexamples=disabled -Dtests=disabled">
+    <branch module="orc/orc-0.4.32.tar.xz" version="0.4.32"
+            hash="sha256:a66e3d8f2b7e65178d786a01ef61f2a0a0b4d0b8370de7ce134ba73da4af18f0"/>
+  </meson>
+
+  <autotools id="faad2" autogen-sh="autoreconf"
+             autogenargs="-without-bmp --without-xmms --without-drm --without-mpeg4ip">
+    <branch repo="sourceforge" version="2.8.6"
+            module="faac/faad2-src/faad2-2.8.0/faad2-2.8.6.tar.gz"
+            hash="sha256:654977adbf62eb81f4fca00152aca58ce3b6dd157181b9edd7bed687a7c73f21">
+    </branch>
+  </autotools>
+
+  <autotools id="nasm" autogen-sh="configure">
+    <branch repo="nasm" version="2.15.05"
+            module="2.15.05/nasm-2.15.05.tar.xz"
+            hash="sha256:3caf6729c1073bf96629b57cee31eeb54f4f8129b01902c73428836550b30a3f"/>
+  </autotools>
+
+  <autotools id="ffmpeg" autogen-sh="configure"
+             autogenargs="--enable-gpl --enable-version3 --enable-shared --disable-static --disable-runtime-cpudetect --disable-programs --disable-ffplay --disable-ffprobe --disable-doc"
+             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s %(autogenargs)s"
+>
+    <branch repo="ffmpeg" version="4.3.2"
+            module="ffmpeg-4.3.2.tar.xz"
+            hash="sha256:46e4e64f1dd0233cbc0934b9f1c0da676008cad34725113fb7f802cfa84ccddb"/>
+    <dependencies>
+      <dep package="nasm"/>
+    </dependencies>
+  </autotools>
+
+  <meson id="gstreamer">
+    <branch module="gstreamer/gstreamer-1.18.4.tar.xz" version="1.18.4"
+            hash="sha256:9aeec99b38e310817012aa2d1d76573b787af47f8a725a65b833880a094dfbc5">
+    </branch>
+    <after>
+      <dep package="glib"/>
+    </after>
+  </meson>
+
+  <meson id="gst-plugins-base" mesonargs="-Dexamples=disabled -Ddoc=disabled">
+    <branch module="gst-plugins-base/gst-plugins-base-1.18.4.tar.xz"
+            version="1.18.4"
+            hash="sha256:29e53229a84d01d722f6f6db13087231cdf6113dd85c25746b9b58c3d68e8323"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="liborc"/>
+    </dependencies>
+    <after>
+    </after>
+  </meson>
+
+  <meson id="gst-plugins-good">
+    <branch module="gst-plugins-good/gst-plugins-good-1.18.4.tar.xz"
+            version="1.18.4"
+            hash="sha256:b6e50e3a9bbcd56ee6ec71c33aa8332cc9c926b0c1fae995aac8b3040ebe39b0">
+    </branch>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+    </dependencies>
+  </meson>
+
+  <meson id="gst-plugins-ugly">
+    <branch version="1.18.4"
+            module="gst-plugins-ugly/gst-plugins-ugly-1.18.4.tar.xz"
+            hash="sha256:218df0ce0d31e8ca9cdeb01a3b0c573172cc9c21bb3d41811c7820145623d13c"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+    </dependencies>
+  </meson>
+
+  <meson id="gst-plugins-bad">
+    <branch version="1.18.4"
+            module="gst-plugins-bad/gst-plugins-bad-1.18.4.tar.xz"
+            hash="sha256:74e806bc5595b18c70e9ca93571e27e79dfb808e5d2e7967afa952b52e99c85f"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+      <dep package="faad2"/>
+      <dep package='openssl'/>
+    </dependencies>
+  </meson>
+
+  <meson id="gst-libav">
+     <branch version="1.18.4"
+             module="gst-libav/gst-libav-1.18.4.tar.xz"
+             hash="sha256:344a463badca216c2cef6ee36f9510c190862bdee48dc4591c0a430df7e8c396"/>
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+      <dep package="ffmpeg"/>
+    </dependencies>
+  </meson>
+
+  <metamodule id="meta-gtk-osx-gstreamer">
+    <dependencies>
+      <dep package="gstreamer"/>
+      <dep package="gst-plugins-base"/>
+      <dep package="gst-plugins-good"/>
+      <dep package="gst-plugins-ugly"/>
+      <dep package="gst-plugins-bad"/>
+      <dep package="gst-libav"/>
+    </dependencies>
+  </metamodule>
+
+</moduleset>

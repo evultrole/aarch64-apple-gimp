@@ -1,0 +1,629 @@
+diff --git a/Source/ThirdParty/ANGLE/src/common/debug.cpp b/Source/ThirdParty/ANGLE/src/common/debug.cpp
+index 2935093b..d251be59 100644
+--- a/Source/ThirdParty/ANGLE/src/common/debug.cpp
++++ b/Source/ThirdParty/ANGLE/src/common/debug.cpp
+@@ -21,7 +21,7 @@
+ #    include <android/log.h>
+ #endif
+ 
+-#if defined(ANGLE_PLATFORM_APPLE)
++#if defined(ANGLE_PLATFORM_APPLE) && MAC_OS_X_VERSION_MAX_ALLOWED > 101200
+ #    include <os/log.h>
+ #endif
+ 
+@@ -232,7 +232,7 @@ void Trace(LogSeverity severity, const char *message)
+         }
+         __android_log_print(android_priority, "ANGLE", "%s: %s\n", LogSeverityName(severity),
+                             str.c_str());
+-#elif defined(ANGLE_PLATFORM_APPLE)
++#elif defined(ANGLE_PLATFORM_APPLE) && MAC_OS_X_VERSION_MAX_ALLOWED > 101200
+         if (__builtin_available(macOS 10.12, iOS 10.0, *))
+         {
+             os_log_type_t apple_log_type = OS_LOG_TYPE_DEFAULT;
+diff --git a/Source/WTF/wtf/glib/GLibUtilities.cpp b/Source/WTF/wtf/glib/GLibUtilities.cpp
+index c93a7824..bb59c35e 100644
+--- a/Source/WTF/wtf/glib/GLibUtilities.cpp
++++ b/Source/WTF/wtf/glib/GLibUtilities.cpp
+@@ -31,6 +31,36 @@
+ #include <unistd.h>
+ #endif
+ 
++#if OS(MAC_OS_X)
++#include <CoreFoundation/CoreFoundation.h>
++
++static CString getBundlePath(bool executable)
++{
++    char bundle_path[PATH_MAX]{};
++    auto bundle{CFBundleGetMainBundle()};
++    CFURLRef url;
++
++    if (executable)
++        url = CFBundleCopyExecutableURL(bundle);
++    else
++        url = CFBundleCopyResourcesDirectoryURL(bundle);
++    auto abs_url{CFURLCopyAbsoluteURL(url)};
++    CFRelease(url);
++    auto string{CFURLCopyFileSystemPath(abs_url, kCFURLPOSIXPathStyle)};
++    auto len{CFStringGetMaximumSizeForEncoding (CFStringGetLength (string),
++                                                kCFStringEncodingUTF8) + 1};
++    if (!len)
++        return CString();
++
++    if (len > PATH_MAX)
++        len = PATH_MAX;
++
++    CFStringGetCString(string, bundle_path, len, kCFStringEncodingUTF8);
++    CFRelease(abs_url);
++    CFRelease(string);
++    return CString(bundle_path, len);
++}
++#endif
+ #if OS(LINUX)
+ CString getCurrentExecutablePath()
+ {
+@@ -40,6 +70,11 @@ CString getCurrentExecutablePath()
+         return CString();
+     return CString(readLinkBuffer, result);
+ }
++#elif OS(MAC_OS_X)
++CString getCurrentExecutablePath()
++{
++    return getBundlePath(true);
++}
+ #elif OS(HURD)
+ CString getCurrentExecutablePath()
+ {
+@@ -77,7 +112,17 @@ CString getCurrentExecutableName()
+ 
+     return g_get_prgname();
+ }
++#if OS(MAC_OS_X)
++char* getSharedLibraryPath()
++{
++    auto bundle_path{getBundlePath(false)};
++    if (bundle_path.isNull())
++        return nullptr;
+ 
++    auto path{g_build_filename(bundle_path.data(), "lib", nullptr)};
++    return path;
++}
++#endif
+ CString enumToString(GType type, guint value)
+ {
+ #if GLIB_CHECK_VERSION(2, 54, 0)
+diff --git a/Source/WTF/wtf/glib/GLibUtilities.h b/Source/WTF/wtf/glib/GLibUtilities.h
+index 3a5fad54..da77f682 100644
+--- a/Source/WTF/wtf/glib/GLibUtilities.h
++++ b/Source/WTF/wtf/glib/GLibUtilities.h
+@@ -26,6 +26,9 @@
+ 
+ WTF_EXPORT_PRIVATE CString getCurrentExecutablePath();
+ WTF_EXPORT_PRIVATE CString getCurrentExecutableName();
++#if OS(MAC_OS_X)
++WTF_EXPORT_PRIVATE char* getSharedLibraryPath();
++#endif
+ WTF_EXPORT_PRIVATE CString enumToString(GType, guint value);
+ 
+ // These might be added to glib in the future, but in the meantime they're defined here.
+diff --git a/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.cpp
+index ad632205..29a9eace 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.cpp
+@@ -23,7 +23,7 @@
+ #if USE(GSTREAMER)
+ #include <gst/gst.h>
+ 
+-#if USE(GSTREAMER_GL)
++#if USE(WPE_VIDEO_PLANE_DISPLAY_DMABUF)
+ #include <gst/gl/egl/gsteglimage.h>
+ #endif
+ 
+@@ -508,6 +508,7 @@ template<> void derefGPtr<GstGLContext>(GstGLContext* ptr)
+         gst_object_unref(GST_OBJECT(ptr));
+ }
+ 
++#if USE(WPE_VIDEO_PLANE_DISPLAY_DMABUF)
+ template <> GRefPtr<GstEGLImage> adoptGRef(GstEGLImage* ptr)
+ {
+     return GRefPtr<GstEGLImage>(ptr, GRefPtrAdopt);
+@@ -525,6 +526,7 @@ template <> void derefGPtr<GstEGLImage>(GstEGLImage* ptr)
+     if (ptr)
+         gst_egl_image_unref(ptr);
+ }
++#endif //USE(WPE_VIDEO_PLANE_DISPLAY_DMABUF)
+ 
+ #endif // USE(GSTREAMER_GL)
+ 
+diff --git a/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.h b/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.h
+index 19509fe1..c7044e54 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.h
++++ b/Source/WebCore/platform/graphics/gstreamer/GRefPtrGStreamer.h
+@@ -30,9 +30,13 @@ struct WebKitWebSrc;
+ #if USE(GSTREAMER_GL)
+ typedef struct _GstGLDisplay GstGLDisplay;
+ typedef struct _GstGLContext GstGLContext;
++
++#if USE(WPE_VIDEO_PLANE_DISPLAY_DMABUF)
+ typedef struct _GstEGLImage GstEGLImage;
+ #endif
+ 
++#endif
++
+ namespace WTF {
+ 
+ template<> GRefPtr<GstPlugin> adoptGRef(GstPlugin* ptr);
+@@ -133,9 +137,12 @@ template<> GRefPtr<GstGLContext> adoptGRef(GstGLContext* ptr);
+ template<> GstGLContext* refGPtr<GstGLContext>(GstGLContext* ptr);
+ template<> void derefGPtr<GstGLContext>(GstGLContext* ptr);
+ 
++#if USE(WPE_VIDEO_PLANE_DISPLAY_DMABUF)
+ template<> GRefPtr<GstEGLImage> adoptGRef(GstEGLImage* ptr);
+ template<> GstEGLImage* refGPtr<GstEGLImage>(GstEGLImage* ptr);
+ template<> void derefGPtr<GstEGLImage>(GstEGLImage* ptr);
++#endif // USE(WPE_VIDEO_PLANE_DISPLAY_DMABUF)
++
+ #endif
+ 
+ } // namespace WTF
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 7c90534a..de555227 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -1259,7 +1259,7 @@ MediaTime MediaPlayerPrivateGStreamer::platformDuration() const
+     if (GST_STATE(m_pipeline.get()) < GST_STATE_PAUSED)
+         return MediaTime::invalidTime();
+ 
+-    int64_t duration = 0;
++    gint64 duration = 0;
+     if (!gst_element_query_duration(m_pipeline.get(), GST_FORMAT_TIME, &duration) || !GST_CLOCK_TIME_IS_VALID(duration)) {
+         GST_DEBUG_OBJECT(pipeline(), "Time duration query failed for %s", m_url.string().utf8().data());
+         return MediaTime::positiveInfiniteTime();
+@@ -2018,7 +2018,7 @@ void MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
+             GUniqueOutPtr<GstStructure> responseHeaders;
+             if (gst_structure_get(structure, "response-headers", GST_TYPE_STRUCTURE, &responseHeaders.outPtr(), nullptr)) {
+                 CString contentLengthHeaderName = httpHeaderNameString(HTTPHeaderName::ContentLength).utf8();
+-                uint64_t contentLength = 0;
++                guint64 contentLength = 0;
+                 if (!gst_structure_get_uint64(responseHeaders.get(), contentLengthHeaderName.data(), &contentLength)) {
+                     // souphttpsrc sets a string for Content-Length, so
+                     // handle it here, until we remove the webkit+ protocol
+diff --git a/Source/WebKit/NetworkProcess/NetworkLoadParameters.h b/Source/WebKit/NetworkProcess/NetworkLoadParameters.h
+index 8cfeb68e..76089e95 100644
+--- a/Source/WebKit/NetworkProcess/NetworkLoadParameters.h
++++ b/Source/WebKit/NetworkProcess/NetworkLoadParameters.h
+@@ -38,6 +38,9 @@
+ #include <wtf/EnumTraits.h>
+ #include <wtf/ProcessID.h>
+ 
++/* audit_token_t */
++#include <mach/message.h>
++
+ namespace WebKit {
+ 
+ enum class PreconnectOnly : bool { No, Yes };
+diff --git a/Source/WebKit/Platform/IPC/ArgumentCoders.h b/Source/WebKit/Platform/IPC/ArgumentCoders.h
+index e00a0ccd..4039ced7 100644
+--- a/Source/WebKit/Platform/IPC/ArgumentCoders.h
++++ b/Source/WebKit/Platform/IPC/ArgumentCoders.h
+@@ -38,6 +38,9 @@
+ #include <wtf/Variant.h>
+ #include <wtf/WallTime.h>
+ 
++/* audit_token_t */
++#include <mach/message.h>
++
+ namespace IPC {
+ 
+ // An argument coder works on POD types
+diff --git a/Source/WebKit/PlatformGTK.cmake b/Source/WebKit/PlatformGTK.cmake
+index 1e3035b0..31b522a4 100644
+--- a/Source/WebKit/PlatformGTK.cmake
++++ b/Source/WebKit/PlatformGTK.cmake
+@@ -34,6 +34,10 @@ list(APPEND WebKit_UNIFIED_SOURCE_LIST_FILES
+     "SourcesGTK.txt"
+ )
+ 
++find_library(APPKIT_FRAMEWORK NAMES AppKit)
++target_link_libraries(WebKit PRIVATE ${APPKIT_FRAMEWORK})
++list(APPEND WebKit_SOURCES WebProcess/gtk/NSApplicationActivationPolicy.mm)
++
+ if (NOT USE_GTK4)
+     list(APPEND WebKit_SOURCES
+         UIProcess/ViewGestureController.cpp
+diff --git a/Source/WebKit/Shared/SandboxExtension.h b/Source/WebKit/Shared/SandboxExtension.h
+index c6516658..b7d0bb04 100644
+--- a/Source/WebKit/Shared/SandboxExtension.h
++++ b/Source/WebKit/Shared/SandboxExtension.h
+@@ -34,6 +34,9 @@
+ #include <wtf/Vector.h>
+ #include <wtf/text/WTFString.h>
+ 
++/* audit_token_t */
++#include <mach/message.h>
++
+ namespace IPC {
+ class Encoder;
+ class Decoder;
+diff --git a/Source/WebKit/Shared/glib/ProcessExecutablePathGLib.cpp b/Source/WebKit/Shared/glib/ProcessExecutablePathGLib.cpp
+index a1e05f52..b2253c27 100644
+--- a/Source/WebKit/Shared/glib/ProcessExecutablePathGLib.cpp
++++ b/Source/WebKit/Shared/glib/ProcessExecutablePathGLib.cpp
+@@ -33,7 +33,6 @@
+ 
+ namespace WebKit {
+ 
+-#if ENABLE(DEVELOPER_MODE)
+ static String getExecutablePath()
+ {
+     CString executablePath = getCurrentExecutablePath();
+@@ -41,7 +40,6 @@ static String getExecutablePath()
+         return FileSystem::directoryName(FileSystem::stringFromFileSystemRepresentation(executablePath.data()));
+     return { };
+ }
+-#endif
+ 
+ static String findWebKitProcess(const char* processName)
+ {
+@@ -59,6 +57,11 @@ static String findWebKitProcess(const char* processName)
+         if (FileSystem::fileExists(processPath))
+             return processPath;
+     }
++#elif OS(MAC_OS_X)
++    auto path{getExecutablePath()};
++    auto processPath{FileSystem::pathByAppendingComponent(FileSystem::stringFromFileSystemRepresentation(path.utf8().data()), processName)};
++    if (FileSystem::fileExists(processPath))
++        return processPath;
+ #endif
+ 
+     return FileSystem::pathByAppendingComponent(FileSystem::stringFromFileSystemRepresentation(PKGLIBEXECDIR), processName);
+diff --git a/Source/WebKit/UIProcess/API/glib/WebKitProtocolHandler.cpp b/Source/WebKit/UIProcess/API/glib/WebKitProtocolHandler.cpp
+index 3515be45..f10a1d5c 100644
+--- a/Source/WebKit/UIProcess/API/glib/WebKitProtocolHandler.cpp
++++ b/Source/WebKit/UIProcess/API/glib/WebKitProtocolHandler.cpp
+@@ -354,9 +354,10 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request)
+         " </tbody></tr>",
+         webGLEnabled(request) ? "Yes" : "No");
+ 
++#if USE(GLX)
+     auto glContext = GLContext::createOffscreenContext();
+     glContext->makeContextCurrent();
+-
++#endif
+     g_string_append_printf(html,
+         " <tbody><tr>"
+         "  <td><div class=\"titlename\">API</div></td>"
+@@ -370,7 +371,7 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request)
+         "  <td>%s</td>"
+         " </tbody></tr>",
+         nativeInterface());
+-
++#if USE(GLX)
+     g_string_append_printf(html,
+         " <tbody><tr>"
+         "  <td><div class=\"titlename\">GL_RENDERER</div></td>"
+@@ -398,7 +399,6 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request)
+         "  <td>%s</td>"
+         " </tbody></tr>",
+         reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+-
+ #if USE(OPENGL_ES)
+     g_string_append_printf(html,
+         " <tbody><tr>"
+@@ -422,6 +422,7 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request)
+         " </tbody></tr>",
+         extensions->str);
+     g_string_free(extensions, TRUE);
++#endif
+ #endif
+ 
+     bool isGLX = false;
+diff --git a/Source/WebKit/UIProcess/API/glib/WebKitWebContext.cpp b/Source/WebKit/UIProcess/API/glib/WebKitWebContext.cpp
+index f44e5177..ecbf1b95 100644
+--- a/Source/WebKit/UIProcess/API/glib/WebKitWebContext.cpp
++++ b/Source/WebKit/UIProcess/API/glib/WebKitWebContext.cpp
+@@ -75,7 +75,7 @@
+ #include <wtf/glib/GUniquePtr.h>
+ #include <wtf/glib/WTFGType.h>
+ #include <wtf/text/CString.h>
+-
++#include <wtf/glib/GLibUtilities.h>
+ #if PLATFORM(GTK)
+ #include "WebKitRemoteInspectorProtocolHandler.h"
+ #endif
+@@ -312,6 +312,12 @@ static const char* injectedBundleDirectory()
+     const char* bundleDirectory = g_getenv("WEBKIT_INJECTED_BUNDLE_PATH");
+     if (bundleDirectory && g_file_test(bundleDirectory, G_FILE_TEST_IS_DIR))
+         return bundleDirectory;
++#elif OS(MAC_OS_X) && PLATFORM(GTK)
++    auto libdir{getSharedLibraryPath()};
++    auto bundledir{g_build_filename(libdir, "webkit2gtk-4.0",
++                                    "injected-bundle", nullptr)};
++    g_free(libdir);
++    return bundledir;
+ #endif
+ 
+ #if PLATFORM(GTK)
+diff --git a/Source/WebKit/UIProcess/gtk/WebDataListSuggestionsDropdownGtk.cpp b/Source/WebKit/UIProcess/gtk/WebDataListSuggestionsDropdownGtk.cpp
+index 130fac3d..99ebaed5 100644
+--- a/Source/WebKit/UIProcess/gtk/WebDataListSuggestionsDropdownGtk.cpp
++++ b/Source/WebKit/UIProcess/gtk/WebDataListSuggestionsDropdownGtk.cpp
+@@ -34,7 +34,7 @@
+ #include <WebCore/GtkVersioning.h>
+ #include <WebCore/IntPoint.h>
+ #include <wtf/glib/GRefPtr.h>
+-#include <wtf/glib/GUniquePtr.h>
++#include <WebCore/GUniquePtrGtk.h>
+ 
+ namespace WebKit {
+ 
+diff --git a/Source/WebKit/WebProcess/gtk/NSApplicationActivationPolicy.h b/Source/WebKit/WebProcess/gtk/NSApplicationActivationPolicy.h
+new file mode 100644
+index 00000000..72859428
+--- /dev/null
++++ b/Source/WebKit/WebProcess/gtk/NSApplicationActivationPolicy.h
+@@ -0,0 +1,4 @@
++
++// This is the C "trampoline" function that will be used
++// to invoke a specific Objective-C method FROM C++
++void SetActivationPolicyProhibited ();
+diff --git a/Source/WebKit/WebProcess/gtk/NSApplicationActivationPolicy.mm b/Source/WebKit/WebProcess/gtk/NSApplicationActivationPolicy.mm
+new file mode 100644
+index 00000000..ce1d75c1
+--- /dev/null
++++ b/Source/WebKit/WebProcess/gtk/NSApplicationActivationPolicy.mm
+@@ -0,0 +1,10 @@
++#include "config.h"
++#import "NSApplicationActivationPolicy.h"
++#import <AppKit/AppKit.h>
++
++// C "trampoline" function to invoke Objective-C method
++void SetActivationPolicyProhibited ()
++{
++    [NSApp setActivationPolicy: NSApplicationActivationPolicyProhibited];
++    return;
++}
+diff --git a/Source/WebKit/WebProcess/gtk/WebProcessMainGtk.cpp b/Source/WebKit/WebProcess/gtk/WebProcessMainGtk.cpp
+index 6444ad4b..6c785748 100644
+--- a/Source/WebKit/WebProcess/gtk/WebProcessMainGtk.cpp
++++ b/Source/WebKit/WebProcess/gtk/WebProcessMainGtk.cpp
+@@ -31,6 +31,7 @@
+ #include "WebProcess.h"
+ #include <WebCore/GtkVersioning.h>
+ #include <libintl.h>
++#include "NSApplicationActivationPolicy.h"
+ 
+ #if PLATFORM(X11)
+ #include <X11/Xlib.h>
+@@ -56,6 +57,7 @@ public:
+ 
+         bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
+         bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
++        SetActivationPolicyProhibited ();
+ 
+         return true;
+     }
+--- a/Source/WebKit/Platform/SharedMemory.h	2021-02-26 01:57:15.000000000 -0800
++++ b/Source/WebKit/Platform/SharedMemory.h	2021-04-04 12:06:44.000000000 -0700
+@@ -75,7 +75,7 @@
+ 
+         bool isNull() const;
+ 
+-#if OS(DARWIN) || OS(WINDOWS)
++#if !USE(UNIX_DOMAIN_SOCKETS)
+         size_t size() const { return m_size; }
+ #endif
+ 
+--- a/Source/WebKit/Platform/IPC/IPCSemaphore.h	2021-02-26 01:57:15.000000000 -0800
++++ b/Source/WebKit/Platform/IPC/IPCSemaphore.h	2021-04-04 13:40:40.000000000 -0700
+@@ -29,9 +29,10 @@
+ #include <wtf/Optional.h>
+ #include <wtf/Seconds.h>
+ 
+-#if OS(DARWIN)
++#if PLATFORM(COCOA)
+ #include <mach/semaphore.h>
+ #include <wtf/MachSendRight.h>
++
+ #endif
+ 
+ namespace IPC {
+@@ -51,7 +52,7 @@
+     void encode(Encoder&) const;
+     static Optional<Semaphore> decode(Decoder&);
+ 
+-#if OS(DARWIN)
++#if PLATFORM(COCOA)
+     explicit Semaphore(MachSendRight&&);
+ 
+     void signal();
+@@ -64,7 +65,7 @@
+ #endif
+ 
+ private:
+-#if OS(DARWIN)
++#if PLATFORM(COCOA)
+     void destroy();
+     MachSendRight m_sendRight;
+     semaphore_t m_semaphore { SEMAPHORE_NULL };
+--- a/Source/WebKit/Platform/IPC/IPCSemaphore.cpp	2021-02-26 01:57:15.000000000 -0800
++++ b/Source/WebKit/Platform/IPC/IPCSemaphore.cpp	2021-04-04 13:50:11.000000000 -0700
+@@ -26,7 +26,7 @@
+ #include "config.h"
+ #include "IPCSemaphore.h"
+ 
+-#if !OS(DARWIN)
++#if !PLATFORM(COCOA)
+ 
+ namespace IPC {
+ 
+--- a/Source/WebKit/NetworkProcess/ServiceWorker/WebSWOriginStore.cpp	2021-02-26 01:57:15.000000000 -0800
++++ b/Source/WebKit/NetworkProcess/ServiceWorker/WebSWOriginStore.cpp	2021-04-04 12:15:30.000000000 -0700
+@@ -87,10 +87,10 @@
+     if (!m_store.createSharedMemoryHandle(handle))
+         return;
+ 
+-#if OS(DARWIN) || OS(WINDOWS)
+-    uint64_t dataSize = handle.size();
+-#else
++#if  USE(UNIX_DOMAIN_SOCKETS)
+     uint64_t dataSize = 0;
++#else
++    uint64_t dataSize = handle.size();
+ #endif
+     connection.send(Messages::WebSWClientConnection::SetSWOriginTableSharedMemory(SharedMemory::IPCHandle { WTFMove(handle), dataSize }));
+ }
+--- a/Source/WebKit/UIProcess/gtk/ClipboardGtk3.cpp	2021-02-26 01:57:16.000000000 -0800
++++ b/Source/WebKit/UIProcess/gtk/ClipboardGtk3.cpp	2021-04-04 13:08:33.000000000 -0700
+@@ -35,6 +35,7 @@
+ #include <WebCore/SharedBuffer.h>
+ #include <gtk/gtk.h>
+ #include <wtf/SetForScope.h>
++#include <wtf/glib/GUniquePtr.h>
+ 
+ namespace WebKit {
+ 
+--- a/Source/WebKit/UIProcess/VisitedLinkStore.cpp	2021-02-26 01:57:16.000000000 -0800
++++ b/Source/WebKit/UIProcess/VisitedLinkStore.cpp	2021-04-04 12:18:40.000000000 -0700
+@@ -119,10 +119,10 @@
+         return;
+ 
+     // FIXME: Get the actual size of data being sent from m_linkHashStore and send it in the SharedMemory::IPCHandle object.
+-#if OS(DARWIN) || OS(WINDOWS)
+-    uint64_t dataSize = handle.size();
+-#else
++#if  USE(UNIX_DOMAIN_SOCKETS)
+     uint64_t dataSize = 0;
++#else
++    uint64_t dataSize = handle.size();
+ #endif
+     process.send(Messages::VisitedLinkTableController::SetVisitedLinkTable(SharedMemory::IPCHandle { WTFMove(handle), dataSize }), identifier());
+ }
+--- a/Source/WebKit/WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp	2021-02-26 01:57:16.000000000 -0800
++++ b/Source/WebKit/WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp	2021-04-04 13:17:34.000000000 -0700
+@@ -1148,9 +1148,10 @@
+ 
+     // If the document is a stand-alone media document, now is the right time to cancel the WebKit load.
+     // FIXME: This code should be shared across all ports. <http://webkit.org/b/48762>.
++#if ENABLE(VIDEO)
+     if (is<MediaDocument>(m_frame->coreFrame()->document()))
+         loader->cancelMainResourceLoad(pluginWillHandleLoadError(loader->response()));
+-
++#endif
+     // Calling commitData did not create the plug-in view.
+     if (!m_pluginView)
+         return;
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHost.h	2021-02-26 01:57:16.000000000 -0800
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHost.h	2021-04-04 13:22:11.000000000 -0700
+@@ -213,7 +213,7 @@
+ inline void LayerTreeHost::setViewOverlayRootLayer(WebCore::GraphicsLayer*) { }
+ inline void LayerTreeHost::scrollNonCompositedContents(const WebCore::IntRect&) { }
+ inline void LayerTreeHost::forceRepaint() { }
+-inline bool LayerTreeHost::forceRepaintAsync(CompletionHandler<void()>&) { return false; }
++inline void LayerTreeHost::forceRepaintAsync(CompletionHandler<void()>&&) {  }
+ inline void LayerTreeHost::sizeDidChange(const WebCore::IntSize&) { }
+ inline void LayerTreeHost::pauseRendering() { }
+ inline void LayerTreeHost::resumeRendering() { }
+--- a/Source/WebCore/svg/graphics/SVGImage.cpp	2021-02-26 01:57:14.000000000 -0800
++++ b/Source/WebCore/svg/graphics/SVGImage.cpp	2021-04-04 11:50:38.000000000 -0700
+@@ -447,7 +447,9 @@
+         // SVGImage objects, but we're safe now, because SVGImage can only be
+         // loaded by a top-level document.
+         m_page = makeUnique<Page>(WTFMove(pageConfiguration));
++#if ENABLE(VIDEO)
+         m_page->settings().setMediaEnabled(false);
++#endif
+         m_page->settings().setScriptEnabled(false);
+         m_page->settings().setPluginsEnabled(false);
+         m_page->settings().setAcceleratedCompositingEnabled(false);
+--- a/Source/WebCore/page/Page.cpp	2021-02-26 01:57:13.000000000 -0800
++++ b/Source/WebCore/page/Page.cpp	2021-04-04 11:42:24.000000000 -0700
+@@ -2099,13 +2099,13 @@
+         chrome().client().clearPlaybackControlsManager();
+ }
+ 
+-#endif
+-
+ void Page::playbackControlsMediaEngineChanged()
+ {
+     chrome().client().playbackControlsMediaEngineChanged();
+ }
+ 
++#endif
++
+ void Page::setMuted(MediaProducer::MutedStateFlags muted)
+ {
+     if (m_mutedState == muted)
+--- a/Source/WebCore/platform/graphics/displaylists/DisplayListItems.cpp	2021-02-26 01:57:13.000000000 -0800
++++ b/Source/WebCore/platform/graphics/displaylists/DisplayListItems.cpp	2021-04-04 11:13:19.000000000 -0700
+@@ -803,11 +803,13 @@
+     return ts;
+ }
+ 
++#if ENABLE(VIDEO)
+ PaintFrameForMedia::PaintFrameForMedia(MediaPlayer& player, const FloatRect& destination)
+     : m_identifier(player.identifier())
+     , m_destination(destination)
+ {
+ }
++#endif
+ 
+ NO_RETURN_DUE_TO_ASSERT void PaintFrameForMedia::apply(GraphicsContext&) const
+ {
+--- a/Source/WebCore/platform/graphics/displaylists/DisplayListRecorder.cpp	2021-02-26 01:57:13.000000000 -0800
++++ b/Source/WebCore/platform/graphics/displaylists/DisplayListRecorder.cpp	2021-04-04 13:57:30.000000000 -0700
+@@ -446,13 +446,19 @@
+ 
+ bool Recorder::canPaintFrameForMedia(const MediaPlayer& player) const
+ {
++#if ENABLE(VIDEO)
+     return !!player.identifier();
++#else
++    return false;
++#endif
+ }
+ 
+ void Recorder::paintFrameForMedia(MediaPlayer& player, const FloatRect& destination)
+ {
++#if ENABLE(VIDEO)
+     ASSERT(player.identifier());
+     append<PaintFrameForMedia>(player, destination);
++#endif
+ }
+ 
+ void Recorder::applyDeviceScaleFactor(float deviceScaleFactor)
+--- a/Source/WebCore/platform/graphics/GraphicsContext.cpp	2021-02-26 01:57:13.000000000 -0800
++++ b/Source/WebCore/platform/graphics/GraphicsContext.cpp	2021-04-04 11:47:43.000000000 -0700
+@@ -1312,7 +1312,9 @@
+         return;
+     }
+ 
++#if ENABLE(VIDEO)
+     player.playerPrivate()->paintCurrentFrameInContext(*this, destination);
++#endif
+ }
+ 
+ }
+--- a/Source/WebCore/editing/markup.cpp	2021-02-26 01:57:12.000000000 -0800
++++ b/Source/WebCore/editing/markup.cpp	2021-04-04 11:11:13.000000000 -0700
+@@ -183,7 +183,9 @@
+     auto pageConfiguration = pageConfigurationWithEmptyClients(PAL::SessionID::defaultSessionID());
+     
+     auto page = makeUnique<Page>(WTFMove(pageConfiguration));
++#if ENABLE(VIDEO)
+     page->settings().setMediaEnabled(false);
++#endif
+     page->settings().setScriptEnabled(false);
+     page->settings().setHTMLParserScriptingFlagPolicy(HTMLParserScriptingFlagPolicy::Enabled);
+     page->settings().setPluginsEnabled(false);
+--- a/Source/WebCore/loader/DocumentThreadableLoader.cpp	2021-02-26 01:57:12.000000000 -0800
++++ b/Source/WebCore/loader/DocumentThreadableLoader.cpp	2021-04-04 11:36:28.000000000 -0700
+@@ -41,8 +41,9 @@
+ #include "DOMWindow.h"
+ #include "Document.h"
+ #include "Frame.h"
++#include "FrameLoader.h"
+ #include "InspectorInstrumentation.h"
+ #include "LegacySchemeRegistry.h"
+ #include "LoadTiming.h"
+ #endif
+ 

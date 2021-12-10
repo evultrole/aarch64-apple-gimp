@@ -1,0 +1,104 @@
+From 6be014fc599d47b3ce3211a00b383c7ad9bf81f6 Mon Sep 17 00:00:00 2001
+From: Jehan <jehan@girinstud.io>
+Date: Fri, 22 Oct 2021 23:08:07 +0200
+Subject: [PATCH] app: replace using the "draw" signal by "expose-event" on
+ GTK+2.
+
+Not sure why but adding a handler to the "expose-event" signal of
+GimpDisplayShell (similarly to how we do it in master branch on "draw")
+just didn't work. But it works on the already existing signal handling
+on the canvas instead (which actually is not a bad deal, as we also
+remove the coordinates translation so maybe we should test this on
+`master` too).
+
+Note: why we are backporting all this logics to gimp-2-10 is because
+changes in macOS BigSur broke the selection's marching ants the same way
+they broke on Wayland and it was confirmed this fix worked for BigSur as
+well, at least on the dev builds.
+It is unnecessary to backport for Wayland (because GIMP 2.10 is based on
+GTK2 which anyway works only through XWayland, hence doesn't have the
+issue), we do it only for macOS BigSur (and further). Well at least the
+fix will hopefully work on the stable branch, because I cannot test
+myself.
+
+See issue #5952.
+---
+ app/display/gimpdisplayshell-callbacks.c |  1 +
+ app/display/gimpdisplayshell-selection.c |  6 ------
+ app/display/gimpdisplayshell.c           | 17 -----------------
+ 3 files changed, 1 insertion(+), 23 deletions(-)
+
+diff --git a/app/display/gimpdisplayshell-callbacks.c b/app/display/gimpdisplayshell-callbacks.c
+index 9b65529b3c..2b621ac5bf 100644
+--- a/app/display/gimpdisplayshell-callbacks.c
++++ b/app/display/gimpdisplayshell-callbacks.c
+@@ -593,6 +593,7 @@ gimp_display_shell_canvas_draw_image (GimpDisplayShell *shell,
+   gimp_canvas_item_draw (shell->unrotated_item, cr);
+ 
+   /* restart (and recalculate) the selection boundaries */
++  gimp_display_shell_selection_draw (shell, cr);
+   gimp_display_shell_selection_restart (shell);
+ }
+ 
+diff --git a/app/display/gimpdisplayshell-selection.c b/app/display/gimpdisplayshell-selection.c
+index 85526619ca..3cfacd3a30 100644
+--- a/app/display/gimpdisplayshell-selection.c
++++ b/app/display/gimpdisplayshell-selection.c
+@@ -412,12 +412,6 @@ selection_generate_segs (Selection *selection)
+                          &selection->n_segs_in, &selection->n_segs_out,
+                          0, 0, 0, 0);
+ 
+-  if (selection->n_segs_in || selection->n_segs_out)
+-    gtk_widget_translate_coordinates (GTK_WIDGET (selection->shell->canvas),
+-                                      GTK_WIDGET (selection->shell),
+-                                      0, 0,
+-                                      &canvas_offset_x, &canvas_offset_y);
+-
+   if (selection->n_segs_in)
+     {
+       selection->segs_in = g_new (GimpSegment, selection->n_segs_in);
+diff --git a/app/display/gimpdisplayshell.c b/app/display/gimpdisplayshell.c
+index 5cc8369dec..9603e4fae4 100644
+--- a/app/display/gimpdisplayshell.c
++++ b/app/display/gimpdisplayshell.c
+@@ -151,8 +151,6 @@ static void      gimp_display_shell_unmap          (GtkWidget        *widget);
+ static void      gimp_display_shell_screen_changed (GtkWidget        *widget,
+                                                     GdkScreen        *previous);
+ static gboolean  gimp_display_shell_popup_menu     (GtkWidget        *widget);
+-static gboolean  gimp_display_shell_draw           (GtkWidget        *widget,
+-                                                    cairo_t          *cr);
+ 
+ static void      gimp_display_shell_real_scaled    (GimpDisplayShell *shell);
+ static void      gimp_display_shell_real_scrolled  (GimpDisplayShell *shell);
+@@ -257,7 +255,6 @@ gimp_display_shell_class_init (GimpDisplayShellClass *klass)
+   widget_class->unmap              = gimp_display_shell_unmap;
+   widget_class->screen_changed     = gimp_display_shell_screen_changed;
+   widget_class->popup_menu         = gimp_display_shell_popup_menu;
+-  widget_class->draw               = gimp_display_shell_draw;
+ 
+   klass->scaled                    = gimp_display_shell_real_scaled;
+   klass->scrolled                  = gimp_display_shell_real_scrolled;
+@@ -1056,20 +1053,6 @@ gimp_display_shell_popup_menu (GtkWidget *widget)
+   return TRUE;
+ }
+ 
+-static gboolean
+-gimp_display_shell_draw (GtkWidget *widget,
+-                         cairo_t   *cr)
+-{
+-  GtkWidgetClass   *widget_class = g_type_class_peek_parent (parent_class);
+-  GimpDisplayShell *shell        = GIMP_DISPLAY_SHELL (widget);
+-  gboolean          stop_handlers;
+-
+-  stop_handlers = widget_class->draw (widget, cr);
+-  gimp_display_shell_selection_draw (shell, cr);
+-
+-  return stop_handlers;
+-}
+-
+ static void
+ gimp_display_shell_real_scaled (GimpDisplayShell *shell)
+ {
+-- 
+2.30.0
+

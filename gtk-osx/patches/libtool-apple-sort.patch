@@ -1,0 +1,38 @@
+--- a/Makefile.am	2015-01-20 07:34:33.000000000 -0800
++++ b/Makefile.am	2021-11-12 10:18:23.000000000 -0800
+@@ -416,8 +416,8 @@
+ # files created in the build tree, so instead we regenerate the
+ # manual pages if the sources for the build-tree files we want to
+ # run have changed.
+-$(libtool_1): $(ltmain_sh)
+-	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
++#$(libtool_1): $(ltmain_sh)
++#	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
+ $(libtoolize_1): $(libtoolize_in)
+ 	$(AM_V_GEN)$(update_mans) libtoolize
+ 
+--- s/Makefile.in	2015-02-15 08:14:14.000000000 -0800
++++ b/Makefile.in	2021-11-12 10:26:26.000000000 -0800
+@@ -2324,8 +2324,8 @@
+ # files created in the build tree, so instead we regenerate the
+ # manual pages if the sources for the build-tree files we want to
+ # run have changed.
+-$(libtool_1): $(ltmain_sh)
+-	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
++#$(libtool_1): $(ltmain_sh)
++#	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
+ $(libtoolize_1): $(libtoolize_in)
+ 	$(AM_V_GEN)$(update_mans) libtoolize
+ 
+--- a/build-aux/ltmain.in	2015-02-06 04:57:56.000000000 -0800
++++ b/build-aux/ltmain.in	2021-11-08 14:58:33.000000000 -0800
+@@ -3188,7 +3188,7 @@
+     if test yes = "$lock_old_archive_extraction"; then
+       $opt_dry_run || rm -f "$lockfile"
+     fi
+-    if ($AR t "$f_ex_an_ar_oldlib" | sort | sort -uc >/dev/null 2>&1); then
++    if ($AR t "$f_ex_an_ar_oldlib" | sort -u | sort -c >/dev/null 2>&1); then
+      :
+     else
+       func_fatal_error "object name conflicts in archive: $f_ex_an_ar_dir/$f_ex_an_ar_oldlib"
+
