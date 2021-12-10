@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  buildMac:
+    name: Build macOS
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        xcode: [ Xcode_12.2 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Set XCode Version
+        run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
+      - name: Build project
+        run: ./build_setup.sh
+      - name: Archive artifact
+        run: zip DLT-macOS.zip -r build/release
+      - name: Upload DLT artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: DLT-Mac
+          path: DLT-macOS.zip
