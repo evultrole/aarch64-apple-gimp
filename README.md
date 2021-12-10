@@ -1,6 +1,8 @@
 # aarch64-apple-gimp
 Changes required to get GIMP compiling on M1 macs with big sur. Probably fixed big sur issues in general
 
+Current tree has an issue at runtime, build completes but does not run. Will need to isolate affect library this weekend.
+
 This is not meant to be build with circle CI. The scripts are left in place for anyone who wishes to look at what the gimp team does to try to adapt my build script to that format.
 
 For code signing you will need to provide your apple dev details. Recommendation is making a .appledevprofile file in your home directory with info as follows:
